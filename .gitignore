@@ -1,1 +1,6 @@
 /client/node_modules
+.hbmk
+/test/builds
+/test/builds.exe
+/trash
+

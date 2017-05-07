@@ -55,7 +55,7 @@
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.harbour",
-				"match": "\\b(?i:if|ELSEIF|ELSE|end(?:if|while|case)?|for(?:\\s+each)?|to|next|do|while|switch|case|endcase|otherwise|exit)\\b"
+				"match": "\\b(?i:if|ELSEIF|ELSE|end(?:if|while|case|do|switch)?|for(?:\\s+each)?|to|next|do|while|switch|case|endcase|otherwise|exit)\\b"
 			},
 			{
 				"name": "keyword.function.harbour",

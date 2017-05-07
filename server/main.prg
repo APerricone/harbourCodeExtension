@@ -6,13 +6,18 @@
 
 #define CRLF chr(13)+chr(10)
 
-procedure MyTrace(cMsg)
-	OutErr(cMsg+CRLF)
+memvar traceLevel
+
+procedure MyTrace(l, cMsg)
+	if l < traceLevel
+		OutErr(cMsg+CRLF)
+	endif
 return
 
 procedure main()
 	local nRead, cLine := Space( 1024 )
 	local nWait := 0, cCurrent
+	public traceLevel := 0
 	do while .t.
 		nRead := fRead(0, @cLine, 1024 )
 		if nRead = 0
@@ -29,7 +34,7 @@ procedure main()
 		if nWait<=0
 			process(cCurrent)
 		endif
-	enddo
+	end
 return
 
 
@@ -50,7 +55,7 @@ return nLength-len(cReaded)
 procedure process(cJson)
 	LOCAL aRet :=  hb_jsonDecode(cJson)
 	local i
-	MyTrace("received:" + aRet["method"])
+	MyTrace(2,"received:" + aRet["method"])
 	switch aRet["method"]
 		case "initialize"
 			Initialize(aRet)
@@ -60,7 +65,7 @@ procedure process(cJson)
 			Parse(aRet)
 			exit
 		otherwise
-			MyTrace("received:" + cJson)
+			MyTrace(2,"received:" + cJson)
 	endswitch
 return
 
@@ -70,14 +75,22 @@ procedure Initialize(hObj)
 		"id" => hObj["id"], ;
 		"result" => { ; 
 			"capabilities" => { ;
-				"textDocumentSync" => { ;
-					"openClose" => "true", ;
-					"change" => 1 ;
-				};
+				"textDocumentSync" => 1;
 			} ;	
 		} ;
 	}
-	
+	switch hObj["params"]["trace"]
+		case "off" 
+			traceLevel := 0
+			exit
+		case 'messages'
+			traceLevel := 1
+			exit
+		case 'verbose'
+			traceLevel := 2
+			exit
+	endswitch
+	traceLevel := 2
 	Send( hResp )
 return
 
@@ -109,12 +122,12 @@ procedure Parse(hObj)
 		}
 		Send (hDiagnostics)		
 	endif
-	//MyTrace("text:" + hObj["params"]["textDocument"]["text"])
+	//MyTrace(2,"text:" + hObj["params"]["textDocument"]["text"])
 return
 
 procedure Send(hMsg)
 	LOCAL cResp := hb_jsonEncode(hMsg)
-	MyTrace("Send:" + cResp)
+	MyTrace(2,"Send:" + cResp)
 	OutStd("Content-Length: " + alltrim(Str(len(cResp))) + CRLF + CRLF + cResp )
 return
 
