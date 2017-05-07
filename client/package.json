@@ -1,0 +1,61 @@
+{
+    "name": "harbour",
+    "displayName": "harbour",
+    "description": "Antonino Perricone's extension for visual studio code about harbour programming language",
+    "version": "0.0.1",
+    "publisher": "aperricone",
+    "icon": "./langHarbour.png",
+    "main": "./extension",
+    "activationEvents": [
+        "onLanguage:harbour"
+    ],
+     "engines": {
+        "vscode": "^1.11.0"
+    },
+    "categories": [
+        "Languages"
+    ],
+    "dependencies": {
+        "vscode-languageclient": "^2.6.3"        
+    },
+    "extensionDependencies": [
+        "ms-vscode.cpptools"
+    ],
+    "contributes": {
+        "configuration": {
+            "type": "object",
+            "title": "Harbour compiler",
+            "properties": {
+                "harbourCompiler.extraIncludePaths": {
+                    "type": "array",
+                    "description": "Extra include paths to use during the compilation.",
+                    "items": {
+                        "type": "string",
+                        "default": ""
+                        }
+                    },
+                "harbourCompiler.warningLevel": {
+                    "type": "number",
+                    "default": 1,
+                    "maximum": 3,
+                    "minimum": 0,
+                    "description": "Warning level."
+                    }
+            }
+        },
+        "languages": [{
+            "id": "harbour",
+            "aliases": ["Harbour", "harbour"],
+            "extensions": ["prg", "ch"],
+            "configuration": "./language-configuration.json"
+        }],
+        "grammars": [{
+            "language": "harbour",
+            "scopeName": "source.harbour",
+            "path": "./syntaxes/harbour.tmLanguage.json",
+            "embeddedLanguages": {
+                "source.c": "c"
+            }
+        }]
+    }
+}

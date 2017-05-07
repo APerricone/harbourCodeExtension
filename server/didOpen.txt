@@ -1,0 +1,12 @@
+{
+	"jsonrpc": "2.0",
+	"method": "textDocument/didOpen",
+	"params": {
+		"textDocument": {
+			"uri": "file:///home/perry/Dropbox/test.prg",
+			"languageId": "harbour",
+			"version": 1,
+			"text": "#include <hbclass.ch>\r\n\r\nclass test\r\n   METHOD aBitmap( n )      INLINE ( If( empty(n) .or. (n > 0 .and. n <= 10), 5 , nil ) )\r\nendclass\r\n//>\r\n\r\nproc commentTest()  // various types of Comments\r\n   local pror := 3\r\n   ? pror\r\n   pror := 4 * 2  && pror := 5 && is like //\r\n   ? pror && prints 8\r\n   * pro := 5 comment\r\n   NOTE pro := 5 comment\r\n   /*\r\n   pro := 5 commento\r\n   */\r\n   ? pror && prints 8\r\n    \r\nreturn\r\n\r\nproc prova()\r\n   local a := {1}\r\n   local cURL := \"http://85.94.212.98/TLdivulgazioniws/Divulgazioni.asmx\", nSlash // Test\r\n\r\n   ? cUrl\r\n   if left(cURL,7) = \"http://\" \r\n      cURL := SUBSTR(cURL, 8)\r\n   endif\r\n   ? cUrl\r\n   nSlash := at(\"/\", cURL)\r\n   ? \"Host:\"+left(cURL,nSlash-1)\r\n   ? \"Path:\"+substr(cURL,nSlash)\r\n\r\n   ? Transform(\"Perry\", \"@\")\r\n   ? Transform(611, \"@\")\r\n   ? ALLTRIM(STR(611))\r\n\r\n   ? val(\"1\")\r\n   ? val(\"1\")>1\r\n   ? hb_regexComp( \"C:\\\\Pos\\\\IMG\\\\003668\\..*\" )\r\n   ? HB_REGEXLIKE((StrTran(\"C:\\Pos\\\",\"\\\",\"\\\\\") +\"IMG\\\\\"+AllTrim(\"003668\")+\"\\..*\"),\"c:\\pos\\img\\003668.jpg\")\r\n //? WinExec(\"wmic path win32_physicalmedia get SerialNumber\",)\r\n\r\n* ? PadLeft(\"Perry\",2) Queste sono commentate\r\nNOTE ? PadLeft(\"Perry\",20) ^^^\r\n/*============================================================================\r\n\r\n   Commmento grande dentro una procedura senza fine\r\n\r\n  --------------------------------------------------------------------------*/\r\n  ? \"ppp\"\r\n\r\n/*============================================================================\r\n\r\n   main()\r\n\r\n  --------------------------------------------------------------------------*/\r\nproc main()\r\n   LOCAL t := test():New()\r\n   //prova2()\r\n\t prova()\r\n   ? t:aBitmap\r\n\t ? \"main\"\r\n\r\n\r\n#pragma BEGINDUMP\r\n#include <Windows.h>\r\n#include <hbapi.h>\r\n\r\n\r\nHB_FUNC( WINEXEC )\r\n{\r\n   int i=0;\r\n   hb_retni( WinExec( hb_parc( 1 ), ( UINT ) hb_parni( 2 ) ) );\r\n}\r\n\r\n\r\n#pragma ENDDUMP\r\n"
+		}
+	}
+}

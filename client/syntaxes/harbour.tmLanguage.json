@@ -1,0 +1,133 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "Harbour",
+	"patterns": [
+		{
+			"include": "#comments"
+		},
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#strings"
+		},
+		{
+			"include": "#numbers"
+		},
+		{
+			"include": "#c_code"
+		}
+	],
+	"repository": {
+		"numbers": {
+			"patterns": [
+				{
+					"match": "\\b([0-9]+)\\b",
+					"name": "constant.numeric.c"
+				}
+			]
+		},
+		"comments": {
+			"patterns": [
+				{
+					"name": "comment.block",
+					"begin": "/\\*",
+					"end": "\\*/"
+				},
+				{
+					"name": "comment.singleline.slash",
+					"match": "//(.*)"
+				},
+				{
+					"name": "comment.singleline.ampersand",
+					"match": "&&(.*)"
+				},
+				{
+					"name": "comment.startline.note",
+					"match": "^\\s*NOTE\\s+(.*)"
+				},
+				{
+					"name": "comment.startline.asterisk",
+					"match": "^\\s*\\*\\s+(.*)"
+				}
+			]
+		},
+		"keywords": {
+			"patterns": [{
+				"name": "keyword.control.harbour",
+				"match": "\\b(?i:if|ELSEIF|ELSE|end(?:if|while|case)?|for(?:\\s+each)?|to|next|do|while|switch|case|endcase|otherwise|exit)\\b"
+			},
+			{
+				"name": "keyword.function.harbour",
+				"match": "\\b(?i:return|proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?|func(?:t(?:i(?:o(?:n)?)?)?)?|static)\\b"
+			},
+			{
+				"name": "keyword.declarations.harbour",
+				"match": "\\b(?i:local|static|public)\\b"
+			},
+			{
+				"name": "meta.function.harbour",
+				"match": "\\b(?i:([a-z_][a-z_0-9]+)\\s*\\()",
+				"captures": {
+					"1": { "name": "entity.name.function.harbour" }
+				}
+			},
+			{
+				"name": "keyword.operator.logical.harbour",
+				"match": "(?i:\\.(T|F|and|or|not)\\.)"
+			},
+			{
+				"name": "meta.preprocessor.include.harbour",
+				"begin": "(?i:^\\s*#include\\s)",
+				"end": "(?=(?://|&&|/\\*))|(?<!;)(?=\n)",
+				"patterns": [
+					{
+						"include": "#strings"
+					},
+					{
+						"name": "string.quoted.angle.harbour",
+						"begin": "<",
+						"end": ">"
+					}
+				]
+			},
+			{
+				"name": "meta.preprocessor.various.harbour",
+				"match": "(?i:^\\s*#[a-zA-z]+)"
+			}]
+		},
+		"strings": {
+			"patterns": [
+				{
+					"name": "string.quoted.double.harbour",
+					"begin": "\"",
+					"end": "\""
+				},
+				{
+					"name": "string.quoted.single.harbour",
+					"begin": "'",
+					"end": "'"
+				}
+			]
+		},
+		"c_code": {
+			"patterns": [
+				{
+					"begin": "(?i:BEGINDUMP)",
+					"end": "(?i:ENDDUMP)",
+					"contentName": "source.c.embedded.harbour",
+					"patterns": [
+						{
+							"match": "\\b(HB_FUNC|hb_ret[a-z]+|hb_par[a-z]+)\\s*\\(",
+							"name": "keyword.connection.harbor"
+						},
+						{
+							"include": "source.c"
+						}
+					]
+				}
+			]
+		}
+	},
+	"scopeName": "source.harbour"
+}

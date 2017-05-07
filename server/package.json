@@ -1,0 +1,9 @@
+{
+  "name": "harbour-lang-server",
+  "description": "Server part of the visual studio code extension about harbour.",
+  "version": "0.0.1",
+  "author": "aperricone",
+  "scripts": {
+    "compile": "./buildsh"
+  }
+}
