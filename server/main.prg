@@ -59,6 +59,7 @@ procedure process(cJson)
 	MyTrace(2,"received:" + aRet["method"])
 	switch aRet["method"]
 		case "initialize"
+			MyTrace(2,"received:" + cJson)
 			Initialize(aRet)
 			exit
 		case "textDocument/didOpen"

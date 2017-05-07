@@ -1,0 +1,4 @@
+proc altroFile()
+	? a
+return
+

@@ -16,8 +16,9 @@ function activate(context) {
 	let clientOptions = {
 		documentSelector: ['harbour'],
 		sincronize: {
-			configurationSection: 'harbourCompiler'
-		}
+			configurationSection: 'harbour'
+		},
+		fileEvents: vscode.workspace.createFileSystemWatcher('**/.clientrc')
 	}
 	let disposable = new client.LanguageClient('Harbour language server', 'Harbour language server', 
 			serverOptions, clientOptions).start();

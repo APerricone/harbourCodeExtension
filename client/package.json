@@ -1,7 +1,7 @@
 {
     "name": "harbour",
     "displayName": "harbour",
-    "description": "Antonino Perricone's extension for visual studio code about harbour programming language",
+    "description": "Harbour language support for visual studio code",
     "version": "0.0.1",
     "publisher": "aperricone",
     "icon": "./langHarbour.png",
@@ -44,7 +44,7 @@
                         "default": ""
                         }
                     },
-                "harbourCompiler.warningLevel": {
+                "harbour.warningLevel": {
                     "type": "number",
                     "default": 1,
                     "maximum": 3,

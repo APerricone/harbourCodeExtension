@@ -2,13 +2,14 @@
 
 #define CRLF chr(13)+chr(10)
 /*
-		"#include <hbclass.ch>" + CRLF + + CRLF + ;
-		"class oggetto" + CRLF + ;
-		"   METHOD aBitmap( n )      INLINE ( If( empty(n) .or. (n > 0 .and. n <= 10), 5 , nil ) )" + CRLF + ;
-		"endclass" + CRLF + ;
 */
 proc main()
 	LOCAL cTest := ;
+		'#include "err.prg"' + CRLF + ;
+		"#include <hbclass.ch>" + CRLF + CRLF + ;
+		"class oggetto" + CRLF + ;
+		"   METHOD aBitmap( n )      INLINE ( If( empty(n) .or. (n > 0 .and. n <= 10), 5 , nil ) )" + CRLF + ;
+		"endclass" + CRLF + ;
 		"proc test()" + CRLF + ;
 		" LOCAL bTest := {|| pippo() }" + CRLF + ;
 		" LOCAL i:= 1" + CRLF + ;
@@ -28,6 +29,7 @@ proc main()
 	for i:=1 to len(aMsg)
 	    ? aMsg[i,1], aMsg[i,2], aMsg[i,3], aMsg[i,4], aMsg[i,5] 
 	next
+	callPP()
 return
 
 proc pippo_Pluto()
@@ -55,14 +57,35 @@ static int pOpenFunc( void * cargo, char * zFileName,
 	HB_SYMBOL_UNUSED( pfFree );
 	
 	HB_PATHNAMES* pInc = pIncludePaths;
-	printf("open\r\n");
-	printf("%s(%i,%i,%i):", zFileName,  fBefore, fSysFile, fBinary);
+	FILE* f;
+	char *nameBuff;
+	printf("open %s(%i,%i,%i):", zFileName,  fBefore, fSysFile, fBinary);
 	//printf(szText,szPar1,szPar2);
 	printf("\r\n");
 	while(pInc)
 	{
 		printf("  %s(%i)\r\n",pInc->szPath,pInc->fFree);
 		pInc = pInc->pNext;
+	}
+    nameBuff = (char*)hb_xalloc(35+strlen(zFileName));
+    if(fBefore)
+	    strcpy(nameBuff,"/home/perry/harbour-src/include/");
+	else
+		*nameBuff = 0;
+    strcat(nameBuff,zFileName);
+	f = fopen(nameBuff,"rt");
+    printf("opened %s\r\n",nameBuff);
+    hb_xfree(nameBuff);	
+	if(f)
+	{
+		fseek(f,0,SEEK_END);
+		*pnLen = ftell(f);
+		*pBufPtr = (char*)hb_xalloc(*pnLen+1);
+		fseek(f,0,SEEK_SET);
+		fread(*pBufPtr,*pnLen,1,f);
+		printf("readed %i\r\n",*pnLen);
+		fclose(f);
+		return HB_PP_OPEN_OK;
 	}
 	return HB_PP_OPEN_FILE;
 }
@@ -90,11 +113,6 @@ static void pMsgFunc( void * cargo, int iErrorFmt, int iLine,
     hb_arraySetC(pMsgItem, 5, szMess);
     hb_xfree(szMess);
     hb_arrayAdd(pMsgDest, pMsgItem);
- //  printf("msg\r\n");
-
-    printf("%c #%i (%s:%i):", cPrefix,  iValue, szModule, iLine);
-    printf(szText,szPar1,szPar2);
-    printf("\r\n"); //*/
 }
 
 static void hb_compInitVars( HB_COMP_DECL )
@@ -276,10 +294,12 @@ HB_FUNC( TEST )
       hb_retclen_buffer( ( char * ) pBuffer, nLen );
 }
 
-HB_FUNC( callPP )
+HB_FUNC( CALLPP )
 {
-	PHB_DYNS pFunc = hb_dynsymFind( "PIPPO_PLUTO" );
+	PHB_DYNS pDyns = hb_dynsymFind( "PIPPO_PLUTO" );
+	PHB_FUNC pFunc = hb_vmProcAddress("PIPPO_PLUTO" );
 	
+	printf("\r\nPP %X - %X\r\n", pDyns, pFunc);
 }
 #pragma ENDDUMP
 
