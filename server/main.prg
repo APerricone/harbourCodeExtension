@@ -9,7 +9,7 @@
 memvar traceLevel
 
 procedure MyTrace(l, cMsg)
-	if l < traceLevel
+	if l <= traceLevel
 		OutErr(cMsg+CRLF)
 	endif
 return
@@ -17,7 +17,8 @@ return
 procedure main()
 	local nRead, cLine := Space( 1024 )
 	local nWait := 0, cCurrent
-	public traceLevel := 0
+	public traceLevel := 2
+	OutErr("start"+CRLF)
 	do while .t.
 		nRead := fRead(0, @cLine, 1024 )
 		if nRead = 0
@@ -61,11 +62,14 @@ procedure process(cJson)
 			Initialize(aRet)
 			exit
 		case "textDocument/didOpen"
+			Parse(aRet,aRet["params"]["textDocument"]["text"])
+			exit
 		case "textDocument/didChange"
-			Parse(aRet)
+			Parse(aRet,aRet["params"]["contentChanges"][1]["text"])
 			exit
 		otherwise
 			MyTrace(2,"received:" + cJson)
+			exit
 	endswitch
 return
 
@@ -94,11 +98,11 @@ procedure Initialize(hObj)
 	Send( hResp )
 return
 
-procedure Parse(hObj)
+procedure Parse(hObj,cText)
 	local hDiagnostics, aMessages, aCnvMessages, i
 	local uri := hObj["params"]["textDocument"]["uri"]
-	Compile(hObj["params"]["textDocument"]["text"], uri, 3, @aMessages)
-	if len(aMessages)>0
+	Compile(cText, uri, 3, @aMessages)
+	//if len(aMessages)>0
 		aCnvMessages := {}
 		for i:=1 to len(aMessages)
 			if aMessages[i,3] = uri
@@ -121,7 +125,7 @@ procedure Parse(hObj)
 			} ;
 		}
 		Send (hDiagnostics)		
-	endif
+	//endif
 	//MyTrace(2,"text:" + hObj["params"]["textDocument"]["text"])
 return
 
@@ -151,13 +155,12 @@ static int pOpenFunc( void * cargo, char * zFileName,
 	HB_SYMBOL_UNUSED( pfFree );
 	
 	HB_PATHNAMES* pInc = pIncludePaths;
-	printf("open\r\n");
-	printf("%s(%i,%i,%i):", zFileName,  fBefore, fSysFile, fBinary);
-	//printf(szText,szPar1,szPar2);
-	printf("\r\n");
+	fprintf(stderr,"open\r\n");
+	fprintf(stderr,"%s(%i,%i,%i):", zFileName,  fBefore, fSysFile, fBinary);
+	fprintf(stderr,"\r\n");
 	while(pInc)
 	{
-		printf("  %s(%i)\r\n",pInc->szPath,pInc->fFree);
+		fprintf(stderr,"  %s(%i)\r\n",pInc->szPath,pInc->fFree);
 		pInc = pInc->pNext;
 	}
 	return HB_PP_OPEN_FILE;
@@ -235,6 +238,7 @@ HB_FUNC( COMPILE )
 	HB_COMP_PARAM->iWarnings = hb_parni( 3 );;
 	HB_COMP_PARAM->fDebugInfo = HB_TRUE;
 	HB_COMP_PARAM->fLineNumbers = HB_TRUE;
+	HB_COMP_PARAM->fGauge = HB_FALSE;
 
 	hb_compChkEnvironment( HB_COMP_PARAM );
 	HB_COMP_PARAM->iSyntaxCheckOnly = 1;
@@ -278,10 +282,10 @@ HB_FUNC( TEST )
          argv[ i-1 ] = hb_arrayGetCPtr( pParam, i );
       }
    }
-   printf("call\r\n");
+   //printf("call\r\n");
    iResult = hb_compMainExt( argc, argv, &pBuffer, &nLen, szSource, 0, 0, 0, pMsgFunc );
    //hb_compCompile( pComp, "{SOURCE}", szSource, iStartLine );
-   printf("%i\r\n",iResult);
+   //printf("%i\r\n",iResult);
    if( iResult == EXIT_SUCCESS && pBuffer )
       hb_retclen_buffer( ( char * ) pBuffer, nLen );
 }

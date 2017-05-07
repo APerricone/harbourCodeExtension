@@ -1,4 +1,5 @@
 /client/node_modules
+/client/bin
 .hbmk
 /test/builds
 /test/builds.exe

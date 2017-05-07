@@ -10,7 +10,7 @@ function activate(context) {
 		}
 	});
 	let serverOptions = {
-		command:  context.asAbsolutePath(path.join('bin', 'server'))
+		command:  context.asAbsolutePath(path.join( 'bin', 'server'))
 		//,env:{LD_LIBRARY_PATH: ":/home/perry/harbour-src/lib/linux/gcc/"}
 	}
 	let clientOptions = {

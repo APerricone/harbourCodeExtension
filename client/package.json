@@ -5,7 +5,7 @@
     "version": "0.0.1",
     "publisher": "aperricone",
     "icon": "./langHarbour.png",
-    "main": "./extension",
+    "main": "./src/extension",
     "activationEvents": [
         "onLanguage:harbour"
     ],
@@ -26,7 +26,17 @@
             "type": "object",
             "title": "Harbour compiler",
             "properties": {
-                "harbourCompiler.extraIncludePaths": {
+                "harbour.trace.server": {
+                  "type": "string",
+                  "enum": [
+                    "off",
+                    "messages",
+                    "verbose"
+                  ],
+                  "default": "off",
+                  "description": "Traces the communication between VS Code and the language server."
+                },
+                "harbour.extraIncludePaths": {
                     "type": "array",
                     "description": "Extra include paths to use during the compilation.",
                     "items": {
@@ -47,7 +57,7 @@
             "id": "harbour",
             "aliases": ["Harbour", "harbour"],
             "extensions": ["prg", "ch"],
-            "configuration": "./language-configuration.json"
+            "configuration": "./syntaxes/language-configuration.json"
         }],
         "grammars": [{
             "language": "harbour",
