@@ -59,11 +59,11 @@
 			},
 			{
 				"name": "keyword.function.harbour",
-				"match": "\\b(?i:return|proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?|func(?:t(?:i(?:o(?:n)?)?)?)?|static)\\b"
+				"match": "\\b(?i:static|return|proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?|func(?:t(?:i(?:o(?:n)?)?)?)?|static)\\b"
 			},
 			{
 				"name": "keyword.declarations.harbour",
-				"match": "\\b(?i:local|static|public)\\b"
+				"match": "\\b(?i:local|private|public|field|thread)\\b"
 			},
 			{
 				"name": "meta.function.harbour",
