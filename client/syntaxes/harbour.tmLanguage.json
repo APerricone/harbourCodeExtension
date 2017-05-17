@@ -63,7 +63,7 @@
 			},
 			{
 				"name": "keyword.declarations.harbour",
-				"match": "\\b(?i:local|private|public|field|thread|memvar)\\b"
+				"match": "\\b(?i:local|private|public|field|thread|memvar|parameter)\\b"
 			},
 			{
 				"name": "meta.function.harbour",
