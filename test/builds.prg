@@ -2,28 +2,45 @@
 
 #define CRLF chr(13)+chr(10)
 /*
+//		'#include "err.prg"' + CRLF + ;
+		"static superman, batman" + CRLF + ;
 */
 proc main()
 	LOCAL cTest := ;
-		'#include "err.prg"' + CRLF + ;
-		"#include <hbclass.ch>" + CRLF + CRLF + ;
+		"#include <hbclass.ch>" + CRLF + ;
+		"" + CRLF + ;
+		"memvar arrow, flash" + CRLF + ;
+		"" + CRLF + ;
 		"class oggetto" + CRLF + ;
+		"   DATA soo AS STRING" + CRLF + ;
+		"   DATA noo AS NUMERIC" + CRLF + ;
+		"   DATA ioo" + CRLF + ;
 		"   METHOD aBitmap( n )      INLINE ( If( empty(n) .or. (n > 0 .and. n <= 10), 5 , nil ) )" + CRLF + ;
+		"   METHOD otherMedhod()"  + CRLF + ;
+		"	METHOD oggProc()"  + CRLF + ;
 		"endclass" + CRLF + ;
+		"METHOD otherMedhod() CLASS oggetto" + CRLF + ;
+		"return nil" + CRLF + ;
+		"METHOD oggProc() class oggetto" + CRLF + ;
+		"return" + CRLF + ;
 		"proc test()" + CRLF + ;
 		" LOCAL bTest := {|| pippo() }" + CRLF + ;
-		" LOCAL i:= 1" + CRLF + ;
-		" i += 2" + CRLF + ;
+		" LOCAL i" + CRLF + ;
+		" public arrow, flash" + CRLF + ;
+		" private canary, firestorm" + CRLF + ;
 		" j := 2" + CRLF + ;
 		" test2('aa')" + CRLF + ;
-		"return" + CRLF + CRLF + ;
-		"proc test2(pippo)" + CRLF + ;
+		"return" + CRLF +;
+		"" + CRLF + ;
+		"func test2(pippo)" + CRLF + ;
 		" FIELD a" + CRLF + ;
 		" LOCAL i:= 1, j := 4, k:= 5" + CRLF + ;
+		" memvar canary, firestorm" + CRLF + ;
 		" i += 2" + CRLF + ;
 		" ? i" + CRLF + ;
-		"return" 
+		"return pippo+1" 
 	LOCAL aMsg, i
+	//LOCAL procedureRegEx := 
 	? test2(cTest, @aMsg)
 	? valtype(aMsg), len(aMsg)
 	for i:=1 to len(aMsg)
@@ -33,9 +50,9 @@ proc main()
 return
 
 proc pippo_Pluto()
+	LOCAL i:=4
 	? "arrivano pippo e pluto"
 return
-
 
 #pragma BEGINDUMP
 #include <hbapi.h>
@@ -108,7 +125,7 @@ static void pMsgFunc( void * cargo, int iErrorFmt, int iLine,
     if(szPar1) len += strlen(szPar1);
     if(szPar2) len += strlen(szPar2);
     szMess = (char*)hb_xalloc(len+1);
-    printf("msg %X (%i)\r\n", szMess, len);
+    //printf("msg %X (%i)\r\n", szMess, len);
     sprintf(szMess, szText,szPar1,szPar2);
     hb_arraySetC(pMsgItem, 5, szMess);
     hb_xfree(szMess);
@@ -151,9 +168,10 @@ HB_FUNC( TEST2 )
 	int iStatus = 0;
 	PHB_HFUNC pFunc;
 	PHB_HVAR pVar;
-	PHB_DEBUGINFO pDebug;
+	PHB_HCLASS pClasses;
+	PHB_HDECLARED pDeclared;
 	
-	printf("dest: %X\r\n",pMsgDest);
+	//printf("dest: %X\r\n",pMsgDest);
 	
 	HB_COMP_PARAM = hb_comp_new();
 	if( pMsgDest )
@@ -163,15 +181,15 @@ HB_FUNC( TEST2 )
 		hb_arrayNew(pMsgDest,0);
 	}
 	HB_COMP_PARAM->iWarnings = 3;
-	HB_COMP_PARAM->fDebugInfo = HB_TRUE;
+	HB_COMP_PARAM->fDebugInfo = HB_FALSE;
 	HB_COMP_PARAM->fLineNumbers = HB_TRUE;
+	HB_COMP_PARAM->fGauge = HB_FALSE;
 
 	hb_compChkEnvironment( HB_COMP_PARAM );
 	HB_COMP_PARAM->iSyntaxCheckOnly = 1;
 	hb_compInitPP( HB_COMP_PARAM, pOpenFunc );
 	hb_compIdentifierOpen( HB_COMP_PARAM );
 
-	//iStatus = hb_compCompile( HB_COMP_PARAM, "{SOURCE}", szSource, iStartLine );
    hb_compInitVars( HB_COMP_PARAM );
 	if( ! hb_pp_inBuffer( HB_COMP_PARAM->pLex->pPP, szFileName, szSource, strlen( szSource ), 0 ) )
 	{
@@ -188,21 +206,13 @@ HB_FUNC( TEST2 )
 	hb_comp_yyparse( HB_COMP_PARAM );
 
 	printf(" ****  \r\n");
-	pDebug = hb_compGetDebugInfo( HB_COMP_PARAM );
-	while(pDebug)
-	{
-		printf("%s(%lu-%lu):%lu\r\n",pDebug->pszModuleName,pDebug->ulFirstLine,pDebug->ulLastLine,pDebug->ulAllocated);
-		pDebug = pDebug->pNext;
-	}
 	pFunc = HB_COMP_PARAM->functions.pFirst;
 	while( pFunc)
 	{
-	/* skip pseudo function frames used in automatically included
-		files for file wide declarations */
 	//	if( ( pFunc->funFlags & HB_FUNF_FILE_DECL ) == 0 )
 		{
 			//hb_compOptimizeFrames( HB_COMP_PARAM, pFunc );
-			printf("%s (%i)\r\n",pFunc->szName,pFunc->iDeclLine);
+			printf("%s (%i) - %X\r\n",pFunc->szName,pFunc->iDeclLine, pFunc->funFlags);
 			pVar = pFunc->pLocals;
 			while(pVar)
 			{
@@ -227,43 +237,32 @@ HB_FUNC( TEST2 )
 				printf("M-->%s (at %i(%i:%i))\r\n",pVar->szName,pVar->iDeclLine,pVar->iStartCol,pVar->iEndCol);
 				pVar = pVar->pNext;
 			}
-			/*
-			printf("cScope         %i\r\n",pFunc->cScope);
-			printf("funFlags       %i\r\n",pFunc->funFlags);
-			printf("wParamCount    %i\r\n",pFunc->wParamCount);
-			printf("wParamNum      %i\r\n",pFunc->wParamNum);
-			printf("pLocals        %X\r\n",pFunc->pLocals);
-			printf("pStatics       %X\r\n",pFunc->pStatics);
-			printf("pFields        %X\r\n",pFunc->pFields);
-			printf("pMemvars       %X\r\n",pFunc->pMemvars);
-			printf("pDetached      %X\r\n",pFunc->pDetached);
-			printf("pPrivates      %X\r\n",pFunc->pPrivates);
-			printf("pCode          %X\r\n",pFunc->pCode);
-			printf("nPCodeSize     %i\r\n",pFunc->nPCodeSize);
-			printf("nPCodePos      %i\r\n",pFunc->nPCodePos);
-			printf("pNOOPs         %X\r\n",pFunc->pNOOPs);
-			printf("pJumps         %X\r\n",pFunc->pJumps);
-			printf("nNOOPs         %i\r\n",pFunc->nNOOPs);
-			printf("nJumps         %i\r\n",pFunc->nJumps);
-			printf("iStaticsBase   %i\r\n",pFunc->iStaticsBase);
-			printf("iFuncSuffix    %i\r\n",pFunc->iFuncSuffix);
-			printf("iEarlyEvalPass %i\r\n",pFunc->iEarlyEvalPass);
-			printf("fVParams       %i\r\n",pFunc->fVParams);
-			printf("bError         %i\r\n",pFunc->bError);
-			printf("bBlock         %X\r\n",pFunc->bBlock);
-			printf("pEnum          %X\r\n",pFunc->pEnum);
-			printf("wSeqCounter    %i\r\n",pFunc->wSeqCounter);
-			printf("wAlwaysCounter %i\r\n",pFunc->wAlwaysCounter);
-			printf("wForCounter    %i\r\n",pFunc->wForCounter);
-			printf("wIfCounter     %i\r\n",pFunc->wIfCounter);
-			printf("wWhileCounter  %i\r\n",pFunc->wWhileCounter);
-			printf("wCaseCounter   %i\r\n",pFunc->wCaseCounter);
-			printf("wSwitchCounter %i\r\n",pFunc->wSwitchCounter);
-			printf("wWithObjectCnt %i\r\n",pFunc->wWithObjectCnt);
-			*/
 			pFunc = pFunc->pNext;
 		}
 	}
+//*
+	pClasses = HB_COMP_PARAM->pFirstClass;
+	while(pClasses)
+	{
+		printf("class: %s(%i)\r\n", pClasses->szName, pClasses->iDeclLine);
+		// here I can search for declared function with same name and change it type in class
+		pDeclared = pClasses->pMethod;
+		while(pDeclared)
+		{
+			// here I can search for declared function with className_DeclaredName and change it type in method
+			// 
+			printf("--> %s (%i) >'%c' - %i\r\n", pDeclared->szName,pDeclared->iDeclLine, pDeclared->cType, pDeclared->iParamCount);
+			pDeclared = pDeclared->pNext;
+		}
+		pClasses = pClasses->pNext;
+	}
+	pDeclared = HB_COMP_PARAM->pFirstDeclared;
+	while(pDeclared)
+	{
+		printf(": %s (%i) >'%c' - %i\r\n", pDeclared->szName,pDeclared->iDeclLine, pDeclared->cType, pDeclared->iParamCount);
+		pDeclared = pDeclared->pNext;
+	}
+//*/
 	hb_comp_free(HB_COMP_PARAM);
 	hb_retni(iStatus);
 }
@@ -297,9 +296,16 @@ HB_FUNC( TEST )
 HB_FUNC( CALLPP )
 {
 	PHB_DYNS pDyns = hb_dynsymFind( "PIPPO_PLUTO" );
-	PHB_FUNC pFunc = hb_vmProcAddress("PIPPO_PLUTO" );
-	
-	printf("\r\nPP %X - %X\r\n", pDyns, pFunc);
+	if( pDyns && ! hb_dynsymIsFunction( pDyns ) )
+         pDyns = NULL;
+    if( pDyns )
+    {
+		hb_vmPushDynSym( info->pDbgEntry );
+      	hb_vmPushNil();
+      	// push other params
+		hb_vmDo( 0 ); //<-- nParams
+	}
 }
+
 #pragma ENDDUMP
 

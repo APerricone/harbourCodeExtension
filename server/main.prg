@@ -4,6 +4,8 @@
 // OutStd per scrivere in stdout
 // hFilenoStdin
 
+#include <fileio.ch>
+
 #define CRLF chr(13)+chr(10)
 
 memvar traceLevel
@@ -15,26 +17,39 @@ procedure MyTrace(l, cMsg)
 return
 
 procedure main()
-	local nRead, cLine := Space( 1024 )
-	local nWait := 0, cCurrent
+	local nRead, cLine := Space( 1024 ), i := 10
+	local nWait := 0, cCurrent:="", lHeaderParsed := .F.
 	public traceLevel := 2
 	OutErr("start"+CRLF)
 	do while .t.
+		cLine := Space( 1024 )
 		nRead := fRead(0, @cLine, 1024 )
 		if nRead = 0
 			return
 		endif
-		if nWait=0
-			cCurrent := left(cLine, nRead)
-			nWait := ReadHeader(@cCurrent, nRead)
-		else
-			cCurrent += left(cLine,nRead)
-			nWait -= nRead
-		endif
-		
-		if nWait<=0
-			process(cCurrent)
-		endif
+		while nRead > 0
+			if nWait=0
+				cCurrent += left(cLine, nRead)
+				lHeaderParsed := at(CRLF+CRLF, cCurrent)<>0
+				if lHeaderParsed
+					nWait := ReadHeader(@cCurrent, nRead)
+				endif
+			else
+				cCurrent += left(cLine,nRead)
+				nWait -= nRead
+			endif
+			if nWait<=0 .and. lHeaderParsed
+				nRead := len(cCurrent)+nWait
+				process(left(cCurrent,nRead))
+				lHeaderParsed := .F.
+				cLine := substr(cCurrent,nRead+1)
+				cCurrent := ""
+				nRead := -nWait
+				nWait := 0
+			else
+				nRead := 0
+			endif
+		enddo
 	end
 return
 
@@ -56,31 +71,39 @@ return nLength-len(cReaded)
 procedure process(cJson)
 	LOCAL aRet :=  hb_jsonDecode(cJson)
 	local i
-	MyTrace(2,"received:" + aRet["method"])
+	MyTrace(2,"received: '" + cJson+"'")
+	MyTrace(1,"received:" + aRet["method"])
 	switch aRet["method"]
 		case "initialize"
-			MyTrace(2,"received:" + cJson)
+			//MyTrace(2,"received:" + cJson)
 			Initialize(aRet)
 			exit
 		case "textDocument/didOpen"
 			Parse(aRet,aRet["params"]["textDocument"]["text"])
 			exit
-		case "textDocument/didChange"
-			Parse(aRet,aRet["params"]["contentChanges"][1]["text"])
+		case "textDocument/didSave"
+			//MyTrace(2,"received:" + cJson)
+			//Parse(aRet,aRet["params"]["text"])
 			exit
 		otherwise
-			MyTrace(2,"received:" + cJson)
+			//MyTrace(2,"received:" + cJson)
 			exit
 	endswitch
 return
 
 procedure Initialize(hObj)
+	local cWorkingPath
 	LOCAL hResp := { ;
 		"jsonrpc" => hObj["jsonrpc"], ;
 		"id" => hObj["id"], ;
 		"result" => { ; 
 			"capabilities" => { ;
-				"textDocumentSync" => 1;
+				"textDocumentSync" => { ;
+					"save"=> { ;
+						"includeText" => .T. ;
+					}, ;
+					"change" => 0 ;
+				};
 			} ;	
 		} ;
 	}
@@ -95,14 +118,33 @@ procedure Initialize(hObj)
 			traceLevel := 2
 			exit
 	endswitch
+	MyTrace(0, "traceLeve:  '" + alltrim(str(traceLevel)) + "'" )
 	traceLevel := 2
+	// Create workDir under workspace
+	if .not. empty(hb_HGetDef(hObj["params"],"rootUri",nil)) .or. ;
+		.not. empty(hb_HGetDef(hObj["params"],"rootPath",nil))
+		MyTrace(0, "rootUri:  '" + hb_HGetDef(hObj["params"],"rootUri","") + "'" )
+		MyTrace(0, "rootPath: '" + hb_HGetDef(hObj["params"],"rootPath","") + "'" )
+		if hb_hHasKey(hObj["params"],"rootUri")
+			cWorkingPath := StrTran(hObj["params"]["rootUri"],"file://","")
+		else
+			cWorkingPath := hObj["params"]["rootPath"]
+		endif
+		cWorkingPath := hb_DirSepToOS( cWorkingPath + "/.hbmk" )
+		MyTrace(0, "workPath: '" + cWorkingPath + "'" )
+		hb_DirBuild( cWorkingPath )
+		hb_FSetAttr( cWorkingPath, FC_HIDDEN )
+	endif
+
 	Send( hResp )
 return
 
 procedure Parse(hObj,cText)
-	local hDiagnostics, aMessages, aCnvMessages, i
+	local hDiagnostics, aMessages :={}, aCnvMessages, i
 	local uri := hObj["params"]["textDocument"]["uri"]
 	Compile(cText, uri, 3, @aMessages)
+	// todo: group messages by different module and send diagnostics of all modules
+	// remember to translate file path with uri, it can be done in c pMsgFunc 
 	//if len(aMessages)>0
 		aCnvMessages := {}
 		for i:=1 to len(aMessages)

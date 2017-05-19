@@ -16,7 +16,9 @@
         "Languages"
     ],
     "dependencies": {
-        "vscode-languageclient": "^2.6.3"        
+        "vscode-languageclient": "^2.6.3",
+        "vscode-debugprotocol": "^1.18.0-pre.2",
+        "vscode-debugadapter": "^1.18.0-pre.4"
     },
     "extensionDependencies": [
         "ms-vscode.cpptools"
