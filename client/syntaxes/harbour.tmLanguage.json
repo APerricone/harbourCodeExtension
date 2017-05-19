@@ -6,10 +6,10 @@
 			"include": "#comments"
 		},
 		{
-			"include": "#keywords"
+			"include": "#strings"
 		},
 		{
-			"include": "#strings"
+			"include": "#keywords"
 		},
 		{
 			"include": "#numbers"
@@ -22,32 +22,36 @@
 		"numbers": {
 			"patterns": [
 				{
-					"match": "\\b([0-9]+)\\b",
-					"name": "constant.numeric.c"
+					"match": "(?i)\\b[0-9]+(\\.[0-9]+)?(?i:e[0-9]+)?\\b",
+					"name": "constant.numeric.harbour"
+				},
+				{
+					"match": "(?i)\\b0x[0-9a-f]+\\b",
+					"name": "constant.numeric.exadecimal.harbour"
 				}
 			]
 		},
 		"comments": {
 			"patterns": [
 				{
-					"name": "comment.block",
+					"name": "comment.block.harbour",
 					"begin": "/\\*",
 					"end": "\\*/"
 				},
 				{
-					"name": "comment.singleline.slash",
+					"name": "comment.singleline.slash.harbour",
 					"match": "//(.*)"
 				},
 				{
-					"name": "comment.singleline.ampersand",
+					"name": "comment.singleline.ampersand.harbour",
 					"match": "&&(.*)"
 				},
 				{
-					"name": "comment.startline.note",
+					"name": "comment.startline.note.harbour",
 					"match": "^\\s*NOTE\\s+(.*)"
 				},
 				{
-					"name": "comment.startline.asterisk",
+					"name": "comment.startline.asterisk.harbour",
 					"match": "^\\s*\\*\\s+(.*)"
 				}
 			]
@@ -55,26 +59,39 @@
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.harbour",
-				"match": "\\b(?i:if|ELSEIF|ELSE|end(?:if|while|case|do|switch)?|for(?:\\s+each)?|to|next|do|while|switch|case|endcase|otherwise|exit)\\b"
+				"match": "\\b(?i:if|ELSEIF|ELSE|end\\s*(?:if|while|case|do|switch|class)?|for(?:\\s+each)?|to|next|do|while|switch|case|endcase|otherwise|exit)\\b"
 			},
 			{
-				"name": "keyword.function.harbour",
-				"match": "\\b(?i:static|return|proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?|func(?:t(?:i(?:o(?:n)?)?)?)?|static)\\b"
-			},
-			{
-				"name": "keyword.declarations.harbour",
-				"match": "\\b(?i:local|private|public|field|thread)\\b"
+				"name": "keyword.control.harbour",
+				"match": "\\b(?i:static|return|class|data)\\b"
 			},
 			{
 				"name": "meta.function.harbour",
-				"match": "\\b(?i:([a-z_][a-z_0-9]+)\\s*\\()",
+				"match": "(?i)\\b(method|proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?|func(?:t(?:i(?:o(?:n)?)?)?)?)\\s+([a-z_][a-z0-9]*)\\s*\\((?:\\s*([a-z_][a-z0-9]*)\\s*,?)*\\)",
+				"captures": {
+					"1": { "name": "keyword.function.harbour" },
+					"2": { "name": "entity.name.function.harbour" },
+					"3": { "name": "variable.parameter.harbour" }
+				}
+			},
+			{
+				"name": "keyword.declarations.harbour",
+				"match": "(?i)\\b(local|private|public|field|thread)\\b"
+			},
+			{
+				"name": "keyword.reserved.harbour",
+				"match": "(?i)\\b(nil)\\b"
+			},
+			{
+				"name": "meta.function.harbour",
+				"match": "(?i)\\b(([a-z_][a-z_0-9]+)\\s*\\()",
 				"captures": {
 					"1": { "name": "entity.name.function.harbour" }
 				}
 			},
 			{
 				"name": "keyword.operator.logical.harbour",
-				"match": "(?i:\\.(T|F|and|or|not)\\.)"
+				"match": "(?i)(\\.(T|F|and|or|not)\\.)"
 			},
 			{
 				"name": "meta.preprocessor.include.harbour",
@@ -93,7 +110,7 @@
 			},
 			{
 				"name": "meta.preprocessor.various.harbour",
-				"match": "(?i:^\\s*#[a-zA-z]+)"
+				"match": "(?i)(^\\s*#[a-zA-z]+)"
 			}]
 		},
 		"strings": {
