@@ -76,7 +76,7 @@
 			},
 			{
 				"name": "keyword.declarations.harbour",
-				"match": "(?i)\\b(local|private|public|field|thread)\\b"
+				"match": "\\b(?i:local|private|public|field|thread|memvar|parameter)\\b"
 			},
 			{
 				"name": "keyword.reserved.harbour",
@@ -88,6 +88,10 @@
 				"captures": {
 					"1": { "name": "entity.name.function.harbour" }
 				}
+			},
+			{
+				"name": "keyword.classes.harbour",
+				"match": "\\b(?i:(?:end)?class(?:data)?|method|data|message|init|constructor|destructor)\\b"
 			},
 			{
 				"name": "keyword.operator.logical.harbour",
@@ -124,6 +128,11 @@
 					"name": "string.quoted.single.harbour",
 					"begin": "'",
 					"end": "'"
+				},
+				{
+					"name": "string.square.harbour",
+					"begin": "(?<![a-z0-9])\\[",
+					"end": "\\]"
 				}
 			]
 		},
