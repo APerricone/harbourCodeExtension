@@ -2,6 +2,14 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
+			"type": "harbour-dbg",
+			"request": "launch",
+			"name": "Launch dbg",
+			"program": "${workspaceRoot}/dbg",
+			"debugServer": 4711,
+			"workspaceRoot": "${workspaceRoot}"
+		},
+		{
 			"type": "node",
 			"request": "launch",
 			"name": "Mini debugger",

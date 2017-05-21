@@ -23,13 +23,14 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3, uParam4 )
 			endif
 			if hb_inetErrorCode(t_oSocketDebug) <> 0
 				//disconnected?
+				OutErr(hb_inetErrorDesc(t_oSocketDebug)+CRLF)
    	  			__dbgSetGo( uParam1)
 				return
 			endif
+			hb_inetSend(t_oSocketDebug,"STOP"+CRLF)
 			do while .T.
 				tmp := hb_inetRecvLine(t_oSocketDebug)
 				if len(tmp)>0
-					? "received:"+tmp
 					switch tmp
 						case "GO"
 						__dbgSetGo( uParam1)
@@ -43,7 +44,8 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3, uParam4 )
 							hb_inetSend(t_oSocketDebug,"STACK " + alltrim(str(len(uParam3)))+CRLF)
 							for i:=1 to len(uParam3)
 								hb_inetSend(t_oSocketDebug, uParam3[i,HB_DBG_CS_MODULE]+ ;
-									":"+alltrim(str(uParam3[i,HB_DBG_CS_LINE]))+":"+uParam3[i,HB_DBG_CS_FUNCTION]+CRLF)
+									":"+alltrim(str(uParam3[i,HB_DBG_CS_LINE]))+ ;
+									":"+uParam3[i,HB_DBG_CS_FUNCTION]+CRLF)
 							next
 						exit
 					endswitch
@@ -62,11 +64,17 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3, uParam4 )
 //*/
 proc main()
 	local i
+	AltD()
 	? "Perry"
-	
+	AltraFunzione()
 	? i:=2
 	? i
-	
+return
+
+proc AltraFunzione
+	? "sei fuori"
+	? "più righe"
+	? "per provare"
 return
 
 /* notes from src/debug/debugger.prg:

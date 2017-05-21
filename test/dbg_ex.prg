@@ -1,5 +1,5 @@
 #include <hbdebug.ch>
-/*
+//*
 PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3, uParam4 )
 	local i, tmp, port := 611 //TEMP
 	? "__dbgEntry", nMode,":", uParam1,"-", uParam2,"-", uParam3,"-", uParam4 
@@ -11,10 +11,21 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3, uParam4 )
       		exit
 
 		CASE HB_DBG_ACTIVATE
-			__dbgSetTrace(uParam1)
+			//__dbgSetTrace(uParam1)
    	  		for i:=1 to len(uParam3)
    	  			? "Stack " + alltrim(str(i))+":"+uParam3[i,HB_DBG_CS_MODULE]+"-"+uParam3[i,HB_DBG_CS_FUNCTION]+;
-   	  				"("+alltrim(str(uParam3[i,HB_DBG_CS_LINE]))+")*"+alltrim(str(uParam3[i,HB_DBG_CS_LEVEL]))
+   	  				"("+alltrim(str(uParam3[i,HB_DBG_CS_LINE]))+")*"+alltrim(str(uParam3[i,HB_DBG_CS_LEVEL]))+;
+					" "+alltrim(str(len(uParam3[i,HB_DBG_CS_LOCALS])))+" locals, ";	 
+					+alltrim(str(len(uParam3[i,HB_DBG_CS_STATICS])))+" statics, "
+   	  		next
+   	  		for i:=1 to len(uParam4)
+   	  			? "Module " + alltrim(str(i))+":"+uParam4[i,HB_DBG_MOD_NAME]+ ;
+   	  				" "+alltrim(str(len(uParam4[i,HB_DBG_MOD_STATICS])))+" statics, ";
+					+alltrim(str(len(uParam4[i,HB_DBG_MOD_GLOBALS])))+" globals,"
+   	  		next
+			tmp := __dbgGetSourceFiles(uParam1)
+   	  		for i:=1 to len(tmp)
+   	  			? "File " + alltrim(str(i))+":" + tmp[i]
    	  		next
 		exit	
 	ENDSWITCH
