@@ -1,9 +1,11 @@
 #include <hbdebug.ch>
 
+THREAD STATIC t_oSocketDebug := nil
+
+#define CRLF Chr(13)+Chr(10)
+
 PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3, uParam4 )
-	local i
-	? "__dbgEntry", nMode,":", uParam1,"-", uParam2,"-", uParam3,"-", uParam4 
-   
+	local i, tmp, port := 6110 //TEMP
 	switch nMode
    		CASE HB_DBG_GETENTRY
 
@@ -11,12 +13,48 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3, uParam4 )
       		exit
 
 		CASE HB_DBG_ACTIVATE
-   	  
-   	  		//__dbgSetGo( uParam1)
-   	  		for i:=1 to len(uParam3)
-   	  			? "Stack " + alltrim(str(i))+":"+uParam3[i,HB_DBG_CS_MODULE]+"-"+uParam3[i,HB_DBG_CS_FUNCTION]+;
-   	  				"("+alltrim(str(uParam3[i,HB_DBG_CS_LINE]))+")*"+alltrim(str(uParam3[i,HB_DBG_CS_LEVEL]))
-   	  		next
+			// if no server then start it.
+			if(empty(t_oSocketDebug))
+				hb_inetInit()
+				t_oSocketDebug := hb_inetCreate()
+				hb_inetTimeout( t_oSocketDebug,1000 )
+				hb_inetConnect("127.0.0.1",port,t_oSocketDebug)
+				? "connected!"
+			endif
+			if hb_inetErrorCode(t_oSocketDebug) <> 0
+				//disconnected?
+   	  			__dbgSetGo( uParam1)
+				return
+			endif
+			do while .T.
+				tmp := hb_inetRecvLine(t_oSocketDebug)
+				if len(tmp)>0
+					? "received:"+tmp
+					switch tmp
+						case "GO"
+						__dbgSetGo( uParam1)
+						return
+						case "STEP" // go to next line of code even if is in another procedure
+						return
+						case "NEXT" // go to next line of same procedure
+						__dbgSetTrace(uParam1)
+						return
+						case "STACK" 
+							hb_inetSend(t_oSocketDebug,"STACK " + alltrim(str(len(uParam3)))+CRLF)
+							for i:=1 to len(uParam3)
+								hb_inetSend(t_oSocketDebug, uParam3[i,HB_DBG_CS_MODULE]+ ;
+									":"+alltrim(str(uParam3[i,HB_DBG_CS_LINE]))+":"+uParam3[i,HB_DBG_CS_FUNCTION]+CRLF)
+							next
+						exit
+					endswitch
+				endif	
+				hb_idleSleep(0.1)
+			enddo				
+
+   	  		//for i:=1 to len(uParam3)
+   	  		//	? "Stack " + alltrim(str(i))+":"+uParam3[i,HB_DBG_CS_MODULE]+"-"+uParam3[i,HB_DBG_CS_FUNCTION]+;
+   	  		//		"("+alltrim(str(uParam3[i,HB_DBG_CS_LINE]))+")*"+alltrim(str(uParam3[i,HB_DBG_CS_LEVEL]))
+   	  		//next
 			exit
 			
 	ENDSWITCH
@@ -24,7 +62,6 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3, uParam4 )
 //*/
 proc main()
 	local i
-	AltD()
 	? "Perry"
 	
 	? i:=2

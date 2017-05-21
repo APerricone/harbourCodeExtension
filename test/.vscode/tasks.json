@@ -6,40 +6,9 @@
     "isShellCommand": true,
     "suppressTaskName": true,
     "showOutput": "always",
+
     "tasks": [
         {
-    "problemMatcher": [
-        {
-            "owner": "cpp",
-            "fileLocation": [
-                "relative",
-                "${workspaceRoot}"
-            ],
-            "pattern": {
-                "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
-                "file": 1,
-                "line": 2,
-                "column": 3,
-                "severity": 4,
-                "message": 5
-            }
-        },
-        {
-            "owner": "harbour",
-            "fileLocation": [
-                "relative",
-                "${workspaceRoot}"
-            ],
-            "pattern": {
-                "regexp": "^(.*)\\((\\d+)\\)\\s+(Warning|Error)\\s+(.*)$",
-                "file": 1,
-                "line": 2,
-                "severity": 3,
-                "message": 4
-            }
-        }
-    ],
-            "isBuildCommand": true,
             "args": [
                 "builds",
                 "-gtcgi",
@@ -49,11 +18,49 @@
         },
         {
             "args": [
-                "socket",
+                "dbg",
                 "-gtcgi",
                 "-w", "-ql"
             ],
-            "taskName": "socketTest"
+            "taskName": "dbgTest"
+        },
+        {
+            "args": [
+                "dbg_ex",
+                "-gtcgi",
+                "-w", "-ql", "-b"
+            ],
+            "taskName": "dbg_exTest"
         }
-    ]
+    ],
+    "problemMatcher": [
+    {
+        "owner": "cpp",
+        "fileLocation": [
+            "relative",
+            "${workspaceRoot}"
+        ],
+        "pattern": {
+            "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+            "file": 1,
+            "line": 2,
+            "column": 3,
+            "severity": 4,
+            "message": 5
+        }
+    },
+    {
+        "owner": "harbour",
+        "fileLocation": [
+            "relative",
+            "${workspaceRoot}"
+        ],
+        "pattern": {
+            "regexp": "^(.*)\\((\\d+)\\)\\s+(Warning|Error)\\s+(.*)$",
+            "file": 1,
+            "line": 2,
+            "severity": 3,
+            "message": 4
+        }
+    }]
 }

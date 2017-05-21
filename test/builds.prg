@@ -300,7 +300,7 @@ HB_FUNC( CALLPP )
          pDyns = NULL;
     if( pDyns )
     {
-		hb_vmPushDynSym( info->pDbgEntry );
+		hb_vmPushDynSym( pDyns );
       	hb_vmPushNil();
       	// push other params
 		hb_vmDo( 0 ); //<-- nParams
