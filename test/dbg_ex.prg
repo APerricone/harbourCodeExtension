@@ -1,7 +1,8 @@
 #include <hbdebug.ch>
+#include <hbmemvar.ch>
 //*
 PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3, uParam4 )
-	local i, tmp, port := 611 //TEMP
+	local i, tmp, j, vv
 	? "__dbgEntry", nMode,":", uParam1,"-", uParam2,"-", uParam3,"-", uParam4 
    
 	switch nMode
@@ -12,11 +13,21 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3, uParam4 )
 
 		CASE HB_DBG_ACTIVATE
 			//__dbgSetTrace(uParam1)
+			? "level:",__dbgProcLevel()
    	  		for i:=1 to len(uParam3)
    	  			? "Stack " + alltrim(str(i))+":"+uParam3[i,HB_DBG_CS_MODULE]+"-"+uParam3[i,HB_DBG_CS_FUNCTION]+;
    	  				"("+alltrim(str(uParam3[i,HB_DBG_CS_LINE]))+")*"+alltrim(str(uParam3[i,HB_DBG_CS_LEVEL]))+;
 					" "+alltrim(str(len(uParam3[i,HB_DBG_CS_LOCALS])))+" locals, ";	 
 					+alltrim(str(len(uParam3[i,HB_DBG_CS_STATICS])))+" statics, "
+				for j:=1 to len(uParam3[i,HB_DBG_CS_LOCALS])
+					tmp := uParam3[i,HB_DBG_CS_LOCALS,j]
+					vv := __dbgVMVarLGet( __dbgProcLevel() - tmp[ HB_DBG_VAR_FRAME ], tmp[ HB_DBG_VAR_INDEX ] )
+					? "Local " + alltrim(str(i))+":#" + alltrim(str(tmp[HB_DBG_VAR_INDEX])) + ;
+						tmp[HB_DBG_VAR_NAME] + "("+tmp[HB_DBG_VAR_TYPE]+":" + ;
+						alltrim(str(tmp[HB_DBG_VAR_FRAME])) + ") " + valtype(vv), ; 
+						vv
+				next
+				? "HB_MV_PRIVATE_LOCAL", __mvDbgInfo( HB_MV_PRIVATE_LOCAL, uParam3[i,HB_DBG_CS_LEVEL])
    	  		next
    	  		for i:=1 to len(uParam4)
    	  			? "Module " + alltrim(str(i))+":"+uParam4[i,HB_DBG_MOD_NAME]+ ;
@@ -41,7 +52,11 @@ proc main()
 return
 
 proc AltraFunzione
-	? "sei fuori"
+	local p := "sei fuori"
+	local a := [1,2,3]
+	memvar test
+	private test := "non io"
+	? p
 	? "più righe"
 	? "per provare"
 return

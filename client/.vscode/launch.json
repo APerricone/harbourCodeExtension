@@ -12,7 +12,7 @@
 		{
 			"type": "node",
 			"request": "launch",
-			"name": "Server",
+			"name": "Debugger",
 			"cwd": "${workspaceRoot}",
 			"program": "${workspaceRoot}/src/debugger.js",
 			"args": [ "--server=4711" ]
@@ -20,8 +20,8 @@
     ],
 	"compounds": [
 		{
-			"name": "Extension + Server",
-			"configurations": [ "Extension", "Server" ]
+			"name": "Extension + Debugger",
+			"configurations": [ "Extension", "Debugger" ]
 		}
 	]
 }

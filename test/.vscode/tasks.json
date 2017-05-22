@@ -4,35 +4,10 @@
     "version": "0.1.0",
     "command": "hbmk2",
     "isShellCommand": true,
-    "suppressTaskName": true,
+    "suppressTaskName": false,
+    "isBuildCommand": true,
     "showOutput": "always",
-
-    "tasks": [
-        {
-            "args": [
-                "builds",
-                "-gtcgi",
-                "-w", "-ql"
-            ],
-            "taskName": "buildsTest"
-        },
-        {
-            "args": [
-                "dbg",
-                "-gtcgi",
-                "-w", "-ql", "-b"
-            ],
-            "taskName": "dbgTest"
-        },
-        {
-            "args": [
-                "dbg_ex",
-                "-gtcgi",
-                "-w", "-ql", "-b"
-            ],
-            "taskName": "dbg_exTest"
-        }
-    ],
+    "args": [ "${relativeFile}", "-gtcgi", "-w", "-ql", "-b"],
     "problemMatcher": [
     {
         "owner": "cpp",

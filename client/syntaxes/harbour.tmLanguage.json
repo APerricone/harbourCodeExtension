@@ -59,7 +59,7 @@
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.harbour",
-				"match": "\\b(?i:if|ELSEIF|ELSE|end\\s*(?:if|while|case|do|switch|class)?|for(?:\\s+each)?|to|next|do|while|switch|case|endcase|otherwise|exit)\\b"
+				"match": "\\b(?i:if|ELSEIF|ELSE|end\\s*(?:if|while|case|do|switch|class)?|for(?:\\s+each)?|to|next|do|while|switch|case|endcase|otherwise|exit|loop)\\b"
 			},
 			{
 				"name": "keyword.control.harbour",
@@ -91,7 +91,7 @@
 			},
 			{
 				"name": "keyword.classes.harbour",
-				"match": "\\b(?i:(?:end)?class(?:data)?|method|data|message|init|constructor|destructor)\\b"
+				"match": "\\b(?i:(?:end)?class(?:data)?|method|data|message|init|constructor|destructor|hidden:|exported:)\\b"
 			},
 			{
 				"name": "keyword.operator.logical.harbour",
@@ -119,6 +119,29 @@
 		},
 		"strings": {
 			"patterns": [
+				{
+					"name": "string.escaped.harbour",
+					"begin": "e\"",
+					"end": "\"",
+					"patterns": [
+						{
+							"match": "\\\\u\\h{4}|\\\\U\\h{8}",
+							"name": "constant.character.escape.harbour"
+						},
+						{
+							"match": "\\\\['\"?\\\\abfnrtv]",
+							"name": "constant.character.escape.harbour"
+						},
+						{
+							"match": "\\\\[0-7]{1,3}",
+							"name": "constant.character.escape.harbour"
+						},
+						{
+							"match": "\\\\x\\h+",
+							"name": "constant.character.escape.harbour"
+						}
+					]					
+				},
 				{
 					"name": "string.quoted.double.harbour",
 					"begin": "\"",
