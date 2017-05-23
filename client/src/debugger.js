@@ -12,7 +12,8 @@ var harbourDebugSession = function()
 	this.Debbugging = true;
 	this.workspaceRoot = "";
 	this.processLine = undefined;
-	this.beakPoints = [];
+	this.breakpoints = {};
+	this.variableCommands = [];
 }
 
 harbourDebugSession.prototype = new debugadapter.DebugSession();
@@ -28,15 +29,20 @@ harbourDebugSession.prototype.processInput = function(buff)
 		{
 			this.processLine(line);
 			continue;
-		} else
+		}
 		if(line.startsWith("STOP"))
 		{
 			this.sendEvent(new debugadapter.StoppedEvent("step",1));
 			continue;
-		} else
+		}
 		if(line.startsWith("STACK"))
 		{
 			this.sendStack(line);
+			continue;
+		}
+		if(line.startsWith("BREAK"))
+		{
+			this.processBreak(line);
 			continue;
 		}
 		for(var j=this.variableCommands.length-1;j>=0;j--)
@@ -248,22 +254,98 @@ harbourDebugSession.prototype.stepInRequest = function(response, args)
 	this.sendResponse(response);
 }
 
-/// BREAKPOINTS
-harbourDebugSession.prototype.setBreakpointsRequest = function(response,args)
+/// breakpoints
+harbourDebugSession.prototype.setBreakPointsRequest = function(response,args)
 {
 	var message = "";
+	response.breakpoints = [];
 	response.breakpoints.length = args.breakpoints.length;
-	var req = {"response":response};
 	var src = args.source.path;
-	for (var i = 0; i < args.breakpoints.length; i++) {
-		response.breakpoints[i] = new debugadapter.Breakpoint(false,breakpoint.line);
-		response.breakpoints[i].id = -1;
-		var breakpoint = args.breakpoints[i];
-		message += "BREAKPOINT\r\n"
-		message += `${src}:${breakpoint.line}`
-
+	if(src.startsWith(this.workspaceRoot))
+		src = src.substring(this.workspaceRoot.length)
+	var dest
+	if(!(src in this.breakpoints))
+	{
+		this.breakpoints[src] = {};
 	}
-	this.sendResponse(response)
+	dest = this.breakpoints[src];
+	for (var i in dest) {
+		if (dest.hasOwnProperty(i)) {
+			dest[i] = -1; // this indicates that it mus be deleted
+		}
+	}
+	dest.response = response;
+	for (var i = 0; i < args.breakpoints.length; i++) {
+		var breakpoint = args.breakpoints[i];
+		response.breakpoints[i] = new debugadapter.Breakpoint(false,breakpoint.line);
+		if(dest.hasOwnProperty(breakpoint.line))
+		{ // breakpoint already exists
+			dest[breakpoint.line] = 1;
+		} else
+		{
+			message += "BREAKPOINT\r\n"
+			message += `+:${src}:${breakpoint.line}\r\n`
+			dest[breakpoint.line] = 0;
+		}
+	}
+	var n1 = 0;
+	for (var i in dest) {
+		if (dest.hasOwnProperty(i) && i!="response") {
+			if(dest[i]==-1)
+			{
+				message += "BREAKPOINT\r\n"
+				message += `-:${src}:${breakpoint.line}\r\n`
+				delete dest[i];
+			}
+		}
+	}
+	this.checkBreakPoint(src);
+	this.socket.write(message)
+	//this.sendResponse(response)
+}
+
+harbourDebugSession.prototype.processBreak = function(line)
+{
+	var aInfos = line.split(":");
+	var dest 
+	if(!(aInfos[1] in this.breakpoints))
+	{
+		//error 
+		return
+	}
+	aInfos[2] = parseInt(aInfos[2]);
+	aInfos[3] = parseInt(aInfos[3]);
+	dest = this.breakpoints[aInfos[1]]
+	var idBreak = dest.response.breakpoints.findIndex(b => b.line == aInfos[2])
+	if(idBreak==-1)
+	{
+		//error
+		return;
+	}
+	if(aInfos[3]>1)
+	{
+		dest.response.breakpoints.line = aInfos[3];
+		dest.response.breakpoints.verified = true;
+	} else
+	{
+		dest.response.breakpoints.verified = false;
+		dest.response.breakpoints.message = "invalid line"
+	} 
+	this.checkBreakPoint(aInfos[1]);
+}
+
+harbourDebugSession.prototype.checkBreakPoint = function(src)
+{
+	var dest = this.breakpoints[src];
+	for (var i in dest) {
+		if (dest.hasOwnProperty(i) && i!="response") {
+			if(dest[i]==0)
+			{
+				return; 
+			}
+		}
+	}
+	this.sendResponse(dest.response);
 }
 
 /// END

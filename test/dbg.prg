@@ -28,11 +28,13 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3, uParam4 )
 				return
 			endif
 			hb_inetSend(t_oSocketDebug,"STOP"+CRLF)
+			
 			do while .T.
 				tmp := hb_inetRecvLine(t_oSocketDebug)
 				if len(tmp)>0
 					if subStr(tmp,4,1)==":"
 						sendCoumpoundVar(tmp,hb_inetRecvLine(t_oSocketDebug))
+						loop
 					endif
 					switch tmp
 						case "GO"
@@ -47,7 +49,7 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3, uParam4 )
 							sendStack(uParam3)
 							exit
 						case "BREAKPOINT"
-							//add
+							setBreakpoint(uParam1,hb_inetRecvLine(t_oSocketDebug))
 							exit
 						case "LOCALS"
 							sendFromStack(uParam3,hb_inetRecvLine(t_oSocketDebug),tmp,HB_DBG_CS_LOCALS)
@@ -148,7 +150,6 @@ static procedure sendFromStack(aStack,cParams,prefix,DBG_CS)
 		cLine := left(prefix,3) + ":" + alltrim(str(aInfo[ HB_DBG_VAR_FRAME ])) + ":" + ;
 				 alltrim(str(aInfo[ HB_DBG_VAR_INDEX ])) + "::" + ;
 				 aInfo[HB_DBG_VAR_NAME] + ":" + valtype(value) + ":" + format(value)
-		? cLine
 		hb_inetSend(t_oSocketDebug,cLine + CRLF )
 	next
 	hb_inetSend(t_oSocketDebug,"END"+CRLF)
@@ -187,7 +188,6 @@ procedure sendFromInfo(prefix, cParams, HB_MV, lLocal,aStack)
 static function getValue(req)
 	local aInfos := hb_aTokens(req,":")
 	local v, i, aIndices
-	? "var:"+req
 	switch aInfos[1]
 		case "LOC"
 			v := __dbgVMVarLGet(__dbgProcLevel()-val(aInfos[2]),0+val(aInfos[3]))
@@ -221,7 +221,6 @@ static function getValue(req)
 			endswitch
 		next
 	endif	
-	? req, valtype(v),v
 return v
 
 static procedure sendCoumpoundVar(req, cParams )
@@ -254,11 +253,50 @@ static procedure sendCoumpoundVar(req, cParams )
 			
 		cLine := req + idx + ":" +;
 				  idx + ":" + valtype(vSend) + ":" + format(vSend)
-		? cLine
 		hb_inetSend(t_oSocketDebug,cLine + CRLF )
 	next
 
 	hb_inetSend(t_oSocketDebug,"END"+CRLF)	
+
+static procedure setBreakpoint(debugInfo, cInfo)
+	LOCAL aInfos := hb_aTokens(cInfo,":"), id
+	local nReq, nLine
+	nReq := val(aInfos[3])
+	if aInfos[1]=="-"
+		// remove
+		id := __dbgIsBreak(debugInfo,aInfos[2],nReq)
+		if id>1
+			__dbgDelBreak(id)
+		endif
+		hb_inetSend(t_oSocketDebug,"BREAK:"+aInfos[2]+":"+aInfos[3]+":-1:request"+CRLF)
+		return
+	endif
+	if aInfos[1]<>"+"
+		hb_inetSend(t_oSocketDebug,"BREAK:"+aInfos[2]+":"+aInfos[3]+":-1:invalid request"+CRLF)
+		return
+	endif
+	nLine := nReq
+	while .not. __dbgIsValidStopLine(debugInfo,aInfos[2],nLine)
+		nLine++
+		if (nLine-nReq)>2
+			exit
+		endif
+	enddo
+	if .not. __dbgIsValidStopLine(debugInfo,aInfos[2],nLine)
+		nLine := nReq - 1
+		while .not. __dbgIsValidStopLine(debugInfo,aInfos[2],nLine)
+			nLine--
+			if (nReq-nLine)>2
+				exit
+			endif
+		enddo
+	endif
+	if .not. __dbgIsValidStopLine(debugInfo,aInfos[2],nLine)
+		hb_inetSend(t_oSocketDebug,"BREAK:"+aInfos[2]+":"+aInfos[3]+":-1:invalid"+CRLF)
+	endif
+	__dbgAddBreak(debugInfo,aInfos[2],nLine)
+	hb_inetSend(t_oSocketDebug,"BREAK:"+aInfos[2]+":"+aInfos[3]+":"+alltrim(str(nLine))+CRLF)
+
 
 //*/
 proc main()
