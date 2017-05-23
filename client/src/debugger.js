@@ -212,7 +212,11 @@ harbourDebugSession.prototype.sendVariables = function(id,line)
 			return;
 		}
 		var infos = line.split(":");
-		line = infos[0]+":"+infos[1]+":"+infos[2]+":"+infos[3]
+		line = infos[0]+":"+infos[1]+":"+infos[2]+":"+infos[3];
+		if(infos.length>7)
+		{ //the value can contains : , we need to rejoin it.
+			infos[6] = infos.splice(6).join(":");
+		}
 		v = new debugadapter.Variable(infos[4],infos[6]);
 		v.type = infos[5]
 		switch(infos[5])

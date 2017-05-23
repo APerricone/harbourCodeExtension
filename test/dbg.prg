@@ -95,20 +95,34 @@ static function format(value)
 	switch valtype(value)
 		case "U"
 			return "nil"
-			exit
 		case "C"
-			return value
-			exit
+		case "M"
+			if at('"',value)==0
+				return '"'+value+'"'
+			elseif at("'",value)==0
+				return "'"+value+"'"
+			else
+				return "["+value+"]" //i don't like it decontexted 
+			endif
 		case "N"
 			return alltrim(str(value))
-			exit
 		case "L"
-			return iif(value,"true","false")
-			exit
+			return iif(value,".T.",".F.")
+		case "D"
+			return 'd"'+left(hb_TsToStr(value),10)+'"'
+		case "T"
+			return 't"'+hb_TsToStr(value)+'"'
 		case "A"
 		case "H"
 			return alltrim(str(len(value)))
-			exit
+		case "B"
+			return "{|| ...}"
+		case "O"
+			return value:ClassName()+" "+alltrim(str(len(value)))
+		case "P"
+			return "Pointer"
+		case "S"
+			RETURN "@" + value:name + "()"
 		endswitch
 return ""
 
@@ -156,13 +170,15 @@ static procedure sendFromStack(aStack,cParams,prefix,DBG_CS)
 
 procedure sendFromInfo(prefix, cParams, HB_MV, lLocal,aStack)
 	local nVars := __mvDbgInfo( HB_MV )
-	local aParams := fixVarCParams(cParams,len(aStack),nVars)
+	local aParams := fixVarCParams(cParams,len(aStack),__mvDbgInfo( HB_MV ))
 	local iStack := aParams[1]
 	local iStart := aParams[2]
 	local iCount := aParams[3]
 	local i, cLine, cName, value
 	local nLocal := __mvDbgInfo( HB_MV_PRIVATE_LOCAL, aStack[iStack,HB_DBG_CS_LEVEL] )
 	hb_inetSend(t_oSocketDebug,prefix+" "+alltrim(str(iStack))+CRLF)
+	nVars := __mvDbgInfo( HB_MV )
+	? HB_MV, HB_MV_PUBLIC, nVars, __mvDbgInfo( HB_MV ), __mvDbgInfo( HB_MV_PUBLIC )
 	for i:=iStart to iStart+iCount
 	//for i:=1 to nVars
 		if i > nVars
@@ -180,6 +196,7 @@ procedure sendFromInfo(prefix, cParams, HB_MV, lLocal,aStack)
 		// PRI::i:
 		cLine := left(prefix,3) + "::" + alltrim(str(i)) + "::" +;
 				  cName + ":" + valtype(value) + ":" + format(value)
+		? cLine, __mvDbgInfo( HB_MV_PRIVATE )
 		hb_inetSend(t_oSocketDebug,cLine + CRLF )
 	next
 
@@ -206,6 +223,10 @@ static function getValue(req)
 			v := __mvDbgInfo(HB_MV_PUBLIC,val(aInfos[3]))
 			exit
 	endswitch
+	// some variable changes its type during execution. mha
+	if at(valtype(v),"AHO") == 0
+		return {}
+	endif
 	req := aInfos[1]+":"+aInfos[2]+":"+aInfos[3]+":"+aInfos[4]
 	if len(aInfos[4])>0
 		aIndices := hb_aTokens(aInfos[4],",")
@@ -299,8 +320,27 @@ static procedure setBreakpoint(debugInfo, cInfo)
 
 
 //*/
+
+#include <hbclass.ch>
+
+class oggetto
+   	DATA soo AS STRING
+   	DATA noo AS NUMERIC
+   	DATA ioo
+   	METHOD aBitmap( n )      INLINE ( If( empty(n) .or. (n > 0 .and. n <= 10), 5 , nil ) )
+   	METHOD otherMedhod()
+   	METHOD oggProc()
+endclass
+
+METHOD otherMedhod() CLASS oggetto
+return nil
+METHOD procedure oggProc() class oggetto
+return
+
+
 proc main()
-	local i
+	local i as numeric
+	loca c := oggetto():New()
 	AltD()
 	? "Perry"
 	AltraFunzione()
@@ -322,6 +362,10 @@ return
 
 proc Called()
 	memvar test2
+	local timeStamp1 := {^ 1978-06-11 17:10:23.324 }
+	local date := d"2017-05-23"
+	local timeStamp2 := t"14:00"
+	local test := "1978-06-11 17:10:23.324"
 	? test2
 	
 
