@@ -233,7 +233,12 @@ harbourDebugSession.prototype.sendVariables = function(id,line)
 				v.value = `HASH(${infos[6]})`;
 				v.namedVariables = infos[6];
 				break;
-			//TODO: CLASSES
+			case "O":
+				this.variableCommands.push(line)
+				v.variablesReference = this.variableCommands.length;
+				infos = infos[6].split(" ")
+				v.value = `CLASS ${infos[0]}`;
+				v.namedVariables = infos[1];
 		}
 		vars.push(v);		
 	}

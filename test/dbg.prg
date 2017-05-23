@@ -1,5 +1,6 @@
 #include <hbdebug.ch>
 #include <hbmemvar.ch>
+#include <hboo.ch>
 
 THREAD STATIC t_oSocketDebug := nil
 
@@ -118,7 +119,8 @@ static function format(value)
 		case "B"
 			return "{|| ...}"
 		case "O"
-			return value:ClassName()+" "+alltrim(str(len(value)))
+			//return value:ClassName()+" "+alltrim(str(len(value)))
+			return value:ClassName()+" "+alltrim(str(len(__objGetMsgList(value,.T.,HB_MSGLISTALL))))
 		case "P"
 			return "Pointer"
 		case "S"
@@ -237,8 +239,10 @@ static function getValue(req)
 					exit
 				case "H"
 					//TODO: support not character hashes keys
-					v:=hb_HGetDef(v,aIndices[i],nil)
+					v := hb_HGetDef(v,aIndices[i],nil)
 					exit
+				case "O"
+					v :=  __objSendMsg(v,aIndices[i])
 			endswitch
 		next
 	endif	
@@ -250,7 +254,14 @@ static procedure sendCoumpoundVar(req, cParams )
 	local iStack := aParams[1]
 	local iStart := aParams[2]
 	local iCount := aParams[3]
-	local i, idx,vSend, cLine
+	local i, idx,vSend, cLine, aData
+	if valtype(value) == "O"
+		aData := __objGetValueList(value)
+		aParams := fixVarCParams(cParams,1,len(aData))
+		iStack := aParams[1]
+		iStart := aParams[2]
+		iCount := aParams[3]
+	endif
 	hb_inetSend(t_oSocketDebug,req+CRLF)
 	if right(req,1)<>":"
 		req+=","
@@ -270,8 +281,12 @@ static procedure sendCoumpoundVar(req, cParams )
 				//TODO: support not character hashes keys
 				vSend:=hb_HGetDef(value,idx,nil)
 				exit
+			case "O"
+				idx := aData[i,1]
+				vSend := aData[i,2]
+				exit
 		endswitch
-			
+		? idx,vSend, valtype(idx), valtype(vSend)
 		cLine := req + idx + ":" +;
 				  idx + ":" + valtype(vSend) + ":" + format(vSend)
 		hb_inetSend(t_oSocketDebug,cLine + CRLF )
@@ -327,20 +342,18 @@ class oggetto
    	DATA soo AS STRING
    	DATA noo AS NUMERIC
    	DATA ioo
+	DATA newData
    	METHOD aBitmap( n )      INLINE ( If( empty(n) .or. (n > 0 .and. n <= 10), 5 , nil ) )
    	METHOD otherMedhod()
-   	METHOD oggProc()
 endclass
 
 METHOD otherMedhod() CLASS oggetto
 return nil
-METHOD procedure oggProc() class oggetto
-return
 
 
 proc main()
 	local i as numeric
-	loca c := oggetto():New()
+	local c := oggetto():New()
 	AltD()
 	? "Perry"
 	AltraFunzione()
