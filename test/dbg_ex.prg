@@ -86,6 +86,10 @@ return
    CASE "L" ; RETURN __dbgVMVarLGet( __dbgProcLevel() - aVar[ HB_DBG_VAR_FRAME ], aVar[ HB_DBG_VAR_INDEX ] )
    CASE "S" ; RETURN __dbgVMVarSGet( aVar[ HB_DBG_VAR_FRAME ], aVar[ HB_DBG_VAR_INDEX ] )
    ENDSWITCH
-
+   recap:
+   localVariable: __dbgVMVarLGet(level,idx)   --> LOC:LEVEL:IDX
+   staticVariable: __dbgVMVarSGet(level,idx)  --> STA:LEVEL:IDX
+   privateVariable: __mvDbgInfo(HB_MV_PRIVATE,idx) --> PRI:IDX
+   publicVariable: __mvDbgInfo(HB_MV_PUBLIC,idx)   --> PUB:IDX
 */
 

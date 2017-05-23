@@ -31,6 +31,9 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3, uParam4 )
 			do while .T.
 				tmp := hb_inetRecvLine(t_oSocketDebug)
 				if len(tmp)>0
+					if subStr(tmp,4,1)==":"
+						sendCoumpoundVar(tmp,hb_inetRecvLine(t_oSocketDebug))
+					endif
 					switch tmp
 						case "GO"
 							__dbgSetGo( uParam1)
@@ -43,6 +46,9 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3, uParam4 )
 						case "STACK" 
 							sendStack(uParam3)
 							exit
+						case "BREAKPOINT"
+							//add
+							exit
 						case "LOCALS"
 							sendFromStack(uParam3,hb_inetRecvLine(t_oSocketDebug),tmp,HB_DBG_CS_LOCALS)
 							exit							
@@ -50,13 +56,13 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3, uParam4 )
 							sendFromStack(uParam3,hb_inetRecvLine(t_oSocketDebug),tmp,HB_DBG_CS_STATICS)
 							exit
 						case "PRIVATES"
-							sendVariables(tmp,hb_inetRecvLine(t_oSocketDebug),HB_MV_PRIVATE, .T., uParam3)
+							sendFromInfo(tmp,hb_inetRecvLine(t_oSocketDebug),HB_MV_PRIVATE, .T., uParam3)
 							exit
 						case "PRIVATE_CALLEE"
-							sendVariables(tmp,hb_inetRecvLine(t_oSocketDebug),HB_MV_PRIVATE, .F., uParam3)
+							sendFromInfo(tmp,hb_inetRecvLine(t_oSocketDebug),HB_MV_PRIVATE, .F., uParam3)
 							exit
 						case "PUBLICS"
-							sendVariables(tmp,hb_inetRecvLine(t_oSocketDebug),HB_MV_PUBLIC,, uParam3)
+							sendFromInfo(tmp,hb_inetRecvLine(t_oSocketDebug),HB_MV_PUBLIC,, uParam3)
 							exit
 						//case "GLOBALS"
 						//	sendVariables(HB_MV_PUBLIC,.F.)
@@ -65,8 +71,9 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3, uParam4 )
 						//	sendVariables(HB_MV_PUBLIC,.F.)
 						//	exit
 					endswitch
+				else
+					hb_idleSleep(0.1)
 				endif	
-				hb_idleSleep(0.1)
 			enddo
 
    			exit
@@ -103,43 +110,57 @@ static function format(value)
 		endswitch
 return ""
 
-static procedure sendFromStack(aStack,cParams,prefix,DBG_CS)
-	local i, aParams := hb_aTokens(cParams,":")
+static function fixVarCParams(cParams, lenStack, lenVars)
+	local aParams := hb_aTokens(cParams,":")
 	local iStack := val(aParams[1])
 	local iStart := val(aParams[2])
 	local iCount := val(aParams[3])
 	local aInfo, value, cLine 
-	iStack:= iif(iStack>len(aStack)	, len(aStack)	, iStack)
+	iStack:= iif(iStack>lenStack	, lenStack	, iStack)
 	iStack:= iif(iStack<1			, 1				, iStack)
-	iStart:= iif(iStart>len(aStack[iStack,DBG_CS]),len(aStack[iStack,DBG_CS]) , iStart )
+	if valType(lenVars) == "B"
+		lenVars:=eval(lenVars,iStack)
+	endif
+	iStart:= iif(iStart>lenVars		, lenVars , iStart )
 	iStart:= iif(iStart<1			, 1				, iStart )
-	iCount:= iif(iCount<1			, len(aStack[iStack,DBG_CS]), iCount )
+	iCount:= iif(iCount<1			, lenVars , iCount )
+	return {iStack, iStart, iCount}
+
+
+static procedure sendFromStack(aStack,cParams,prefix,DBG_CS)
+	local aParams := fixVarCParams(cParams,len(aStack),{|iStack| len(aStack[iStack,DBG_CS])} )
+	local iStack := aParams[1]
+	local iStart := aParams[2]
+	local iCount := aParams[3]
+	local i, aInfo, value, cLine, level
 	hb_inetSend(t_oSocketDebug,prefix+" "+alltrim(str(iStack))+CRLF)
 	for i:=iStart to iStart+iCount
 		if(i>len(aStack[iStack,DBG_CS]))
 			exit
 		endif
 		aInfo := aStack[iStack,DBG_CS,i]
-		value := __dbgVMVarLGet( __dbgProcLevel() - aInfo[ HB_DBG_VAR_FRAME ], aInfo[ HB_DBG_VAR_INDEX ] )
-		cLine := alltrim(str(i)) + ":" + alltrim(str(aInfo[ HB_DBG_VAR_INDEX ])) + ":" +;
-				  aInfo[HB_DBG_VAR_NAME] + ":" + valtype(value) + ":" + format(value)
+		if DBG_CS == HB_DBG_CS_LOCALS
+			value := __dbgVMVarLGet( __dbgProcLevel()-aInfo[ HB_DBG_VAR_FRAME ], aInfo[ HB_DBG_VAR_INDEX ] )
+		else
+			value := __dbgVMVarSGet( aInfo[ HB_DBG_VAR_FRAME ], aInfo[ HB_DBG_VAR_INDEX ] )
+		endif
+		// LOC:LEVEL:IDX::
+		cLine := left(prefix,3) + ":" + alltrim(str(aInfo[ HB_DBG_VAR_FRAME ])) + ":" + ;
+				 alltrim(str(aInfo[ HB_DBG_VAR_INDEX ])) + "::" + ;
+				 aInfo[HB_DBG_VAR_NAME] + ":" + valtype(value) + ":" + format(value)
+		? cLine
 		hb_inetSend(t_oSocketDebug,cLine + CRLF )
 	next
 	hb_inetSend(t_oSocketDebug,"END"+CRLF)
 
-procedure sendVariables(prefix, cParams, HB_MV, lLocal,aStack)
-	local i, aParams := hb_aTokens(cParams,":"), cLine, cName, value
-	local iStack := val(aParams[1])
-	local iStart := val(aParams[2])
-	local iCount := val(aParams[3])
+procedure sendFromInfo(prefix, cParams, HB_MV, lLocal,aStack)
 	local nVars := __mvDbgInfo( HB_MV )
-	local nLocal
-	iStack:= iif(iStack>len(aStack)	, len(aStack)	, iStack)
-	iStack:= iif(iStack<1			, 1				, iStack)
-	iStart:= iif(iStart>nVars		, nVars 		, iStart )
-	iStart:= iif(iStart<1			, 1				, iStart )
-	iCount:= iif(iCount<1			, nVars			, iCount )
-	nLocal := __mvDbgInfo( HB_MV_PRIVATE_LOCAL, aStack[iStack,HB_DBG_CS_LEVEL] )
+	local aParams := fixVarCParams(cParams,len(aStack),nVars)
+	local iStack := aParams[1]
+	local iStart := aParams[2]
+	local iCount := aParams[3]
+	local i, cLine, cName, value
+	local nLocal := __mvDbgInfo( HB_MV_PRIVATE_LOCAL, aStack[iStack,HB_DBG_CS_LEVEL] )
 	hb_inetSend(t_oSocketDebug,prefix+" "+alltrim(str(iStack))+CRLF)
 	for i:=iStart to iStart+iCount
 	//for i:=1 to nVars
@@ -155,13 +176,89 @@ procedure sendVariables(prefix, cParams, HB_MV, lLocal,aStack)
 			endif
 		endif
 		value := __mvDbgInfo( HB_MV, i, @cName )
-		cLine := alltrim(str(i)) + ":" + alltrim(str(i)) + ":" +;
+		// PRI::i:
+		cLine := left(prefix,3) + "::" + alltrim(str(i)) + "::" +;
 				  cName + ":" + valtype(value) + ":" + format(value)
 		hb_inetSend(t_oSocketDebug,cLine + CRLF )
 	next
 
 	hb_inetSend(t_oSocketDebug,"END"+CRLF)	
 
+static function getValue(req)
+	local aInfos := hb_aTokens(req,":")
+	local v, i, aIndices
+	? "var:"+req
+	switch aInfos[1]
+		case "LOC"
+			v := __dbgVMVarLGet(__dbgProcLevel()-val(aInfos[2]),0+val(aInfos[3]))
+			exit
+		case "STA"
+			v := __dbgVMVarSGet(val(aInfos[2]),val(aInfos[3]))
+			exit
+		case "GLO"
+		case "EXT"
+			v := __dbgVMVarSGet(val(aInfos[2]),val(aInfos[3]))
+			exit
+		case "PRI"
+			v := __mvDbgInfo(HB_MV_PRIVATE,val(aInfos[3]))
+			exit
+		case "PUB"
+			v := __mvDbgInfo(HB_MV_PUBLIC,val(aInfos[3]))
+			exit
+	endswitch
+	req := aInfos[1]+":"+aInfos[2]+":"+aInfos[3]+":"+aInfos[4]
+	if len(aInfos[4])>0
+		aIndices := hb_aTokens(aInfos[4],",")
+		for i:=1 to len(aIndices)
+			switch(valtype(v))
+				case "A"
+					v:=v[val(aIndices[i])]
+					exit
+				case "H"
+					//TODO: support not character hashes keys
+					v:=hb_HGetDef(v,aIndices[i],nil)
+					exit
+			endswitch
+		next
+	endif	
+	? req, valtype(v),v
+return v
+
+static procedure sendCoumpoundVar(req, cParams )
+	local value := getValue(@req)
+	local aParams := fixVarCParams(cParams,1,len(value))
+	local iStack := aParams[1]
+	local iStart := aParams[2]
+	local iCount := aParams[3]
+	local i, idx,vSend, cLine
+	hb_inetSend(t_oSocketDebug,req+CRLF)
+	if right(req,1)<>":"
+		req+=","
+	endif
+	for i:=iStart to iStart+iCount
+	//for i:=1 to nVars
+		if i > len(Value)
+			loop
+		endif
+		switch(valtype(value))
+			case "A"
+				idx := alltrim(str(i))
+				vSend:=value[i]
+				exit
+			case "H"
+				idx:=hb_HKeyAt(value,i)
+				//TODO: support not character hashes keys
+				vSend:=hb_HGetDef(value,idx,nil)
+				exit
+		endswitch
+			
+		cLine := req + idx + ":" +;
+				  idx + ":" + valtype(vSend) + ":" + format(vSend)
+		? cLine
+		hb_inetSend(t_oSocketDebug,cLine + CRLF )
+	next
+
+	hb_inetSend(t_oSocketDebug,"END"+CRLF)	
 
 //*/
 proc main()
@@ -175,7 +272,7 @@ return
 
 proc AltraFunzione()
 	local p := "sei fuori"
-	local a := {1,2,3}
+	local a := {{'pp'=>3,'pi'=>3.14},{20,10},"AAA"}
 	memvar test,test2
 	public test := "non io"
 	private test2 := "altro"
@@ -195,6 +292,9 @@ proc Called()
 			default there is a breakpoint at startup, without 'go' next line is a breakpoint, 
 				if 'trace' next line even if is inside a called procedure is a breakpoint
 		uParam1 --> debugInfo
+
+		__dbgInvokeDebug() if .T. it stopped is caused by an AltD()
+
 	
 	Commands:
 		__dbgSetGo(debugInfo) --> play the program

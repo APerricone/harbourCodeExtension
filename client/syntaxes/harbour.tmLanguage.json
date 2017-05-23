@@ -154,7 +154,7 @@
 				},
 				{
 					"name": "string.square.harbour",
-					"begin": "(?<![a-z0-9])\\[",
+					"begin": "(?<![a-z0-9_])\\[",
 					"end": "\\]"
 				}
 			]
