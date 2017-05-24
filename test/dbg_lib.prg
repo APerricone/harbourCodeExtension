@@ -35,12 +35,13 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3, uParam4 )
 				return
 			endif
 			hb_inetSend(t_oSocketDebug,"STOP"+CRLF)
+			//ErrorBlock( {| e | ErrorBlockCode( e ) } ) does not work, ask to comunity...
 			
 			do while .T.
 				tmp := hb_inetRecvLine(t_oSocketDebug)
 				if len(tmp)>0
 					if subStr(tmp,4,1)==":"
-						sendCoumpoundVar(tmp,hb_inetRecvLine(t_oSocketDebug))
+						sendCoumpoundVar(uParam1, tmp, hb_inetRecvLine(t_oSocketDebug))
 						loop
 					endif
 					switch tmp
@@ -79,6 +80,9 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3, uParam4 )
 						//case "EXTERNALS"
 						//	sendVariables(HB_MV_PUBLIC,.F.)
 						//	exit
+						case "EXPRESSION"
+							sendExpression(uParam1,hb_inetRecvLine(t_oSocketDebug))
+							exit
 					endswitch
 				else
 					hb_idleSleep(0.1)
@@ -208,7 +212,7 @@ static procedure sendFromInfo(prefix, cParams, HB_MV, lLocal,aStack)
 
 	hb_inetSend(t_oSocketDebug,"END"+CRLF)	
 
-static function getValue(req)
+static function getValue(debugInfo,req)
 	local aInfos := hb_aTokens(req,":")
 	local v, i, aIndices
 	switch aInfos[1]
@@ -228,6 +232,8 @@ static function getValue(req)
 		case "PUB"
 			v := __mvDbgInfo(HB_MV_PUBLIC,val(aInfos[3]))
 			exit
+		case "EXP"
+			v := __dbgGetExprValue( debugInfo, aInfos[2] )
 	endswitch
 	// some variable changes its type during execution. mha
 	if at(valtype(v),"AHO") == 0
@@ -252,8 +258,8 @@ static function getValue(req)
 	endif	
 return v
 
-static procedure sendCoumpoundVar(req, cParams )
-	local value := getValue(@req)
+static procedure sendCoumpoundVar(debugInfo,req, cParams )
+	local value := getValue(debugInfo,@req)
 	local aParams := fixVarCParams(cParams,1,len(value))
 	local iStack := aParams[1]
 	local iStart := aParams[2]
@@ -335,3 +341,40 @@ static procedure setBreakpoint(debugInfo, cInfo)
 	endif
 	__dbgAddBreak(debugInfo,aInfos[2],nLine)
 	hb_inetSend(t_oSocketDebug,"BREAK:"+aInfos[2]+":"+aInfos[3]+":"+alltrim(str(nLine))+CRLF)
+
+STATIC PROCEDURE ErrorBlockCode( e )
+	local t
+	hb_inetSend(t_oSocketDebug,"ERROR:"+e:Description+CRLF)
+	? "ERROR:"+e:Description
+	__dbgInvokeDebug(.T.)
+	AltD()
+	break(e)
+	for t:=1 to 10
+		break(e)
+	next
+
+static procedure sendExpression(debugInfo, xExpr)
+	LOCAL xResult, cType
+   	LOCAL oErr
+	local lValid := .F.
+
+	xResult := __dbgGetExprValue( debugInfo, xExpr, @lValid )
+   	IF lValid
+		cType := valtype(xResult)
+		xResult := format(xResult)
+	else
+		cType := "E"
+		oErr := xResult
+		IF oErr:ClassName() == "ERROR"
+			xResult := oErr:operation + ": " + oErr:description
+			IF HB_ISARRAY( oErr:args )
+				xResult += "; arguments:"
+				AEval( oErr:args, {| x, i | xResult += iif( i == 1, " ", ", " ) + ;
+					format( x ) } )
+			ENDIF
+		ELSE
+			xResult := "Syntax error"
+		ENDIF
+	ENDIF
+
+	hb_inetSend(t_oSocketDebug,"EXPRESSION:"+cType+":"+xResult+CRLF)

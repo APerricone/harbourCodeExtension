@@ -6,7 +6,7 @@ This is an extension for visual studio code about harbour programmin language, i
 
 - simple and complete syntax hightlight
 - Language Server written in harbour to manipolate harbour file with error and warning report
-- [TODO] Debug support
+- Debug support
 - [TODO] Compiling integrated with creationg of debug and not-debug c files
 
 > Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
@@ -39,7 +39,7 @@ Users appreciate release notes as you update your extension.
 
 ### 0.0.1
 
-Language support and syntax hightligy
+Language support and syntax highlight
 
 ### 0.0.2
 
