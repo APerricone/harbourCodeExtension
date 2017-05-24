@@ -5,9 +5,15 @@
 THREAD STATIC t_oSocketDebug := nil
 
 #define CRLF e"\r\n"
+#ifndef DBG_PORT
+// Temp, I hope to find another way to do InterProcessCommunication that uses ProcessId as unique key
+// in the meanwhile, you can change the port using compiler command line argumend -D to set DBG_PORT
+// to another value, it is useful if you need to debug 2 programm in the same time.
+#define DBG_PORT 6110
+#endif
 
 PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3, uParam4 )
-	local i, tmp, port := 6110 //TEMP
+	local i, tmp
 	switch nMode
    		CASE HB_DBG_GETENTRY
 
@@ -20,7 +26,7 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3, uParam4 )
 				hb_inetInit()
 				t_oSocketDebug := hb_inetCreate()
 				hb_inetTimeout( t_oSocketDebug,1000 )
-				hb_inetConnect("127.0.0.1",port,t_oSocketDebug)
+				hb_inetConnect("127.0.0.1",DBG_PORT,t_oSocketDebug)
 			endif
 			if hb_inetErrorCode(t_oSocketDebug) <> 0
 				//disconnected?
@@ -170,7 +176,7 @@ static procedure sendFromStack(aStack,cParams,prefix,DBG_CS)
 	next
 	hb_inetSend(t_oSocketDebug,"END"+CRLF)
 
-procedure sendFromInfo(prefix, cParams, HB_MV, lLocal,aStack)
+static procedure sendFromInfo(prefix, cParams, HB_MV, lLocal,aStack)
 	local nVars := __mvDbgInfo( HB_MV )
 	local aParams := fixVarCParams(cParams,len(aStack),__mvDbgInfo( HB_MV ))
 	local iStack := aParams[1]
@@ -180,7 +186,6 @@ procedure sendFromInfo(prefix, cParams, HB_MV, lLocal,aStack)
 	local nLocal := __mvDbgInfo( HB_MV_PRIVATE_LOCAL, aStack[iStack,HB_DBG_CS_LEVEL] )
 	hb_inetSend(t_oSocketDebug,prefix+" "+alltrim(str(iStack))+CRLF)
 	nVars := __mvDbgInfo( HB_MV )
-	? HB_MV, HB_MV_PUBLIC, nVars, __mvDbgInfo( HB_MV ), __mvDbgInfo( HB_MV_PUBLIC )
 	for i:=iStart to iStart+iCount
 	//for i:=1 to nVars
 		if i > nVars
@@ -198,7 +203,6 @@ procedure sendFromInfo(prefix, cParams, HB_MV, lLocal,aStack)
 		// PRI::i:
 		cLine := left(prefix,3) + "::" + alltrim(str(i)) + "::" +;
 				  cName + ":" + valtype(value) + ":" + format(value)
-		? cLine, __mvDbgInfo( HB_MV_PRIVATE )
 		hb_inetSend(t_oSocketDebug,cLine + CRLF )
 	next
 
@@ -286,7 +290,6 @@ static procedure sendCoumpoundVar(req, cParams )
 				vSend := aData[i,2]
 				exit
 		endswitch
-		? idx,vSend, valtype(idx), valtype(vSend)
 		cLine := req + idx + ":" +;
 				  idx + ":" + valtype(vSend) + ":" + format(vSend)
 		hb_inetSend(t_oSocketDebug,cLine + CRLF )
@@ -332,85 +335,3 @@ static procedure setBreakpoint(debugInfo, cInfo)
 	endif
 	__dbgAddBreak(debugInfo,aInfos[2],nLine)
 	hb_inetSend(t_oSocketDebug,"BREAK:"+aInfos[2]+":"+aInfos[3]+":"+alltrim(str(nLine))+CRLF)
-
-
-//*/
-
-#include <hbclass.ch>
-
-class oggetto
-   	DATA soo AS STRING
-   	DATA noo AS NUMERIC
-   	DATA ioo
-	DATA newData
-   	METHOD aBitmap( n )      INLINE ( If( empty(n) .or. (n > 0 .and. n <= 10), 5 , nil ) )
-   	METHOD otherMedhod()
-endclass
-
-METHOD otherMedhod() CLASS oggetto
-return nil
-
-
-proc main()
-	local i as numeric
-	local c := oggetto():New()
-	AltD()
-	? "Perry"
-	AltraFunzione()
-	? i:=2
-	? i
-return
-
-proc AltraFunzione()
-	local p := "sei fuori"
-	local a := {{'pp'=>3,'pi'=>3.14},{20,10},"AAA"}
-	memvar test,test2
-	public test := "non io"
-	private test2 := "altro"
-	Called()
-	? p
-	? "più righe"
-	? "per provare"
-return
-
-proc Called()
-	memvar test2
-	local timeStamp1 := {^ 1978-06-11 17:10:23.324 }
-	local date := d"2017-05-23"
-	local timeStamp2 := t"14:00"
-	local test := "1978-06-11 17:10:23.324"
-	? test2
-	
-
-/* notes from src/debug/debugger.prg:
-	__DbgEntry ACTIVATE -> breakpoint arrived,
-			default there is a breakpoint at startup, without 'go' next line is a breakpoint, 
-				if 'trace' next line even if is inside a called procedure is a breakpoint
-		uParam1 --> debugInfo
-
-		__dbgInvokeDebug() if .T. it stopped is caused by an AltD()
-
-	
-	Commands:
-		__dbgSetGo(debugInfo) --> play the program
-		__dbgSetTrace(debugInfo) --> set a breakpoint in the first line of the next called procedure
-		__dbgSetCBTrace(debugInfo,lCB) --> trace includes codeblock too
-		__dbgAddBreak(debugInfo,file,line) --> 
-		__dbgIsBreak(debugInfo,file,line) --> return id of breakpoint if setted
-		__dbgDelBreak(debugInfo, id)
-		__dbgAddWatch(debugInfo,cExpr,lTracePoint) --> 
-      	__mvDbgInfo( HB_MV_PUBLIC|HB_MV_PRIVATE ) --> returns number of public/private variable
-      	__mvDbgInfo( HB_MV_PUBLIC|HB_MV_PRIVATE, idx, @cName ) -> returns the index of idx public variable (Sets its name in cName)
-      	__mvDbgInfo( HB_MV_PRIVATE_LOCAL, lv ) -> returns number of private variable at level lv of stack
-		__dbgProcLevel() --> return the current level (len of stack?)
-		      	
-		gets of value of variable
-		   SWITCH aVar[ HB_DBG_VAR_TYPE ]
-   CASE "G" ; RETURN __dbgVMVarGGet( aVar[ HB_DBG_VAR_FRAME ], aVar[ HB_DBG_VAR_INDEX ] )
-   CASE "L" ; RETURN __dbgVMVarLGet( __dbgProcLevel() - aVar[ HB_DBG_VAR_FRAME ], aVar[ HB_DBG_VAR_INDEX ] )
-   CASE "S" ; RETURN __dbgVMVarSGet( aVar[ HB_DBG_VAR_FRAME ], aVar[ HB_DBG_VAR_INDEX ] )
-   ENDSWITCH
-
-*/
-
-

@@ -4,38 +4,77 @@
     "version": "0.1.0",
     "command": "hbmk2",
     "isShellCommand": true,
-    "suppressTaskName": false,
-    "isBuildCommand": true,
+    "suppressTaskName": true,
     "showOutput": "always",
-    "args": [ "${relativeFile}", "-gtcgi", "-w", "-ql", "-b"],
-    "problemMatcher": [
-    {
-        "owner": "cpp",
-        "fileLocation": [
-            "relative",
-            "${workspaceRoot}"
-        ],
-        "pattern": {
-            "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
-            "file": 1,
-            "line": 2,
-            "column": 3,
-            "severity": 4,
-            "message": 5
+    "tasks": [
+        {
+            "taskName": "build",
+            "isBuildCommand": true,
+            "args": [ "${relativeFile}", "-gtcgi", "-w", "-ql", "-b", "-lcode_dbg", "-L."],
+            "problemMatcher": [
+            {
+                "owner": "cpp",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceRoot}"
+                ],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5
+                }
+            },
+            {
+                "owner": "harbour",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceRoot}"
+                ],
+                "pattern": {
+                    "regexp": "^(.*)\\((\\d+)\\)\\s+(Warning|Error)\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "severity": 3,
+                    "message": 4
+                }
+            }]
+        },
+        {
+            "taskName": "createLibrary",
+            "args": [ "dbg_lib", "-w", "-ql", "-ocode_dbg", "-hblib"],
+            "problemMatcher": [
+            {
+                "owner": "cpp",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceRoot}"
+                ],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5
+                }
+            },
+            {
+                "owner": "harbour",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceRoot}"
+                ],
+                "pattern": {
+                    "regexp": "^(.*)\\((\\d+)\\)\\s+(Warning|Error)\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "severity": 3,
+                    "message": 4
+                }
+            }]
         }
-    },
-    {
-        "owner": "harbour",
-        "fileLocation": [
-            "relative",
-            "${workspaceRoot}"
-        ],
-        "pattern": {
-            "regexp": "^(.*)\\((\\d+)\\)\\s+(Warning|Error)\\s+(.*)$",
-            "file": 1,
-            "line": 2,
-            "severity": 3,
-            "message": 4
-        }
-    }]
+    ]
 }

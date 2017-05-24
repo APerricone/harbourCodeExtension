@@ -10,4 +10,5 @@ proc test()
 	LOCAL i:= 1
 	i += 2
 	? i
+	? j
 return

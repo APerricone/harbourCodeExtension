@@ -4,16 +4,10 @@
 		{
 			"type": "harbour-dbg",
 			"request": "launch",
-			"name": "Launch dbg",
-			"program": "${workspaceRoot}/dbg",
+			"name": "Launch currentFile",
+			"program": "${workspaceRoot}/${fileBasenameNoExtension}",
 			"debugServer": 4711,
 			"workspaceRoot": "${workspaceRoot}"
-		},
-		{
-			"type": "node",
-			"request": "launch",
-			"name": "Mini debugger",
-			"program": "${workspaceRoot}/mini_debugger.js"
 		}
 	]
 }
