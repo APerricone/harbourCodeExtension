@@ -286,6 +286,12 @@ harbourDebugSession.prototype.stepInRequest = function(response, args)
 	this.sendResponse(response);
 }
 
+harbourDebugSession.prototype.stepOutRequest = function(response, args)
+{
+	this.socket.write("EXIT\r\n");
+	this.sendResponse(response);
+}
+
 /// breakpoints
 harbourDebugSession.prototype.setBreakPointsRequest = function(response,args)
 {

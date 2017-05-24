@@ -53,6 +53,9 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3, uParam4 )
 						case "NEXT" // go to next line of same procedure
 							__dbgSetTrace(uParam1)
 							return
+						case "EXIT" // go to callee procedure
+							__dbgSetNextRoutine(uParam1)
+							return
 						case "STACK" 
 							sendStack(uParam3)
 							exit
