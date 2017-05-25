@@ -5,7 +5,7 @@ var path = require('path');
 function activate(context) {
 	vscode.languages.setLanguageConfiguration('harbour', {
 		indentationRules: {
-			increaseIndentPattern: /^\s*(proc[a-z]*|func[a-z]*|class|if|else|elseif|for|if|try|case|otherwise|while|switch)\b/i,
+			increaseIndentPattern: /^\s*(proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?|func(?:t(?:i(?:o(?:n)?)?)?)?|class|if|else|elseif|for|if|try|case|otherwise|while|switch)\b/i,
 			decreaseIndentPattern: /^\s*(end[a-z]*|next|else|elseif|next)\b/i
 		}
 	});

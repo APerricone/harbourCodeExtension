@@ -62,17 +62,8 @@
 				"match": "\\b(?i:if|ELSEIF|ELSE|end\\s*(?:if|while|case|do|switch|class)?|for(?:\\s+each)?|to|next|do|while|switch|case|endcase|otherwise|exit|loop)\\b"
 			},
 			{
-				"name": "keyword.control.harbour",
-				"match": "\\b(?i:static|return|class|data)\\b"
-			},
-			{
-				"name": "meta.function.harbour",
-				"match": "(?i)\\b(method|proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?|func(?:t(?:i(?:o(?:n)?)?)?)?)\\s+([a-z_][a-z0-9]*)\\s*\\((?:\\s*([a-z_][a-z0-9]*)\\s*,?)*\\)",
-				"captures": {
-					"1": { "name": "keyword.function.harbour" },
-					"2": { "name": "entity.name.function.harbour" },
-					"3": { "name": "variable.parameter.harbour" }
-				}
+				"name": "keyword.control.harbour",				
+				"match": "\\b(?i:static|retu(?:r?(?:n))?|method|proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?|func(?:t(?:i(?:o(?:n)?)?)?)?))\\b"
 			},
 			{
 				"name": "keyword.declarations.harbour",
