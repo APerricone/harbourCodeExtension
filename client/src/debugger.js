@@ -106,7 +106,11 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
 	}).listen(port);
 	// starts the program
 	console.error("start the program");
-	this.process = cp.spawn(args.program,args.arguments, { cwd:args.workingDir });
+	if(args.arguments)
+		this.process = cp.spawn(args.program, args.arguments, { cwd:args.workingDir });
+	else
+		this.process = cp.spawn(args.program, { cwd:args.workingDir });
+
 	this.process.on("exit",function(code)
 	{
 		//tc.sendEvent(new debugadapter.Event("exited",{"exitCode":code}));
