@@ -6,6 +6,9 @@
     "isShellCommand": true,
     "suppressTaskName": true,
     "showOutput": "always",
+    "windows": {
+        "command": "myBuild.bat"
+    },
     "tasks": [
         {
             "taskName": "build",

@@ -88,10 +88,10 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
 	var tc=this;
 	if("workspaceRoot" in args)
 	{
-		this.workspaceRoot = args.workspaceRoot+"/"; 
+		this.workspaceRoot = args.workspaceRoot + path.sep; 
 	} else
 	{
-		this.workspaceRoot = path.dirname(args.program) + "/";
+		this.workspaceRoot = path.dirname(args.program) + path.sep;
 	}
 	// starts the server
 	var server = net.createServer(socket => {
@@ -302,9 +302,9 @@ harbourDebugSession.prototype.setBreakPointsRequest = function(response,args)
 	var message = "";
 	response.breakpoints = [];
 	response.breakpoints.length = args.breakpoints.length;
-	var src = args.source.path;
-	if(src.startsWith(this.workspaceRoot))
-		src = src.substring(this.workspaceRoot.length)
+	//var src = args.source.path;
+	//if(src.startsWith(this.workspaceRoot)) src = src.substring(this.workspaceRoot.length)
+	var src = args.source.name;
 	var dest
 	if(!(src in this.breakpoints))
 	{
@@ -337,7 +337,7 @@ harbourDebugSession.prototype.setBreakPointsRequest = function(response,args)
 			{
 				message += "BREAKPOINT\r\n"
 				message += `-:${src}:${breakpoint.line}\r\n`
-				delete dest[i];
+				dest[breakpoint.line] = 0;
 			}
 		}
 	}
@@ -366,12 +366,18 @@ harbourDebugSession.prototype.processBreak = function(line)
 	}
 	if(aInfos[3]>1)
 	{
-		dest.response.breakpoints.line = aInfos[3];
-		dest.response.breakpoints.verified = true;
+		dest.response.breakpoints[idBreak].line = aInfos[3];
+		dest.response.breakpoints[idBreak].verified = true;
 	} else
 	{
-		dest.response.breakpoints.verified = false;
-		dest.response.breakpoints.message = "invalid line"
+		if(aInfos[4]=="request")
+		{
+			delete d[b.line];
+		} else
+		{
+			dest.response.breakpoints[idBreak].verified = false;
+			dest.response.breakpoints[idBreak].message = "invalid line"
+		}
 	} 
 	this.checkBreakPoint(aInfos[1]);
 }
