@@ -2,7 +2,7 @@
     "name": "harbour",
     "displayName": "harbour",
     "description": "Harbour language support for visual studio code",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "publisher": "aperricone",
     "icon": "./harbourIcon.svg",
     "main": "./src/extension",
@@ -29,16 +29,16 @@
             "type": "object",
             "title": "Harbour compiler",
             "properties": {
-                "harbour.trace.server": {
-                  "type": "string",
-                  "enum": [
-                    "off",
-                    "messages",
-                    "verbose"
-                  ],
-                  "default": "off",
-                  "description": "Traces the communication between VS Code and the language server."
-                },
+                "harbour.validating": {
+                    "type": "boolean",
+                    "description": "Every time a file is opened or saved the executable is called to validate the code(Lint).",
+                    "default": true
+                    },
+                "harbour.compilerExecutable": {
+                    "type": "string",
+                    "description": "complete path of the harbour executable.",
+                    "default": "harbour"
+                    },
                 "harbour.extraIncludePaths": {
                     "type": "array",
                     "description": "Extra include paths to use during the compilation.",
