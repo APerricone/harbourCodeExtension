@@ -3,21 +3,39 @@ var debugprotocol = require("vscode-debugprotocol");
 var net = require("net");
 var path = require("path");
 var cp = require("child_process");
+/** @requires vscode-debugadapter   */
 /// CLASS DEFINITION
+
+/**
+ * The debugger
+ * @class
+ */
 var harbourDebugSession = function()
 {
+	/** @type{vscode-debugadapter.StackTraceResponse} */
 	this.stack = [];
+	/** @type{child_process.child_process} */
 	this.process = null;
+	/** @type{net.socket} */
 	this.socket = null;
+	/** @type{boolean} */
 	this.Debbugging = true;
 	this.workspaceRoot = "";
+	/** @description the current process line function
+	 * @type{function(string)} */
 	this.processLine = undefined;
 	this.breakpoints = {};
+	/** @type{string[]} */
 	this.variableCommands = [];
+	/** @type{DebugProtocol.StackResponse} */
 }
 
 harbourDebugSession.prototype = new debugadapter.DebugSession();
 
+/**
+ * process data from debugging process.
+ * @param buff{string} the imported data
+ */
 harbourDebugSession.prototype.processInput = function(buff)
 {
 	var lines = buff.split("\r\n");
@@ -69,6 +87,11 @@ harbourDebugSession.prototype.processInput = function(buff)
 }
 
 /// START
+
+/**
+ * @param response{debugprotocol.InitializeResponse} 
+ * @param args{debugprotocol.InitializeRequestArguments} 
+ */
 harbourDebugSession.prototype.initializeRequest = function (response, args) 
 {
 	response.body.supportsConfigurationDoneRequest = true;
@@ -95,7 +118,6 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
 	}
 	// starts the server
 	var server = net.createServer(socket => {
-		console.error("connected!")
 		//connected!
 		tc.sendEvent(new debugadapter.InitializedEvent());
 		server.close();
@@ -129,6 +151,10 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
 }
 
 /// STACK
+/**
+ * @param response{DebugProtocol.StackTraceResponse} response to send
+ * @param args{DebugProtocol.StackTraceArguments} arguments
+ */
 harbourDebugSession.prototype.stackTraceRequest = function(response,args)
 {
 	this.socket.write("STACK\r\n");
@@ -177,8 +203,7 @@ harbourDebugSession.prototype.scopesRequest = function(response, args)
 	// save wanted stack
 	this.currentStack = args.frameId+1;
 	// reset references
-	this.variableCommands = ["LOCALS","PUBLICS","PRIVATES",
-								"PRIVATE_CALLEE","STATICS"];
+	this.variableCommands = ["LOCALS","PUBLICS","PRIVATES", "PRIVATE_CALLEE","STATICS"];
 	//TODO: "GLOBALS","EXTERNALS"
 	this.varResp = [];
 	this.varResp.length = this.variableCommands.length;
@@ -274,6 +299,7 @@ harbourDebugSession.prototype.sendVariables = function(id,line)
 /// PROGRAM FLOW
 harbourDebugSession.prototype.continueRequest = function(response, args)
 {
+	this.process.
 	this.socket.write("GO\r\n");
 	this.sendResponse(response);
 }
@@ -342,12 +368,14 @@ harbourDebugSession.prototype.setBreakPointsRequest = function(response,args)
 		}
 	}
 	this.checkBreakPoint(src);
+	//this.sendEvent(new debugadapter.OutputEvent("send: "+message,"console"))
 	this.socket.write(message)
 	//this.sendResponse(response)
 }
 
 harbourDebugSession.prototype.processBreak = function(line)
 {
+	//this.sendEvent(new debugadapter.OutputEvent("received: "+line+"\r\n","console"))
 	var aInfos = line.split(":");
 	var dest 
 	if(!(aInfos[1] in this.breakpoints))
@@ -368,15 +396,17 @@ harbourDebugSession.prototype.processBreak = function(line)
 	{
 		dest.response.breakpoints[idBreak].line = aInfos[3];
 		dest.response.breakpoints[idBreak].verified = true;
+		dest[aInfos[2]] = 1;
 	} else
 	{
 		if(aInfos[4]=="request")
 		{
-			delete d[b.line];
+			delete dest[aInfos[2]];
 		} else
 		{
 			dest.response.breakpoints[idBreak].verified = false;
 			dest.response.breakpoints[idBreak].message = "invalid line"
+			dest[aInfos[2]] = 1;
 		}
 	} 
 	this.checkBreakPoint(aInfos[1]);
@@ -393,6 +423,7 @@ harbourDebugSession.prototype.checkBreakPoint = function(src)
 			}
 		}
 	}
+	//this.sendEvent(new debugadapter.OutputEvent("Response "+src+"\r\n","console"))
 	this.sendResponse(dest.response);
 }
 
@@ -406,6 +437,10 @@ harbourDebugSession.prototype.evaluateRequest = function(response,args)
 	this.socket.write("EXPRESSION\r\n"+args.expression+"\r\n")	
 }
 
+/**
+ * Evaluate the return from an expression request
+ * @param line{string} the income line
+ */
 harbourDebugSession.prototype.processExpression = function(line)
 {
 	// EXPRESSION:{type}:{result}
