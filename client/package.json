@@ -6,6 +6,9 @@
     "publisher": "aperricone",
     "icon": "./harbourIcon.svg",
     "main": "./src/extension",
+    "repository": {
+        "url": "https://github.com/APerricone/harbourCodeExtension"
+    },
     "activationEvents": [
         "onLanguage:harbour"
     ],
@@ -17,7 +20,6 @@
         "Debuggers"
     ],
     "dependencies": {
-        "vscode-languageclient": "^2.6.3",
         "vscode-debugprotocol": "^1.18.0-pre.2",
         "vscode-debugadapter": "^1.18.0-pre.4"
     },
