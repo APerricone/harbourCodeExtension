@@ -271,7 +271,7 @@ harbourDebugSession.prototype.getVariableFormat = function(dest,type,value,value
 }
 
 harbourDebugSession.prototype.sendVariables = function(id,line)
- {
+{
 	var vars = [];
 	this.processLine = function(line)
 	{

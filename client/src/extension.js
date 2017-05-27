@@ -2,6 +2,7 @@ var vscode = require('vscode');
 var client = require('vscode-languageclient');
 var path = require('path');
 var validation = require('./validation.js');
+var provider = require('./provider.js');
 
 var diagnosticCollection;
 
@@ -16,6 +17,10 @@ function activate(context) {
 	vscode.workspace.onDidOpenTextDocument(validation.validate,undefined, context.subscriptions);
 	vscode.workspace.onDidSaveTextDocument(validation.validate,undefined, context.subscriptions);
 	vscode.workspace.onDidCloseTextDocument(validation.removeValidation,undefined, context.subscriptions);
+
+	context.subscriptions.push(vscode.languages.registerDocumentSymbolProvider(
+		{ "language": 'harbour'},
+		new provider.Provider()));
 }
 
 function deactivate() {
