@@ -7,7 +7,7 @@ This is an extension for visual studio code about harbour programming language, 
 - simple and complete syntax hightlight
 - Debug support
 - Diagnostic infos
-- Symbol Definitions Within a Document provider
+- Symbol Definitions Within a Document provider (access it by pressing <kbd>CTRL</kbd>+<kbd>P</kbd> then <kbd>@</kbd>)
 - [TODO] Symbol Definitions in folder provider
 
 > Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
