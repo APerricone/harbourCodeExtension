@@ -3,6 +3,7 @@ var fs = require("fs");
 var lr = require("readline");
 
 var procRegEx = /\s*((?:proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?)|func(?:t(?:i(?:o(?:n)?)?)?)?)\s+([a-z_][a-z0-9_]*)\s*\(([^\)]*)\)/i;
+var methodRegEx = /\s*(meth(?:o(?:d)?)?)\s+([a-z_][a-z0-9_]*)\s*\(([^\)]*)\)(?:\s*class\s+([a-z_][a-z0-9_]*))?/i
 var hb_funcRegEx = /HB_FUNC\s*\(\s*([A-Z0-9_]+)\s*\)/
 function Provider()
 {
@@ -15,8 +16,11 @@ Provider.prototype.Clear = function()
 	this.currLine = "";
 	this.lineNr = -1;
 	this.startLine = 0;
+	//** @type{array} */
 	this.funcList = [];
 	this.cMode = false;
+	this.currentDocument = "";
+	this.currentClass = "";
 }
 
 /**
@@ -128,34 +132,63 @@ Provider.prototype.parse = function(line)
 	if(!this.cMode)
 	{
 		if(line.indexOf("pragma")>=0 && line.indexOf("BEGINDUMP")>=0)
+		// && /\^s*#pragma\s+BEGINDUMP\s*$/.test(line)
 		{
 			this.cMode = true;
 			return;
 		}
 		if(words[0].length>=4)
 		{
-			if(words[0].toLowerCase() == "procedure".substr(0,words[0].length)||
-				(words.length>1 && words[1].toLowerCase() == "procedure".substr(0,words[1].length)))
+			words[0] = words[0].toLowerCase();
+			if(words[0] == "class")
 			{
-				var r = procRegEx.exec(line);
-				if(r)
+				this.currentClass = words[1];
+				this.funcList.push(new vscode.SymbolInformation(words[1],vscode.SymbolKind.Class,
+					"",
+					new vscode.Location(this.currentDocument,
+						new vscode.Range(this.lineNr,0,this.lineNr,Number.MAX_VALUE))));
+
+			}
+			if(words[0] == "endclass")
+			{
+				var toChange = this.funcList.find( v => v.name == this.currentClass && v.kind == vscode.SymbolKind.Class);
+				if(toChange)
 				{
-					this.funcList.push(["procedure",r[2],this.startLine,this.lineNr,r[3]]);
+					toChange.location.range = new vscode.Range(toChange.location.range.start.line,0,this.lineNr,Number.MAX_VALUE);
+					//toChange.location.range.end.line = this.lineNr;
 				}
 			}
-			if(words[0].toLowerCase() == "function".substr(0,words[0].length)||
+
+			if(words[0] == "method".substr(0,words[0].length))
+			{
+				var r = methodRegEx.exec(line);
+				if(r)
+				{
+					this.currentClass = r[4] || this.currentClass;
+					this.funcList.push(new vscode.SymbolInformation(r[2],vscode.SymbolKind.Method,
+						this.currentClass,
+						new vscode.Location(this.currentDocument,
+							new vscode.Range(this.startLine,0,this.lineNr,Number.MAX_VALUE))));
+				}
+			} else
+			if(words[0] == "procedure".substr(0,words[0].length)||
+				(words.length>1 && words[1].toLowerCase() == "procedure".substr(0,words[1].length)) ||
+				words[0] == "function".substr(0,words[0].length)||
 				(words.length>1 && words[1].toLowerCase() == "function".substr(0,words[1].length)))
 			{
 				var r = procRegEx.exec(line);
 				if(r)
 				{
-					this.funcList.push(["function",r[2],this.startLine,this.lineNr,r[3]]);
+					this.funcList.push(new vscode.SymbolInformation(r[2],vscode.SymbolKind.Function,"",
+						new vscode.Location(this.currentDocument,
+							new vscode.Range(this.startLine,0,this.lineNr,Number.MAX_VALUE))));
 				}
 			}
 		}
 	} else
 	{
 		if(line.indexOf("pragma")>=0 && line.indexOf("ENDDUMP")>=0)
+		// && /\^s*#pragma\s+ENDDUMP\s*$/.test(line)
 		{
 			this.cMode = false;
 			return;
@@ -165,7 +198,9 @@ Provider.prototype.parse = function(line)
 			var r = hb_funcRegEx.exec(line);
 			if(r)
 			{
-				this.funcList.push(["c_function",r[1],this.startLine,this.lineNr,"?"]);
+				this.funcList.push(new vscode.SymbolInformation(r[1],vscode.SymbolKind.Function,"",
+						new vscode.Location(this.currentDocument,
+							new vscode.Range(this.lineNr,0,this.lineNr,Number.MAX_VALUE))));
 			}
 		}
 	}
@@ -191,20 +226,18 @@ Provider.prototype.provideDocumentSymbols = function(document, token)
 	this.Clear();
 	return new Promise((resolve,reject) => 
 	{
+		this.currentDocument = document.uri;
 		var lines=document.getText().split(/\r?\n/);
 		for (var i = 0; i < lines.length; i++) 
 		{
+			if(token.isCancellationRequested)
+			{
+				resolve(this.funcList);
+				return;
+			}	
 			this.parse(lines[i]);
 		}
-		var ret = [];
-		for (var i = 0; i < this.funcList.length; i++) 
-		{
-			var func = this.funcList[i];
-			ret.push(new vscode.SymbolInformation(func[1],11,"",
-				new vscode.Location(document.uri,
-					new vscode.Range(func[2],0,func[3],Number.MAX_VALUE))));
-		}
-		resolve(ret);
+		resolve(this.funcList);
 	});
 }
 
