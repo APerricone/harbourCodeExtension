@@ -28,6 +28,10 @@ function validate(textDocument)
 		args.push("-i"+path);
 	}
 	var process = cp.spawn(section.compilerExecutable,args, { cwd: vscode.workspace.path });
+	process.on("error", e=>
+	{
+		vscode.window.showWarningMessage(`unable to start ${section.compilerExecutable}, check the "harbour.compilerExecutable" vlaue`);
+	});
 	var diagnostics = {};
 	diagnostics[textDocument.fileName] = [];
 	process.stderr.on('data', data => 

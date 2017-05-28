@@ -4,4 +4,13 @@
 /test/builds
 /test/builds.exe
 /trash
-
+/client/hb_out.log
+/server/test.i
+/server/.vscode/settings.json
+/test/dbg_ex
+/test/dbg_test
+/test/libcode_dbg.a
+/test/socket
+/test/socket.prg
+/test/test_code.c
+/test/test_code.prg

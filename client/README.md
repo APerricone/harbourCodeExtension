@@ -1,63 +1,31 @@
 # code-harbour README
 
-This is an extension for visual studio code about harbour programmin language, it is still W.I.P. :)
+This is an extension for visual studio code about harbour programming language, it is still W.I.P. :)
 
 ## Features
 
 - simple and complete syntax hightlight
-- Language Server written in harbour to manipolate harbour file with error and warning report
 - Debug support
-- [TODO] Compiling integrated with creationg of debug and not-debug c files
+- Diagnostic infos
+- Symbol Definitions Within a Document provider
+- [TODO] Symbol Definitions in folder provider
 
 > Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
 
-### TODO NEXT:
-* Use include paths
-
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+Currently only Harbour is supported, sometime is to set `harbour.compilerExecutable` with complete path.
 
 ## Extension Settings
-
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
 This extension contributes the following settings:
 
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
+* `harbour.validating`: enable/disable the validation every open and save of harbour files.
+* `harbour.compilerExecutable`: sometime is necessary to set the path of the harbour executable to make validation works.
+* `harbour.extraIncludePaths`: add path where found the includes to avoid "file not found" error.
+* `harbour.warningLevel`: sets the warning level for validation.
+<span name="DEBUG">
+## How to use the debugger</a>
+The code of the debugger is inside the [dbg_lib.prg](tests/dbg_lib.prg) you can include this file in your project or **BETTER** create a library with this file to link in your project.
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 0.0.1
-
-Language support and syntax highlight
-
-### 0.0.2
-
-Errors and warning reports
-
------------------------------------------------------------------------------------------------------------
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on OSX or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on OSX or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (OSX) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
