@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
+## 0.2.1
+- minor fixes
+
 ## 0.2.0
 - first version of symbol provider.
 

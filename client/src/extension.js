@@ -1,10 +1,10 @@
 var vscode = require('vscode');
-var client = require('vscode-languageclient');
 var path = require('path');
 var validation = require('./validation.js');
 var provider = require('./provider.js');
 
 var diagnosticCollection;
+
 
 function activate(context) {
 	vscode.languages.setLanguageConfiguration('harbour', {
