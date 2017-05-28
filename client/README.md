@@ -23,9 +23,10 @@ This extension contributes the following settings:
 * `harbour.compilerExecutable`: sometime is necessary to set the path of the harbour executable to make validation works.
 * `harbour.extraIncludePaths`: add path where found the includes to avoid "file not found" error.
 * `harbour.warningLevel`: sets the warning level for validation.
+
 <span name="DEBUG">
-## How to use the debugger</a>
-The code of the debugger is inside the [dbg_lib.prg](tests/dbg_lib.prg) you can include this file in your project or **BETTER** create a library with this file to link in your project.
+## How to use the debugger</span>
+The code of the debugger is inside the [dbg_lib.prg](test/dbg_lib.prg) you can include this file in your project or **BETTER** create a library with this file to link in your project.
 
 ## Known Issues
 
