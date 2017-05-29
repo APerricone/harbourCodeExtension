@@ -299,7 +299,6 @@ harbourDebugSession.prototype.sendVariables = function(id,line)
 /// PROGRAM FLOW
 harbourDebugSession.prototype.continueRequest = function(response, args)
 {
-	this.process.
 	this.socket.write("GO\r\n");
 	this.sendResponse(response);
 }
