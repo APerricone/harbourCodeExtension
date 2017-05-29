@@ -41,7 +41,7 @@ function validate(textDocument)
 		if(r)
 		{
 			var line = parseInt(r[2])-1;
-			if(!r[1] in diagnostics)
+			if(!(r[1] in diagnostics))
 			{
 				diagnostics[r[1]] = [];
 			}
