@@ -50,7 +50,7 @@ function validate(textDocument)
 		}
 	});
 	process.stdout.on('data', data => 
-		console.log(data.toString())
+		//console.log(data.toString())
 	);
 	process.on("exit",function(code)
 	{
