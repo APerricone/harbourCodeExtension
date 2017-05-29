@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 128 128" height="128" width="128">
-  <g id="layer1">
-    <path id="sail1" style="fill:#4c96d1;stroke:none" d="m 58,40.8 c -1.4,17.1 -0.4,35 0,52.7 -12,-1.3 -20.3,-0 -26,3.1 z" />
-    <path id="sail2" style="fill:#1d74ba;stroke:none" d="M 59.2,23.3 20.3,90.4 c 9.8,-3.6 19.5,-6.2 29.3,-3.5 -0.2,-25.8 4.3,-45.2 9.7,-63.5 z" />
-    <path id="sail3" style="fill:#205da4;stroke:none" d="m 55.2,14.1 -41.8,61.4 C 23,69.4 32.8,65.5 43.6,68.2 43,47 47.7,29.6 55.2,14.1 Z" />
-    <path id="hull1" style="fill:#2d3976;stroke:none" d="m 0.4,93 1.7,3.1 c 28.2,0.1 47.2,9.7 125.6,6 l -0.4,-2.3 C 98.5,102.7 52.7,99 0.4,93 Z" />
-    <path id="hull2" style="fill:#9c1020;stroke:none" d="m 14.7,98 c 36.8,3.3 72.6,8.4 112.5,6 l -1.7,2.3 C 86,111.5 67.4,106.7 23,103.6 Z" />
-    <path id="hull3" style="fill:#2d3976;stroke:none" d="m 25.7,105.2 51.4,4.6 c -14.1,1 -34.2,-3.3 -41.4,4.1 z" />
-    <path id="vscode-border" style="fill:white;stroke:none" d="m 62.9,46.1 7,-3.7 15,11.9 23.9,-24.1 16,6.6 0,49.1 -16.2,6.4 L 84.8,68.5 69.9,80.3 62.9,76.4 Z" />
-    <path id="vscode-fill" style="fill:#0271bc;stroke:none" d="m 108.9,31.5 -24.2,24.1 -14.6,-12 -6.1,3 0,29.5 5.8,2.9 15.2,-12.1 23.9,24.2 14.6,-6.1 0.2,-47.6 -14.9,-6 z m -0.1,17.4 0,24.8 -15.6,-12.3 15.6,-12.4 z m -39.1,3.2 9.1,9.1 -9.2,9.7 0.1,-18.8 z" />
-  </g>
+  <path id="sail1" style="fill:#4c96d1;stroke:none" d="m 58,41 c -1.5,17 -0.5,35 0,53 -12,-1.5 -20.5,-0 -26,3 z" />
+  <path id="sail2" style="fill:#1d74ba;stroke:none" d="M 59,23.5 20.5,90.5 c 10,-4 19.5,-6 29.5,-3.5 -0.5,-26 4.5,-45 10,-63.5 z" />
+  <path id="sail3" style="fill:#205da4;stroke:none" d="m 55,14 -42,61.5 C 23,69.5 33,65.5 43.5,68 43,47 48,29.5 55,14 Z" />
+  <path id="hull1" style="fill:#2d3976;stroke:none" d="m 0.5,93 2,3 c 28,0 47,10 125.5,6 l -0.5,-2.5 C 98.5,103 53,99 0.5,93 Z" />
+  <path id="hull2" style="fill:#9c1020;stroke:none" d="m 15,98 c 37,3.5 72.5,8.5 112.5,6 l -1.5,2.5 C 86,111.5 67.5,106.5 23,103.5 Z" />
+  <path id="hull3" style="fill:#2d3976;stroke:none" d="m 25.5,105 51.5,4.5 c -14,1 -34,-3.5 -41.5,4 z" />
+  <path id="vscode-border" style="fill:white;stroke:none" d="m 85,54.5 -15,-12 -7,3.4 0,30.6 7,3.5 15,-12 24,24 15.5,-6.5 0,-48.5 -15.5,-6.5 z" />
+  <path id="vscode-fill" style="fill:#0271bc;stroke:none" d="M 109,31.5 85,55.5 70,43.5 l -6,3 0,29.5 6,3 15,-12 24,24 14.5,-6 0,-47.5 z m -0.1,17.5 0.2,25.1 L 93,61.5 109,49 Z M 70,52 l 9,9 -9.5,10 z" />
 </svg>

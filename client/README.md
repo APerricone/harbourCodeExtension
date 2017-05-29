@@ -24,9 +24,10 @@ This extension contributes the following settings:
 * `harbour.extraIncludePaths`: add path where found the includes to avoid "file not found" error.
 * `harbour.warningLevel`: sets the warning level for validation.
 
-
 ## How to use the debugger<a name="DEBUG"></a>
 The code of the debugger is inside the [dbg_lib.prg](../test/dbg_lib.prg) you can include this file in your project or **BETTER** create a library with this file to link in your project.
+
+> NOTE: don't forget to compile harbour file with debug information <kbd>-b</kbd>
 
 ## Known Issues
 
