@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
+## 0.2.2
+- fix validation when diagnostic is in another file.
+
 ## 0.2.1
 - minor fixes
 
