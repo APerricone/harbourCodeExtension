@@ -40,17 +40,32 @@ function validate(textDocument)
 		var r = valRegEx.exec(data.toString().trim());
 		if(r)
 		{
-			var line = parseInt(r[2])-1;
+			var lineNr = parseInt(r[2])-1;
+			var line = textDocument.lineAt(lineNr)
 			if(!(r[1] in diagnostics))
 			{
 				diagnostics[r[1]] = [];
 			}
-			diagnostics[r[1]].push(new vscode.Diagnostic(new vscode.Range(line,0,line,Number.MAX_VALUE),
-				r[4], r[3]=="Warning"? 1 : 0))
+			var subject = r[4].match(/'([^']+)'/);
+			var putAll = true;
+			if(subject)
+			{
+				var m;
+				var rr = new RegExp(subject[1],"ig")
+				while(m=rr.exec(line.text))
+				{
+					putAll = false;
+					diagnostics[r[1]].push(new vscode.Diagnostic(new vscode.Range(lineNr,m.index,lineNr,m.index+subject[1].length),
+						r[4], r[3]=="Warning"? 1 : 0))
+				}
+			} 
+			if(putAll)
+				diagnostics[r[1]].push(new vscode.Diagnostic(line.range,
+					r[4], r[3]=="Warning"? 1 : 0))
 		}
 	});
 	process.stdout.on('data', data => 
-		//console.log(data.toString())
+		{} //console.log(data.toString())
 	);
 	process.on("exit",function(code)
 	{
