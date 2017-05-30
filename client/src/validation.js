@@ -41,7 +41,21 @@ function validate(textDocument)
 		if(r)
 		{
 			var lineNr = parseInt(r[2])-1;
-			var line = textDocument.lineAt(lineNr)
+			var lines = [textDocument.lineAt(lineNr)];
+			while(lineNr>0)
+			{
+				lineNr--;
+				var line = textDocument.lineAt(lineNr)
+				if(line.text[line.text.length-1]==";")
+				{
+					lines.splice(0,0,line);
+				} else
+				{
+					lineNr++;
+					break;
+				}
+					
+			}
 			if(!(r[1] in diagnostics))
 			{
 				diagnostics[r[1]] = [];
@@ -51,16 +65,20 @@ function validate(textDocument)
 			if(subject)
 			{
 				var m;
-				var rr = new RegExp(subject[1],"ig")
-				while(m=rr.exec(line.text))
-				{
-					putAll = false;
-					diagnostics[r[1]].push(new vscode.Diagnostic(new vscode.Range(lineNr,m.index,lineNr,m.index+subject[1].length),
-						r[4], r[3]=="Warning"? 1 : 0))
+				var rr = new RegExp("\\b"+subject[1]+"\\b","ig")
+				for (var i = 0; i < lines.length; i++) {
+					line = lines[i];
+					while(m=rr.exec(line.text))
+					{
+						putAll = false;
+						diagnostics[r[1]].push(new vscode.Diagnostic(new vscode.Range(lineNr+i,m.index,lineNr+i,m.index+subject[1].length),
+							r[4], r[3]=="Warning"? 1 : 0))
+					}
+					
 				}
 			} 
 			if(putAll)
-				diagnostics[r[1]].push(new vscode.Diagnostic(line.range,
+				diagnostics[r[1]].push(new vscode.Diagnostic(new vscode.Range(lineNr,0,lineNr+lines.length-1,Number.MAX_VALUE),
 					r[4], r[3]=="Warning"? 1 : 0))
 		}
 	});
