@@ -28,6 +28,10 @@ var harbourDebugSession = function()
 	/** @type{string[]} */
 	this.variableCommands = [];
 	/** @type{DebugProtocol.StackResponse} */
+	this.stack = null;
+	this.justStart = true;
+	/** @type{string} */
+	this.queue = "";
 }
 
 harbourDebugSession.prototype = new debugadapter.DebugSession();
@@ -101,7 +105,7 @@ harbourDebugSession.prototype.initializeRequest = function (response, args)
 
 harbourDebugSession.prototype.configurationDoneRequest = function(response, args)
 {
-	if(this.startGO) this.socket.write("GO\r\n");
+	if(this.startGO) this.command("GO\r\n");
 	this.sendResponse(response);
 }
 
@@ -109,6 +113,7 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
 {
 	var port = 6110; //temp
 	var tc=this;
+	this.justStart = true;
 	if("workspaceRoot" in args)
 	{
 		this.workspaceRoot = args.workspaceRoot + path.sep; 
@@ -125,6 +130,9 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
 		socket.on("data", data=> {
 			tc.processInput(data.toString())
 		});
+		socket.write(tc.queue);
+		this.justStart = false;
+		tc.queue = "";
 	}).listen(port);
 	// starts the program
 	console.error("start the program");
@@ -150,6 +158,14 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
 	this.sendResponse(response);
 }
 
+harbourDebugSession.prototype.command = function(cmd)
+{
+	if(this.justStart)
+		this.queue += cmd;
+	else
+		this.socket.write(cmd);
+}
+
 /// STACK
 /**
  * @param response{DebugProtocol.StackTraceResponse} response to send
@@ -157,7 +173,7 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
  */
 harbourDebugSession.prototype.stackTraceRequest = function(response,args)
 {
-	this.socket.write("STACK\r\n");
+	this.command("STACK\r\n");
 	this.stack = response;
 }
 
@@ -231,7 +247,7 @@ harbourDebugSession.prototype.variablesRequest = function(response,args)
 	if(args.variablesReference<=this.variableCommands.length)
 	{
 		this.varResp[args.variablesReference-1] = response;
-		this.socket.write(`${this.variableCommands[args.variablesReference-1]}\r\n`+
+		this.command(`${this.variableCommands[args.variablesReference-1]}\r\n`+
 						  `${this.currentStack}:${hbStart}:${hbCount}\r\n`);
 	} else
 		this.sendResponse(response)
@@ -299,26 +315,25 @@ harbourDebugSession.prototype.sendVariables = function(id,line)
 /// PROGRAM FLOW
 harbourDebugSession.prototype.continueRequest = function(response, args)
 {
-	this.process.
-	this.socket.write("GO\r\n");
+	this.command("GO\r\n");
 	this.sendResponse(response);
 }
 
 harbourDebugSession.prototype.nextRequest = function(response, args)
 {
-	this.socket.write("NEXT\r\n");
+	this.command("NEXT\r\n");
 	this.sendResponse(response);
 }
 
 harbourDebugSession.prototype.stepInRequest = function(response, args)
 {
-	this.socket.write("STEP\r\n");
+	this.command("STEP\r\n");
 	this.sendResponse(response);
 }
 
 harbourDebugSession.prototype.stepOutRequest = function(response, args)
 {
-	this.socket.write("EXIT\r\n");
+	this.command("EXIT\r\n");
 	this.sendResponse(response);
 }
 
@@ -326,8 +341,9 @@ harbourDebugSession.prototype.stepOutRequest = function(response, args)
 harbourDebugSession.prototype.setBreakPointsRequest = function(response,args)
 {
 	var message = "";
-	response.breakpoints = [];
-	response.breakpoints.length = args.breakpoints.length;
+	response.body = {"breakpoints": []};
+	response.body.breakpoints = [];
+	response.body.breakpoints.length = args.breakpoints.length;
 	//var src = args.source.path;
 	//if(src.startsWith(this.workspaceRoot)) src = src.substring(this.workspaceRoot.length)
 	var src = args.source.name;
@@ -345,7 +361,7 @@ harbourDebugSession.prototype.setBreakPointsRequest = function(response,args)
 	dest.response = response;
 	for (var i = 0; i < args.breakpoints.length; i++) {
 		var breakpoint = args.breakpoints[i];
-		response.breakpoints[i] = new debugadapter.Breakpoint(false,breakpoint.line);
+		response.body.breakpoints[i] = new debugadapter.Breakpoint(false,breakpoint.line);
 		if(dest.hasOwnProperty(breakpoint.line))
 		{ // breakpoint already exists
 			dest[breakpoint.line] = 1;
@@ -369,7 +385,7 @@ harbourDebugSession.prototype.setBreakPointsRequest = function(response,args)
 	}
 	this.checkBreakPoint(src);
 	//this.sendEvent(new debugadapter.OutputEvent("send: "+message,"console"))
-	this.socket.write(message)
+	this.command(message)
 	//this.sendResponse(response)
 }
 
@@ -386,7 +402,7 @@ harbourDebugSession.prototype.processBreak = function(line)
 	aInfos[2] = parseInt(aInfos[2]);
 	aInfos[3] = parseInt(aInfos[3]);
 	dest = this.breakpoints[aInfos[1]]
-	var idBreak = dest.response.breakpoints.findIndex(b => b.line == aInfos[2])
+	var idBreak = dest.response.body.breakpoints.findIndex(b => b.line == aInfos[2])
 	if(idBreak==-1)
 	{
 		//error
@@ -394,8 +410,8 @@ harbourDebugSession.prototype.processBreak = function(line)
 	}
 	if(aInfos[3]>1)
 	{
-		dest.response.breakpoints[idBreak].line = aInfos[3];
-		dest.response.breakpoints[idBreak].verified = true;
+		dest.response.body.breakpoints[idBreak].line = aInfos[3];
+		dest.response.body.breakpoints[idBreak].verified = true;
 		dest[aInfos[2]] = 1;
 	} else
 	{
@@ -404,8 +420,8 @@ harbourDebugSession.prototype.processBreak = function(line)
 			delete dest[aInfos[2]];
 		} else
 		{
-			dest.response.breakpoints[idBreak].verified = false;
-			dest.response.breakpoints[idBreak].message = "invalid line"
+			dest.response.body.breakpoints[idBreak].verified = false;
+			dest.response.body.breakpoints[idBreak].message = "invalid line"
 			dest[aInfos[2]] = 1;
 		}
 	} 
@@ -434,7 +450,7 @@ harbourDebugSession.prototype.evaluateRequest = function(response,args)
 	this.evaluateResponse = response;
 	this.evaluateResponse.body = {};
 	this.evaluateResponse.body.result = args.expression; 
-	this.socket.write("EXPRESSION\r\n"+args.expression+"\r\n")	
+	this.command("EXPRESSION\r\n"+args.expression+"\r\n")	
 }
 
 /**

@@ -41,7 +41,7 @@ function validate(textDocument)
 		if(r)
 		{
 			var line = parseInt(r[2])-1;
-			if(!r[1] in diagnostics)
+			if(!(r[1] in diagnostics))
 			{
 				diagnostics[r[1]] = [];
 			}
@@ -50,7 +50,7 @@ function validate(textDocument)
 		}
 	});
 	process.stdout.on('data', data => 
-		console.log(data.toString())
+		//console.log(data.toString())
 	);
 	process.on("exit",function(code)
 	{
