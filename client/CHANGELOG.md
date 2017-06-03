@@ -1,6 +1,18 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
+## Planned
+- Show matches on 'if-else-endif', 'for-exit-loop-next' etc...
+
+## 0.3.0
+- New Debug library, it is totally rewritten without C code, it allows new features like:
+	- pause support
+	- add/remove breakpoint during running
+	- step out
+	- error catch
+	- other bugfixes
+- validation only on problem if it is only a word
+
 ## 0.2.3
 - fix validation when diagnostic is in another file.
 - fix typo on debugger

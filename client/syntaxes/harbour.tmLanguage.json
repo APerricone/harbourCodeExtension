@@ -3,6 +3,9 @@
 	"name": "Harbour",
 	"patterns": [
 		{
+			"include": "#c_code"
+		},
+		{
 			"include": "#comments"
 		},
 		{
@@ -16,9 +19,6 @@
 		},
 		{
 			"include": "#numbers"
-		},
-		{
-			"include": "#c_code"
 		}
 	],
 	"repository": {
@@ -151,33 +151,41 @@
 				{
 					"name": "string.quoted.double.harbour",
 					"begin": "\"",
-					"end": "\""
+					"end": "\"|\\n"
 				},
 				{
 					"name": "string.quoted.single.harbour",
 					"begin": "'",
-					"end": "'"
+					"end": "'|\\n"
 				},
 				{
 					"name": "string.square.harbour",
 					"begin": "(?<![a-z0-9_\\]])\\[",
-					"end": "\\]"
+					"end": "\\]|\\n"
 				}
 			]
 		},
 		"c_code": {
 			"patterns": [
 				{
-					"begin": "(?i:BEGINDUMP)",
-					"end": "(?i:ENDDUMP)",
+					"begin": "(?i:^\\s*(#pragma)\\s+(BEGINDUMP))",
+					"end": "(?i:^\\s*(#pragma)\\s+(ENDDUMP))",
 					"contentName": "source.c.embedded.harbour",
+					"begincaptures": {
+						"1": { "name": "meta.preprocessor.pragma.harbour" },
+						"2": { "name": "keyword.dump.harbor" }
+					},
+					"endcaptures": {
+						"1": { "name": "meta.preprocessor.pragma.harbour" },
+						"2": { "name": "keyword.dump.harbor" }
+					},
 					"patterns": [
+						{
+							"include": "source.c"
+						},
 						{
 							"match": "\\b(HB_FUNC|hb_ret[a-z]+|hb_par[a-z]+)\\s*\\(",
 							"name": "keyword.connection.harbor"
-						},
-						{
-							"include": "source.c"
 						}
 					]
 				}
