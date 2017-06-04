@@ -56,7 +56,6 @@ static procedure CheckSocket()
 			tmp := ""
 		endif
 		if len(tmp)>0
-			? "<<", tmp
 			if subStr(tmp,4,1)==":"
 				sendCoumpoundVar(tmp, hb_inetRecvLine(oSocket))
 				loop
@@ -126,7 +125,7 @@ static procedure CheckSocket()
 				if __dbgInvokeDebug(.F.)
 					t_oDebugInfo:lRunning := .F.
 					if .not. lStopSent
-						hb_inetSend(oSocket,"STOP:invoke"+CRLF)
+						hb_inetSend(oSocket,"STOP:AltD"+CRLF)
 						lStopSent := .T.
 					endif
 				endif
@@ -394,7 +393,6 @@ return (cInfo = 1)
 static procedure setBreakpoint(cInfo)
 	LOCAL aInfos := hb_aTokens(cInfo,":"), aFile, idLine
 	local nReq, nLine
-	? "break", cInfo
 	nReq := val(aInfos[3])
 	if aInfos[1]=="-"
 		// remove
@@ -402,11 +400,7 @@ static procedure setBreakpoint(cInfo)
 			idLine := aScan(t_oDebugInfo:aBreaks[aInfos[2]], {|v| v=nReq })
 			if idLine>0
 				aDel(t_oDebugInfo:aBreaks[aInfos[2]],idLine)
-			else
-				? "idLine=0"
 			endif
-		else
-			? "idFile=0"
 		endif
 		hb_inetSend(t_oDebugInfo:socket,"BREAK:"+aInfos[2]+":"+aInfos[3]+":-1:request"+CRLF)
 		return
@@ -455,13 +449,12 @@ return idLine<>0
 
 proc AddModule(aInfo)
 	local i, idx
-	? aInfo
 	for i:=1 to len(aInfo)
 		aInfo[i,1] := alltrim(aInfo[i,1])
 		if len(aInfo[i,1])=0
 			loop
 		endif
-		idx := aScan(t_oDebugInfo:aModules, {|v| QOut("'"+v[1]+"'","'"+aInfo[i,1]+"'",aInfo[i,1]=v[1]), aInfo[i,1]=v[1]})
+		idx := aScan(t_oDebugInfo:aModules, {|v| aInfo[i,1]=v[1]})
 		if idx=0
 			aadd(t_oDebugInfo:aModules,aInfo[i])
 		else
@@ -550,8 +543,8 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 				t_oDebugInfo:bInitLines := .T.
 			endif
 			tmp := hb_aTokens(uParam1,":") //1,2 file,function
-			aadd(tmp,procLine(__dbgProcLevel())) // line
-			aadd(tmp,__dbgProcLevel()) //level
+			aadd(tmp,procLine(__dbgProcLevel()-1)) // line
+			aadd(tmp,__dbgProcLevel()-1) //level
 			aadd(tmp,{}) //locals
 			aadd(tmp,{}) //statics
 			aAdd(t_oDebugInfo:aStack, tmp)

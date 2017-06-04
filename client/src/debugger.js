@@ -387,7 +387,7 @@ harbourDebugSession.prototype.setBreakPointsRequest = function(response,args)
 			{
 				message += "BREAKPOINT\r\n"
 				message += `-:${src}:${i}\r\n`
-				dest[breakpoint.line] = 0;
+				dest[i] = 0;
 			}
 		}
 	}
