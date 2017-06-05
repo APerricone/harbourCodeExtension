@@ -7,8 +7,8 @@ class oggetto
 endclass
 //*/
 proc test()
-	LOCAL i:= 1
+	LOCAL i:= 1, b:= "  fff"
 	i += 2
 	? i
-	? j
+	? j, pippo
 return

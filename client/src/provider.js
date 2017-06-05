@@ -21,6 +21,7 @@ Provider.prototype.Clear = function()
 	this.cMode = false;
 	this.currentDocument = "";
 	this.currentClass = "";
+	this.currentMethod = "";
 }
 
 /**
@@ -128,6 +129,8 @@ Provider.prototype.parse = function(line)
 	/** @type{string[]} */
 	var words = line.split(/\s/).filter((el) => el.length!=0);
 	if(words.length==0) return;
+	words[0] = words[0].toLowerCase();
+	if(words.length>1) words[1] = words[1].toLowerCase(); else words[1] = "";
 	//console.log((this.cMode?"C":"H")+this.lineNr+">"+line);
 	if(!this.cMode)
 	{
@@ -139,7 +142,6 @@ Provider.prototype.parse = function(line)
 		}
 		if(words[0].length>=4)
 		{
-			words[0] = words[0].toLowerCase();
 			if(words[0] == "class")
 			{
 				this.currentClass = words[1];
@@ -171,10 +173,10 @@ Provider.prototype.parse = function(line)
 							new vscode.Range(this.startLine,0,this.lineNr,Number.MAX_VALUE))));
 				}
 			} else
-			if(words[0] == "procedure".substr(0,words[0].length)||
-				(words.length>1 && words[1].toLowerCase() == "procedure".substr(0,words[1].length)) ||
-				words[0] == "function".substr(0,words[0].length)||
-				(words.length>1 && words[1].toLowerCase() == "function".substr(0,words[1].length)))
+			if(	words[0] == "procedure".substr(0,words[0].length) ||
+				words[1] == "procedure".substr(0,words[1].length) ||
+				words[0] == "function".substr(0,words[0].length) ||
+				words[1] == "function".substr(0,words[1].length) )
 			{
 				var r = procRegEx.exec(line);
 				if(r)
@@ -183,7 +185,7 @@ Provider.prototype.parse = function(line)
 						new vscode.Location(this.currentDocument,
 							new vscode.Range(this.startLine,0,this.lineNr,Number.MAX_VALUE))));
 				}
-			}
+			} 
 		}
 	} else
 	{
@@ -241,6 +243,5 @@ Provider.prototype.provideDocumentSymbols = function(document, token)
 	});
 }
 
-//var pp = new Parser();
 exports.Provider = Provider;
 

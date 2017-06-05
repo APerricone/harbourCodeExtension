@@ -564,6 +564,8 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 		case HB_DBG_ENDPROC
 			aSize(t_oDebugInfo:aStack,len(t_oDebugInfo:aStack)-1)
 			if t_oDebugInfo:bInitLines
+				// I don't like this hack, shoud be better if in case of HB_DBG_ENDPROC 
+				// uParam1 is the returned value, it allow to show it in watch too...
 				AddModule(__GETLASTRETURN(13))
 			endif
 			t_oDebugInfo:bInitStatics := .F.
