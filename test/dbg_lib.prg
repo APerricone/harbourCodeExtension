@@ -74,7 +74,7 @@ method procedure CheckSocket(lStopSent) class DebugInfo
 			tmp := ""
 		endif
 		if len(tmp)>0
-			? "<<", tmp
+			//? "<<", tmp
 			if subStr(tmp,4,1)==":"
 				::sendCoumpoundVar(tmp, hb_inetRecvLine(::socket))
 				loop
@@ -548,15 +548,13 @@ STATIC PROCEDURE ErrorBlockCode( e )
 
 PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 	local tmp
-	? "__dbgEntry",nMode, uParam1, uParam2, uParam3
+	//? "__dbgEntry",nMode, uParam1, uParam2, uParam3
 
 	switch nMode
-		case 6
+		case HB_DBG_MODULENAME
 			if empty(t_oDebugInfo)
 				t_oDebugInfo := DebugInfo():New()
 			endif
-			return
-		case HB_DBG_MODULENAME
 			if at("_INITSTATICS", uParam1)<>0
 				t_oDebugInfo:bInitStatics := .T.
 			elseif at("_INITGLOBALS", uParam1)<>0
@@ -588,7 +586,7 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			if t_oDebugInfo:bInitLines
 				// I don't like this hack, shoud be better if in case of HB_DBG_ENDPROC 
 				// uParam1 is the returned value, it allow to show it in watch too...
-				tmp := __GETLASTRETURN(10) ; ? 10,valtype(tmp),tmp
+				tmp := __GETLASTRETURN(10) //; ? 10,valtype(tmp),tmp
 				t_oDebugInfo:AddModule(tmp)
 			endif
 			t_oDebugInfo:bInitStatics := .F.
