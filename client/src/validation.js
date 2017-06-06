@@ -52,21 +52,30 @@ function validate(textDocument)
 			if(r)
 			{
 				var lineNr = parseInt(r[2])-1;
+				var subject = r[4].match(/'([^']+)'/g);
+				if(subject && subject.length>1 && subject[1].indexOf("(")>=0)
+				{
+					var nsub = subject[1].match(/\(([0-9]+)\)/);
+					if(nsub)
+					{
+						lineNr = parseInt(nsub[1])-1;
+					}
+				}
 				var line = textDocument.lineAt(lineNr)
 				if(!(r[1] in diagnostics))
 				{
 					diagnostics[r[1]] = [];
 				}
-				var subject = r[4].match(/'([^']+)'/);
 				var putAll = true;
 				if(subject)
 				{
 					var m;
-					var rr = new RegExp(subject[1],"ig")
+					subject[0] = subject[0].substr(1,subject[0].length-2)
+					var rr = new RegExp('\\b'+subject[0]+'\\b',"ig")
 					while(m=rr.exec(line.text))
 					{
 						putAll = false;
-						diagnostics[r[1]].push(new vscode.Diagnostic(new vscode.Range(lineNr,m.index,lineNr,m.index+subject[1].length),
+						diagnostics[r[1]].push(new vscode.Diagnostic(new vscode.Range(lineNr,m.index,lineNr,m.index+subject[0].length),
 							r[4], r[3]=="Warning"? 1 : 0))
 					}
 				} 
