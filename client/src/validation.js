@@ -71,7 +71,7 @@ function validate(textDocument)
 				{
 					var m;
 					subject[0] = subject[0].substr(1,subject[0].length-2)
-					var rr = new RegExp('\\b'+subject[0]+'\\b',"ig")
+					var rr = new RegExp('\\b'+subject[0].replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&")+'\\b',"ig")
 					while(m=rr.exec(line.text))
 					{
 						putAll = false;
