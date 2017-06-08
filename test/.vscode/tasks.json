@@ -12,8 +12,8 @@
     "tasks": [
         {
             "taskName": "build",
-            "isBuildCommand": false,
-            "args": [ "${relativeFile}", "-gtcgi", "-w", "-ql", "-b", "-lcode_dbg", "-L."],
+            "isBuildCommand": true,
+            "args": [ "-lcode_dbg", "-L.", "${relativeFile}", "-gtcgi", "-w", "-ql", "-b","-debug", "-gc3","-inc"],
             "problemMatcher": [
             {
                 "owner": "cpp",
@@ -47,7 +47,7 @@
         },
         {
             "taskName": "build_noLib",
-            "isBuildCommand": true,
+            "isBuildCommand": false,
             "args": [ "${relativeFile}", "-gtcgi", "-w", "-ql", "-debug", "-inc" ],
             "problemMatcher": [
             {
@@ -82,7 +82,7 @@
         },
         {
             "taskName": "createLibrary",
-            "args": [ "dbg_lib", "-w", "-ql", "-ocode_dbg", "-hblib"],
+            "args": [ "dbg_lib", "-w", "-ql", "-ocode_dbg", "-debug","-gc3", "-hblib","-inc"],
             "problemMatcher": [
             {
                 "owner": "cpp",
