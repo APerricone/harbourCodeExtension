@@ -2,6 +2,7 @@ var vscode = require('vscode');
 var path = require('path');
 var validation = require('./validation.js');
 var provider = require('./provider.js');
+//var decorator = require('./decorator.js');
 
 var diagnosticCollection;
 
@@ -14,9 +15,7 @@ function activate(context) {
 		}
 	});
 	validation.activate(context);
-	vscode.workspace.onDidOpenTextDocument(validation.validate,undefined, context.subscriptions);
-	vscode.workspace.onDidSaveTextDocument(validation.validate,undefined, context.subscriptions);
-	vscode.workspace.onDidCloseTextDocument(validation.removeValidation,undefined, context.subscriptions);
+	//decorator.activate(context);
 
 	context.subscriptions.push(vscode.languages.registerDocumentSymbolProvider(
 		{ "language": 'harbour'},

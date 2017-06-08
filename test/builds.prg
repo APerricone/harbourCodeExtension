@@ -4,11 +4,7 @@
 /*
 //		'#include "err.prg"' + CRLF + ;
 		"static superman, batman" + CRLF + ;
-*/
-proc main()
-	LOCAL cTest := ;
-		"#include <hbclass.ch>" + CRLF + ;
-		"" + CRLF + ;
+
 		"memvar arrow, flash" + CRLF + ;
 		"" + CRLF + ;
 		"class oggetto" + CRLF + ;
@@ -23,6 +19,11 @@ proc main()
 		"return nil" + CRLF + ;
 		"METHOD oggProc() class oggetto" + CRLF + ;
 		"return" + CRLF + ;
+*/
+proc main()
+	LOCAL cTest := ;
+		"#include <hbclass.ch>" + CRLF + ;
+		"" + CRLF + ;
 		"proc test()" + CRLF + ;
 		" LOCAL bTest := {|| pippo() }" + CRLF + ;
 		" LOCAL i" + CRLF + ;
@@ -51,7 +52,11 @@ return
 
 proc pippo_Pluto()
 	LOCAL i:=4
+	a := i!=4
 	? "arrivano pippo e pluto"
+	? i,j,;
+		j,;
+		i
 return
 
 #pragma BEGINDUMP
@@ -74,8 +79,9 @@ static int pOpenFunc( void * cargo, char * zFileName,
 	HB_SYMBOL_UNUSED( pfFree );
 	
 	HB_PATHNAMES* pInc = pIncludePaths;
-	FILE* f;
 	char *nameBuff;
+	HB_SIZE nRead;
+	int i;
 	printf("open %s(%i,%i,%i):", zFileName,  fBefore, fSysFile, fBinary);
 	//printf(szText,szPar1,szPar2);
 	printf("\r\n");
@@ -86,24 +92,30 @@ static int pOpenFunc( void * cargo, char * zFileName,
 	}
     nameBuff = (char*)hb_xalloc(35+strlen(zFileName));
     if(fBefore)
-	    strcpy(nameBuff,"/home/perry/harbour-src/include/");
+		strcpy(nameBuff,"c:\\harbour\\include\\"); // windows
+	    //strcpy(nameBuff,"/home/perry/harbour-src/include/"); // linux
 	else
 		*nameBuff = 0;
     strcat(nameBuff,zFileName);
-	f = fopen(nameBuff,"rt");
-    printf("opened %s\r\n",nameBuff);
-    hb_xfree(nameBuff);	
-	if(f)
+
+	*file_ptr = fopen(nameBuff,"rt");
+	if(*file_ptr)
 	{
-		fseek(f,0,SEEK_END);
-		*pnLen = ftell(f);
+		printf("opened %s (%08X)\r\n",nameBuff, file_ptr);
+		fseek(*file_ptr,0,SEEK_END);
+		*pnLen = ftell(*file_ptr);
 		*pBufPtr = (char*)hb_xalloc(*pnLen+1);
-		fseek(f,0,SEEK_SET);
-		fread(*pBufPtr,*pnLen,1,f);
-		printf("readed %i\r\n",*pnLen);
-		fclose(f);
+		//fseek(*file_ptr,0,SEEK_SET);
+		fclose(*file_ptr);
+		*file_ptr = fopen(nameBuff,"rt");
+		nRead = fread(&((*pBufPtr)[nRead]),1,*pnLen,*file_ptr);
+		printf("readed %i/%i (%i)\r\n",nRead,*pnLen, ferror(*file_ptr));
+		*pnLen = nRead;
+		fclose(*file_ptr);
+	    hb_xfree(nameBuff);	
 		return HB_PP_OPEN_OK;
 	}
+    hb_xfree(nameBuff);	
 	return HB_PP_OPEN_FILE;
 }
 
@@ -212,29 +224,49 @@ HB_FUNC( TEST2 )
 	//	if( ( pFunc->funFlags & HB_FUNF_FILE_DECL ) == 0 )
 		{
 			//hb_compOptimizeFrames( HB_COMP_PARAM, pFunc );
+		#ifdef _USE_MYHB
 			printf("%s (%i) - %X\r\n",pFunc->szName,pFunc->iDeclLine, pFunc->funFlags);
+		#else
+			printf("%s - %X\r\n",pFunc->szName, pFunc->funFlags);
+		#endif
 			pVar = pFunc->pLocals;
 			while(pVar)
 			{
+			#ifdef _USE_MYHB
 				printf("L-->%s (at %i(%i:%i))\r\n",pVar->szName,pVar->iDeclLine,pVar->iStartCol,pVar->iEndCol);
+			#else
+				printf("L-->%s (at %i)\r\n",pVar->szName,pVar->iDeclLine);
+			#endif
 				pVar = pVar->pNext;
 			}
 			pVar = pFunc->pStatics;
 			while(pVar)
 			{
-				printf("S-->%s (at %i(%i:%i))\r\n",pVar->szName,pVar->iDeclLine,pVar->iStartCol,pVar->iEndCol);
+			#ifdef _USE_MYHB
+				printf("L-->%s (at %i(%i:%i))\r\n",pVar->szName,pVar->iDeclLine,pVar->iStartCol,pVar->iEndCol);
+			#else
+				printf("L-->%s (at %i)\r\n",pVar->szName,pVar->iDeclLine);
+			#endif
 				pVar = pVar->pNext;
 			}
 			pVar = pFunc->pFields;
 			while(pVar)
 			{
-				printf("F-->%s (at %i(%i:%i))\r\n",pVar->szName,pVar->iDeclLine,pVar->iStartCol,pVar->iEndCol);
+			#ifdef _USE_MYHB
+				printf("L-->%s (at %i(%i:%i))\r\n",pVar->szName,pVar->iDeclLine,pVar->iStartCol,pVar->iEndCol);
+			#else
+				printf("L-->%s (at %i)\r\n",pVar->szName,pVar->iDeclLine);
+			#endif
 				pVar = pVar->pNext;
 			}
 			pVar = pFunc->pMemvars;
 			while(pVar)
 			{
-				printf("M-->%s (at %i(%i:%i))\r\n",pVar->szName,pVar->iDeclLine,pVar->iStartCol,pVar->iEndCol);
+			#ifdef _USE_MYHB
+				printf("L-->%s (at %i(%i:%i))\r\n",pVar->szName,pVar->iDeclLine,pVar->iStartCol,pVar->iEndCol);
+			#else
+				printf("L-->%s (at %i)\r\n",pVar->szName,pVar->iDeclLine);
+			#endif
 				pVar = pVar->pNext;
 			}
 			pFunc = pFunc->pNext;
@@ -244,14 +276,22 @@ HB_FUNC( TEST2 )
 	pClasses = HB_COMP_PARAM->pFirstClass;
 	while(pClasses)
 	{
+	#ifdef _USE_MYHB
 		printf("class: %s(%i)\r\n", pClasses->szName, pClasses->iDeclLine);
+	#else
+		printf("class: %s\r\n", pClasses->szName);
+	#endif
 		// here I can search for declared function with same name and change it type in class
 		pDeclared = pClasses->pMethod;
 		while(pDeclared)
 		{
 			// here I can search for declared function with className_DeclaredName and change it type in method
 			// 
+		#ifdef _USE_MYHB
 			printf("--> %s (%i) >'%c' - %i\r\n", pDeclared->szName,pDeclared->iDeclLine, pDeclared->cType, pDeclared->iParamCount);
+		#else
+			printf("--> %s >'%c' - %i\r\n", pDeclared->szName, pDeclared->cType, pDeclared->iParamCount);
+		#endif
 			pDeclared = pDeclared->pNext;
 		}
 		pClasses = pClasses->pNext;
@@ -259,7 +299,11 @@ HB_FUNC( TEST2 )
 	pDeclared = HB_COMP_PARAM->pFirstDeclared;
 	while(pDeclared)
 	{
-		printf(": %s (%i) >'%c' - %i\r\n", pDeclared->szName,pDeclared->iDeclLine, pDeclared->cType, pDeclared->iParamCount);
+		#ifdef _USE_MYHB
+			printf("--> %s (%i) >'%c' - %i\r\n", pDeclared->szName,pDeclared->iDeclLine, pDeclared->cType, pDeclared->iParamCount);
+		#else
+			printf("--> %s >'%c' - %i\r\n", pDeclared->szName, pDeclared->cType, pDeclared->iParamCount);
+		#endif
 		pDeclared = pDeclared->pNext;
 	}
 //*/

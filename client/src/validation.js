@@ -7,6 +7,10 @@ function activate(context)
 {
     diagnosticCollection = vscode.languages.createDiagnosticCollection('harbour');
 	context.subscriptions.push(diagnosticCollection);
+
+	vscode.workspace.onDidOpenTextDocument(validate,undefined, context.subscriptions);
+	vscode.workspace.onDidSaveTextDocument(validate,undefined, context.subscriptions);
+	vscode.workspace.onDidCloseTextDocument(removeValidation,undefined, context.subscriptions);
 }
 
 function deactivate()
@@ -14,7 +18,7 @@ function deactivate()
 	 diagnosticCollection.dispose();
 }
 
-var valRegEx = /([^\(]*)\((\d+)\)\s+(Warning|Error)\s+(.*)/
+var valRegEx = /^\r?([^\(]*)\((\d+)\)\s+(Warning|Error)\s+([^\r\n]*)/
 function validate(textDocument)
 {
 	if(textDocument.languageId !== 'harbour' )
@@ -34,52 +38,42 @@ function validate(textDocument)
 	});
 	var diagnostics = {};
 	diagnostics[textDocument.fileName] = [];
+	var errorLines = "";
 	process.stderr.on('data', data => 
 	{
-		//console.error(data.toString())
-		var r = valRegEx.exec(data.toString().trim());
-		if(r)
+		errorLines += data.toString();
+		var p;
+		while((p=errorLines.indexOf("\n"))>=0)
 		{
-			var lineNr = parseInt(r[2])-1;
-			var lines = [textDocument.lineAt(lineNr)];
-			while(lineNr>0)
+			var subLine = errorLines.substring(0,p);
+			errorLines = errorLines.substring(p+1);
+			//console.error(data.toString())
+			var r = valRegEx.exec(subLine);
+			if(r)
 			{
-				lineNr--;
+				var lineNr = parseInt(r[2])-1;
 				var line = textDocument.lineAt(lineNr)
-				if(line.text[line.text.length-1]==";")
+				if(!(r[1] in diagnostics))
 				{
-					lines.splice(0,0,line);
-				} else
-				{
-					lineNr++;
-					break;
+					diagnostics[r[1]] = [];
 				}
-					
-			}
-			if(!(r[1] in diagnostics))
-			{
-				diagnostics[r[1]] = [];
-			}
-			var subject = r[4].match(/'([^']+)'/);
-			var putAll = true;
-			if(subject)
-			{
-				var m;
-				var rr = new RegExp("\\b"+subject[1]+"\\b","ig")
-				for (var i = 0; i < lines.length; i++) {
-					line = lines[i];
+				var subject = r[4].match(/'([^']+)'/);
+				var putAll = true;
+				if(subject)
+				{
+					var m;
+					var rr = new RegExp(subject[1],"ig")
 					while(m=rr.exec(line.text))
 					{
 						putAll = false;
-						diagnostics[r[1]].push(new vscode.Diagnostic(new vscode.Range(lineNr+i,m.index,lineNr+i,m.index+subject[1].length),
+						diagnostics[r[1]].push(new vscode.Diagnostic(new vscode.Range(lineNr,m.index,lineNr,m.index+subject[1].length),
 							r[4], r[3]=="Warning"? 1 : 0))
 					}
-					
-				}
-			} 
-			if(putAll)
-				diagnostics[r[1]].push(new vscode.Diagnostic(new vscode.Range(lineNr,0,lineNr+lines.length-1,Number.MAX_VALUE),
-					r[4], r[3]=="Warning"? 1 : 0))
+				} 
+				if(putAll)
+					diagnostics[r[1]].push(new vscode.Diagnostic(line.range,
+						r[4], r[3]=="Warning"? 1 : 0))
+			}
 		}
 	});
 	process.stdout.on('data', data => 
@@ -104,5 +98,3 @@ function removeValidation(textDocument)
 
 exports.activate = activate;
 exports.deactivate = deactivate;
-exports.validate = validate;
-exports.removeValidation = removeValidation;

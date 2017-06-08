@@ -46,6 +46,7 @@ harbourDebugSession.prototype.processInput = function(buff)
 	for (var i = 0; i < lines.length; i++)
 	{
 		var line = lines[i];
+		this.sendEvent(new debugadapter.OutputEvent(">>"+line+"\r\n","stdout"))
 		if(line.length==0) continue;
 		if(this.processLine)
 		{
@@ -54,7 +55,7 @@ harbourDebugSession.prototype.processInput = function(buff)
 		}
 		if(line.startsWith("STOP"))
 		{
-			this.sendEvent(new debugadapter.StoppedEvent("step",1));
+			this.sendEvent(new debugadapter.StoppedEvent(line.substring(5),1));
 			continue;
 		}
 		if(line.startsWith("STACK"))
@@ -337,6 +338,12 @@ harbourDebugSession.prototype.stepOutRequest = function(response, args)
 	this.sendResponse(response);
 }
 
+harbourDebugSession.prototype.pauseRequest = function(response, args)
+{
+	this.command("PAUSE\r\n");
+	this.sendResponse(response);
+}
+
 /// breakpoints
 harbourDebugSession.prototype.setBreakPointsRequest = function(response,args)
 {
@@ -365,6 +372,7 @@ harbourDebugSession.prototype.setBreakPointsRequest = function(response,args)
 		if(dest.hasOwnProperty(breakpoint.line))
 		{ // breakpoint already exists
 			dest[breakpoint.line] = 1;
+			response.body.breakpoints[i].verified = true;
 		} else
 		{
 			message += "BREAKPOINT\r\n"
@@ -378,8 +386,8 @@ harbourDebugSession.prototype.setBreakPointsRequest = function(response,args)
 			if(dest[i]==-1)
 			{
 				message += "BREAKPOINT\r\n"
-				message += `-:${src}:${breakpoint.line}\r\n`
-				dest[breakpoint.line] = 0;
+				message += `-:${src}:${i}\r\n`
+				dest[i] = 0;
 			}
 		}
 	}
@@ -402,10 +410,14 @@ harbourDebugSession.prototype.processBreak = function(line)
 	aInfos[2] = parseInt(aInfos[2]);
 	aInfos[3] = parseInt(aInfos[3]);
 	dest = this.breakpoints[aInfos[1]]
-	var idBreak = dest.response.body.breakpoints.findIndex(b => b.line == aInfos[2])
+	var idBreak = dest.response.body.breakpoints.findIndex(b => b.line == aInfos[2]);
 	if(idBreak==-1)
 	{
-		//error
+		if(aInfos[2] in dest)
+		{
+			delete dest[aInfos[2]];
+			this.checkBreakPoint(aInfos[1]);
+		}
 		return;
 	}
 	if(aInfos[3]>1)
@@ -415,15 +427,9 @@ harbourDebugSession.prototype.processBreak = function(line)
 		dest[aInfos[2]] = 1;
 	} else
 	{
-		if(aInfos[4]=="request")
-		{
-			delete dest[aInfos[2]];
-		} else
-		{
-			dest.response.body.breakpoints[idBreak].verified = false;
-			dest.response.body.breakpoints[idBreak].message = "invalid line"
-			dest[aInfos[2]] = 1;
-		}
+		dest.response.body.breakpoints[idBreak].verified = false;
+		dest.response.body.breakpoints[idBreak].message = "invalid line"
+		dest[aInfos[2]] = 1;
 	} 
 	this.checkBreakPoint(aInfos[1]);
 }
@@ -450,7 +456,7 @@ harbourDebugSession.prototype.evaluateRequest = function(response,args)
 	this.evaluateResponse = response;
 	this.evaluateResponse.body = {};
 	this.evaluateResponse.body.result = args.expression; 
-	this.command("EXPRESSION\r\n"+args.expression+"\r\n")	
+	this.command(`EXPRESSION\r\n${args.frameId || 1}:${args.expression}\r\n`)	
 }
 
 /**
@@ -459,15 +465,15 @@ harbourDebugSession.prototype.evaluateRequest = function(response,args)
  */
 harbourDebugSession.prototype.processExpression = function(line)
 {
-	// EXPRESSION:{type}:{result}
+	// EXPRESSION:{frame}:{type}:{result}
 	var infos = line.split(":");
-	if(infos.length>3)
+	if(infos.length>4)
 	{ //the value can contains : , we need to rejoin it.
-		infos[2] = infos.splice(2).join(":");
+		infos[3] = infos.splice(3).join(":");
 	}
-	var line = "EXP:"+this.evaluateResponse.body.result+"::";
+	var line = "EXP:" + infos[1] + ":" + this.evaluateResponse.body.result + ":";
 	this.evaluateResponse.body = 
-		this.getVariableFormat(this.evaluateResponse.body,infos[1],infos[2],"result",line);
+		this.getVariableFormat(this.evaluateResponse.body,infos[2],infos[3],"result",line);
 	this.sendResponse(this.evaluateResponse);	
 }
 

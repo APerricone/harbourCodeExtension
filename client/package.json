@@ -2,7 +2,7 @@
     "name": "harbour",
     "displayName": "harbour",
     "description": "Harbour language support for visual studio code",
-    "version": "0.2.3",
+    "version": "0.3.0",
     "publisher": "aperricone",
     "icon": "harbourIcon.svg",
     "main": "./src/extension",
@@ -17,7 +17,8 @@
     },
     "categories": [
         "Languages",
-        "Debuggers"
+        "Debuggers",
+        "Linters"
     ],
     "dependencies": {
         "vscode-debugprotocol": "^1.18.0-pre.2",
