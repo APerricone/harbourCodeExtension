@@ -2,6 +2,9 @@
 
 This is an extension for visual studio code about harbour programming language, it is still W.I.P. :)
 
+## Warning
+the versione 0.3 has a new debugger library, you must update it!!
+
 ## Features
 
 - simple and complete syntax hightlight

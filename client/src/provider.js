@@ -3,7 +3,7 @@ var fs = require("fs");
 var lr = require("readline");
 
 var procRegEx = /\s*((?:proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?)|func(?:t(?:i(?:o(?:n)?)?)?)?)\s+([a-z_][a-z0-9_]*)\s*\(([^\)]*)\)/i;
-var methodRegEx = /\s*(meth(?:o(?:d)?)?)\s+([a-z_][a-z0-9_]*)\s*\(([^\)]*)\)(?:\s*class\s+([a-z_][a-z0-9_]*))?/i
+var methodRegEx = /\s*(meth(?:o(?:d)?)?)\s+(?:(?:(?:proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?)|func(?:t(?:i(?:o(?:n)?)?)?)?)\s+)?([a-z_][a-z0-9_]*)\s*\(([^\)]*)\)(?:\s*class\s+([a-z_][a-z0-9_]*))?/i
 var hb_funcRegEx = /HB_FUNC\s*\(\s*([A-Z0-9_]+)\s*\)/
 function Provider()
 {

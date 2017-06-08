@@ -4,6 +4,11 @@ All notable changes to the "harbour" extension will be documented in this file.
 ## Planned
 - Show matches on 'if-else-endif', 'for-exit-loop-next' etc...
 
+## 0.3.1
+- Added missin method on debugger... still not working
+- better validation message when the correct line is inside the message
+- recognization of method procedure and method function
+
 ## 0.3.0
 - New Debug library, it is totally rewritten without C code, it allows new features like:
 	- pause support
