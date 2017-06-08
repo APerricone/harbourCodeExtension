@@ -456,7 +456,7 @@ harbourDebugSession.prototype.evaluateRequest = function(response,args)
 	this.evaluateResponse = response;
 	this.evaluateResponse.body = {};
 	this.evaluateResponse.body.result = args.expression; 
-	this.command(`EXPRESSION\r\n${args.frameId || 1}:${args.expression}\r\n`)	
+	this.command(`EXPRESSION\r\n${args.frameId+1 || this.currentStack}:${args.expression}\r\n`)	
 }
 
 /**
