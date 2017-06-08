@@ -554,7 +554,7 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			aAdd(t_oDebugInfo['aStack'], tmp)
 			exit
 		case HB_DBG_LOCALNAME
-			aAdd(t_oDebugInfo['aStack'][len(t_oDebugInfo['aStack'])][HB_DBG_CS_LOCALS], {uParam2, uParam1, "L", len(t_oDebugInfo['aStack'])})
+			aAdd(t_oDebugInfo['aStack'][len(t_oDebugInfo['aStack'])][HB_DBG_CS_LOCALS], {uParam2, uParam1, "L", __dbgProcLevel()-1})
 			exit
 		case HB_DBG_STATICNAME
 			if t_oDebugInfo['bInitStatics']

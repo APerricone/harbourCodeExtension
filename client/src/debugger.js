@@ -100,7 +100,7 @@ harbourDebugSession.prototype.processInput = function(buff)
 harbourDebugSession.prototype.initializeRequest = function (response, args) 
 {
 	response.body.supportsConfigurationDoneRequest = true;
-	response.body.supportsEvaluateForHovers = true;
+	//response.body.supportsEvaluateForHovers = true; too risky
 	this.sendResponse(response);
 };
 
