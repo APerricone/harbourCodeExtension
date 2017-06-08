@@ -466,16 +466,16 @@ return xExpr
 static function evalExpression( xExpr, level ) 
 	local oErr, xResult, __dbg := {}
 	local i, cName, v
-	local aStack := t_oDebugInfo['aStack']
+ 	local aStack := t_oDebugInfo['aStack',len(t_oDebugInfo['aStack'])-level+1]
 	// replace all locals
-	for i:=1 to len(aStack[level,HB_DBG_CS_LOCALS])
-		xExpr := replaceExpression(xExpr, @__dbg, aStack[level,HB_DBG_CS_LOCALS,i,HB_DBG_VAR_NAME], ;
-					__dbgVMVarLGet(__dbgProcLevel()-aStack[level,HB_DBG_CS_LOCALS,i,HB_DBG_VAR_FRAME],aStack[level,HB_DBG_CS_LOCALS,i,HB_DBG_VAR_INDEX]))
+	for i:=1 to len(aStack[HB_DBG_CS_LOCALS])
+		xExpr := replaceExpression(xExpr, @__dbg, aStack[HB_DBG_CS_LOCALS,i,HB_DBG_VAR_NAME], ;
+					__dbgVMVarLGet(__dbgProcLevel()-aStack[HB_DBG_CS_LOCALS,i,HB_DBG_VAR_FRAME],aStack[HB_DBG_CS_LOCALS,i,HB_DBG_VAR_INDEX]))
 	next
 	// replace all proc statics
-	for i:=1 to len(aStack[level,HB_DBG_CS_STATICS])
-		xExpr := replaceExpression(xExpr, @__dbg, aStack[level,HB_DBG_CS_STATICS,i,HB_DBG_VAR_NAME], ;
-					__dbgVMVarSGet(aStack[level,HB_DBG_CS_STATICS,i,HB_DBG_VAR_FRAME],aStack[level,HB_DBG_CS_LOCALS,i,HB_DBG_VAR_INDEX]))
+	for i:=1 to len(aStack[HB_DBG_CS_STATICS])
+		xExpr := replaceExpression(xExpr, @__dbg, aStack[HB_DBG_CS_STATICS,i,HB_DBG_VAR_NAME], ;
+					__dbgVMVarSGet(aStack[HB_DBG_CS_STATICS,i,HB_DBG_VAR_FRAME],aStack[HB_DBG_CS_LOCALS,i,HB_DBG_VAR_INDEX]))
 	next
 	// replace all public
 	for i:=1 to __mvDbgInfo( HB_MV_PUBLIC )
@@ -554,7 +554,7 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			aAdd(t_oDebugInfo['aStack'], tmp)
 			exit
 		case HB_DBG_LOCALNAME
-			aAdd(t_oDebugInfo['aStack'][len(t_oDebugInfo['aStack'])][HB_DBG_CS_LOCALS], {uParam2, uParam1, "L", len(t_oDebugInfo['aStack'])})
+			aAdd(t_oDebugInfo['aStack'][len(t_oDebugInfo['aStack'])][HB_DBG_CS_LOCALS], {uParam2, uParam1, "L", __dbgProcLevel()-1})
 			exit
 		case HB_DBG_STATICNAME
 			if t_oDebugInfo['bInitStatics']

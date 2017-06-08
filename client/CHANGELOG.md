@@ -4,8 +4,12 @@ All notable changes to the "harbour" extension will be documented in this file.
 ## Planned
 - Show matches on 'if-else-endif', 'for-exit-loop-next' etc...
 
-## unreleased
+## 0.3.3
+- Fixed expression evaluation
 - better validation message when the error contains a regEx character
+
+## 0.3.2
+- removed refused debug prints
 
 ## 0.3.1
 - Added missin method on debugger... still not working

@@ -10,14 +10,22 @@ class oggetto
 endclass
 
 METHOD otherMedhod() CLASS oggetto
-return nil
+	local test := ::soo
+	if empty(::soo)
+		::soo := "nil"
+	endif
+return ::soo + " " + str(::noo)
 
 
 proc main()
 	local i as numeric
 	local c := oggetto():New()
+	local bs := "{|a,c| QOut(c:otherMedhod()) }"
+	local b := {|a,c| QOut(c:otherMedhod()) }
 	AltD()
 	? "Perry"
+	eval(&bs,"",c)
+	//eval(b,"",c)
 	AltraFunzione()
 	? i:=2
 	? i
