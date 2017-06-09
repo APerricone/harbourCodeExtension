@@ -3,7 +3,17 @@
   "description": "Server part of the visual studio code extension about harbour.",
   "version": "0.0.1",
   "author": "aperricone",
+  "main": "src/index.js",
+  "engines": {
+    "node": "*"
+  },
+  "dependencies": {
+    "vscode-languageserver": "^3.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^6.0.52"
+  },
   "scripts": {
-    "compile": "./buildsh"
   }
 }
+
