@@ -1,6 +1,5 @@
-var vscode = require("vscode");
 var fs = require("fs");
-var lr = require("readline");
+var readline = require("readline");
 
 var procRegEx = /\s*((?:proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?)|func(?:t(?:i(?:o(?:n)?)?)?)?)\s+([a-z_][a-z0-9_]*)\s*\(([^\)]*)\)/i;
 var methodRegEx = /\s*(meth(?:o(?:d)?)?)\s+(?:(?:(?:proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?)|func(?:t(?:i(?:o(?:n)?)?)?)?)\s+)?([a-z_][a-z0-9_]*)\s*(?:\(([^\)]*)\))?(?:\s*class\s+([a-z_][a-z0-9_]*))?/i
@@ -25,7 +24,30 @@ Provider.prototype.Clear = function()
 }
 
 /**
- * @param line{string}
+ * @constructor
+ * @param {string} name 
+ * @param {string} kind 
+ * @param {string} parent 
+ * @param {string} document 
+ * @param {number} startLine 
+ * @param {number} startCol 
+ * @param {number} endLine 
+ * @param {number} endCol 
+ */
+function Info(name,kind,parent,document,startLine,startCol,endLine,endCol)
+{
+	this.name = name;
+	this.kind = kind;
+	this.parent = parent;
+	this.document = document;
+	this.startLine = startLine;
+	this.startCol = startCol;
+	this.endLine = endLine;
+	this.endCol = endCol;
+}
+
+/**
+ * @param {string} line
  */
 Provider.prototype.parse = function(line)
 {
@@ -145,19 +167,15 @@ Provider.prototype.parse = function(line)
 			if(words[0] == "class")
 			{
 				this.currentClass = words[1];
-				this.funcList.push(new vscode.SymbolInformation(words[1],vscode.SymbolKind.Class,
-					"",
-					new vscode.Location(this.currentDocument,
-						new vscode.Range(this.lineNr,0,this.lineNr,Number.MAX_VALUE))));
-
+				this.funcList.push(new Info(words[1],'class','',this.currentDocument,
+						this.lineNr,0,this.lineNr,1000));
 			}
 			if(words[0] == "endclass")
 			{
-				var toChange = this.funcList.find( v => v.name == this.currentClass && v.kind == vscode.SymbolKind.Class);
+				var toChange = this.funcList.find( v => v.name == this.currentClass && v.kind == 'class');
 				if(toChange)
 				{
-					toChange.location.range = new vscode.Range(toChange.location.range.start.line,0,this.lineNr,Number.MAX_VALUE);
-					//toChange.location.range.end.line = this.lineNr;
+					toChange.endLine = this.lineNr;
 				}
 			}
 
@@ -167,10 +185,8 @@ Provider.prototype.parse = function(line)
 				if(r)
 				{
 					this.currentClass = r[4] || this.currentClass;
-					this.funcList.push(new vscode.SymbolInformation(r[2],vscode.SymbolKind.Method,
-						this.currentClass,
-						new vscode.Location(this.currentDocument,
-							new vscode.Range(this.startLine,0,this.lineNr,Number.MAX_VALUE))));
+					this.funcList.push(new Info(r[2],'method',this.currentClass,this.currentDocument,
+						this.startLine,0,this.lineNr,1000));
 				}
 			} else
 			if(	words[0] == "procedure".substr(0,words[0].length) ||
@@ -181,9 +197,9 @@ Provider.prototype.parse = function(line)
 				var r = procRegEx.exec(line);
 				if(r)
 				{
-					this.funcList.push(new vscode.SymbolInformation(r[2],vscode.SymbolKind.Function,"",
-						new vscode.Location(this.currentDocument,
-							new vscode.Range(this.startLine,0,this.lineNr,Number.MAX_VALUE))));
+					var kind = r[1].startsWith('p')? "procedure" : "function";
+					this.funcList.push(new Info(r[2],kind,"",this.currentDocument,
+						this.startLine,0,this.lineNr,1000));
 				}
 			} 
 		}
@@ -200,9 +216,8 @@ Provider.prototype.parse = function(line)
 			var r = hb_funcRegEx.exec(line);
 			if(r)
 			{
-				this.funcList.push(new vscode.SymbolInformation(r[1],vscode.SymbolKind.Function,"",
-						new vscode.Location(this.currentDocument,
-							new vscode.Range(this.lineNr,0,this.lineNr,Number.MAX_VALUE))));
+				this.funcList.push(new Info(r[1],"C-FUNC","",this.currentDocument,
+							this.lineNr,0,this.lineNr,1000));
 			}
 		}
 	}
@@ -210,36 +225,14 @@ Provider.prototype.parse = function(line)
 
 Provider.prototype.parseFile = function(file,encoding)
 {
+	var providerThisContext = this;
 	this.Clear();
+	encoding = encoding || "utf8";
 	return new Promise((resolve,reject) =>
 	{
-		var reader = lr.createInterface({input:fs.createReadStream("/home/perry/Dropbox/test.prg","utf8")});
-		reader.on("line",d => pp.parse(d));
-		reader.on("close",() => {resolve(pp.funcList);})
-	});
-}
-
-/**
- * @param document{vscode.TextDocument}
- * @param token{vscode.CancellationToken}
- */
-Provider.prototype.provideDocumentSymbols = function(document, token)
-{
-	this.Clear();
-	return new Promise((resolve,reject) => 
-	{
-		this.currentDocument = document.uri;
-		var lines=document.getText().split(/\r?\n/);
-		for (var i = 0; i < lines.length; i++) 
-		{
-			if(token.isCancellationRequested)
-			{
-				resolve(this.funcList);
-				return;
-			}	
-			this.parse(lines[i]);
-		}
-		resolve(this.funcList);
+		var reader = readline.createInterface({input:fs.createReadStream(file,encoding)});
+		reader.on("line",d => providerThisContext.parse(d));
+		reader.on("close",() => {resolve(providerThisContext.funcList);})
 	});
 }
 

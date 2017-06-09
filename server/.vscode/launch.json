@@ -1,69 +1,14 @@
 {
-	"version": "0.2.0",
-	"configurations": [
-		{
-			"name": "C++ Launch",
-			"type": "cppdbg",
-			"request": "launch",
-			"program": "${workspaceRoot}/server",
-			"args": ["< test.txt"],
-			"stopAtEntry": false,
-			"cwd": "${workspaceRoot}",
-			"environment": [],
-			"externalConsole": true,
-			"linux": {
-				"MIMode": "gdb",
-				"setupCommands": [
-					{
-						"description": "Enable pretty-printing for gdb",
-						"text": "-enable-pretty-printing",
-						"ignoreFailures": true
-					}
-				]
-			},
-			"osx": {
-				"MIMode": "lldb"
-			},
-			"windows": {
-				"MIMode": "gdb",
-				"setupCommands": [
-					{
-						"description": "Enable pretty-printing for gdb",
-						"text": "-enable-pretty-printing",
-						"ignoreFailures": true
-					}
-				]
-			}
-		},
-		{
-			"name": "C++ Attach",
-			"type": "cppdbg",
-			"request": "attach",
-			"program": "${workspaceRoot}/server",
-			"processId": "${command:pickProcess}",
-			"linux": {
-				"MIMode": "gdb",
-				"setupCommands": [
-					{
-						"description": "Enable pretty-printing for gdb",
-						"text": "-enable-pretty-printing",
-						"ignoreFailures": true
-					}
-				]
-			},
-			"osx": {
-				"MIMode": "lldb"
-			},
-			"windows": {
-				"MIMode": "gdb",
-				"setupCommands": [
-					{
-						"description": "Enable pretty-printing for gdb",
-						"text": "-enable-pretty-printing",
-						"ignoreFailures": true
-					}
-				]
-			}
-		}
-	]
+    // Utilizzare IntelliSense per esplorare possibili attributi di debug di Node.js .
+    // Al passaggio del mouse vengono visualizzate le descrizioni degli attributi esistenti.
+    // Per ulteriori informazioni, visitare: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Avvia programma",
+            "program": "${workspaceRoot}\\src\\index.js"
+        }
+    ]
 }
