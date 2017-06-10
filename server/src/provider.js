@@ -3,8 +3,6 @@ var readline = require("readline");
 
 var procRegEx = /\s*((?:proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?)|func(?:t(?:i(?:o(?:n)?)?)?)?)\s+([a-z_][a-z0-9_]*)\s*(?:\(([^\)]*)\))?/i;
 var methodRegEx = /\s*(meth(?:o(?:d)?)?)\s+(?:(?:(?:proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?)|func(?:t(?:i(?:o(?:n)?)?)?)?)\s+)?([a-z_][a-z0-9_]*)\s*(?:\(([^\)]*)\))?(?:\s*class\s+([a-z_][a-z0-9_]*))?/i
-var varListRegEx = /([a-z0-9_]+)(\s*as\s+[a-z]+\s*)?(?:\s*:=\s*(?:('(?:[^'],+)*[^']*'|"(?:[^"],+)*[^"]*"|\[(?:[^\]],+)*[^\]]*\]|{(?:[^}],+)*[^}]*}|[^,]*)))?,?\s*/ig
-//var testVLRE = "prova, pippo as numeric := 5\r\n, \t\tpluto := 'test, other', mickey := {'prova'=>{1,2,3}},tttr"
 var hb_funcRegEx = /HB_FUNC\s*\(\s*([A-Z0-9_]+)\s*\)/
 function Provider()
 {
@@ -174,6 +172,33 @@ Provider.prototype.linePrepare = function()
 	}
 }
 
+function toDeclareList(list)
+{
+	list=list.join(" ");
+	//console.log("-1:"+list);
+	for(var i=0;i<10;i++)
+	{
+		var filter;
+		switch(i)
+		{
+			case 0: filter = /{[^{}]*}/; break;
+			case 1: filter = /\[[^\[\]]*\]/; break;
+			case 2: filter = /'[^']*'/; break;
+			case 3: filter = /"[^"]*"/; break;
+			default:
+				i=100;
+		}
+		do
+		{
+			var old= list;
+			list=list.replace(filter,"")
+		} while(old.length!=list.length)
+		//console.log(i+":"+list);
+	}
+	list=list.replace(":="," ")
+	return list.split(",");
+}
+
 Provider.prototype.parseHarbour = function(words)
 {
 	if(this.currLine.indexOf("pragma")>=0 && this.currLine.indexOf("BEGINDUMP")>=0)
@@ -188,7 +213,7 @@ Provider.prototype.parseHarbour = function(words)
 		{
 			this.currentClass = words[1];
 			this.addInfo(words[1],'class')
-		}
+		} else
 		if(words[0] == "endclass")
 		{
 			var toChange = this.funcList.find( v => v.name == this.currentClass && v.kind == 'class');
@@ -196,24 +221,19 @@ Provider.prototype.parseHarbour = function(words)
 			{
 				toChange.endLine = this.lineNr;
 			}
-		}
+		} else
 		if(words[0] == "data")
 		{
 			if(this.currentClass.length>0)
-			{
-				var list = words.slice(1).join(" ");
-				var added = false;
-				var m;
-				while(m=varListRegEx.exec(list))
+			{	
+				var list = toDeclareList(words.slice(1));
+				for (var i = 0; i < list.length; i++) 
 				{
-					added = true;
-					this.addInfo(m[1],'data',this.currentClass,true);
+					var m = list[i].split(/\s/).filter((el) => el.length!=0);
+					this.addInfo(m[0],'data',this.currentClass,true);
 				}
-				if(!added)
-					this.addInfo(words[1],'data',this.currentClass,true);
 			}
-		}
-
+		} else
 		if(words[0] == "method".substr(0,words[0].length))
 		{
 			var r = methodRegEx.exec(this.currLine);
@@ -221,20 +241,50 @@ Provider.prototype.parseHarbour = function(words)
 			{
 				this.currentClass = r[4] || this.currentClass;
 				this.addInfo(r[2],'method',this.currentClass);
+				this.currentMethod = r[2];
 			}
 		} else
 		if(	words[0] == "procedure".substr(0,words[0].length) ||
-			words[1] == "procedure".substr(0,words[1].length) ||
 			words[0] == "function".substr(0,words[0].length) ||
-			words[1] == "function".substr(0,words[1].length) )
+			(
+				(
+					words[0] == "static".substr(0,words[0].length) ||
+					words[0] == "init" ||
+					words[0] == "exit"
+				) &&
+				words[1].length>4 && 
+				(
+					words[1] == "procedure".substr(0,words[1].length) ||
+					words[1] == "function".substr(0,words[1].length)
+				)
+			))
 		{
 			var r = procRegEx.exec(this.currLine);
 			if(r)
 			{
 				var kind = r[1].startsWith('p')? "procedure" : "function";
+				if(words[0].startsWith("stat")) kind+="*"; 
 				this.addInfo(r[2],kind);
+				this.currentMethod = r[2];
 			}
-		} 
+		} else
+		if(	words[0] == "local".substr(0,words[0].length) ||
+			words[0] == "public".substr(0,words[0].length) ||
+			words[0] == "private".substr(0,words[0].length))
+		{
+			if(this.currentMethod.length>0)
+			{
+				var kind = "local";
+				if(words[0].startsWith("publ")) kind = "public";
+				if(words[0].startsWith("private")) kind = "private";
+				var list = toDeclareList(words.slice(1));
+				for (var i = 0; i < list.length; i++) 
+				{
+					var m = list[i].split(/\s/).filter((el) => el.length!=0);
+					this.addInfo(m[0],kind,this.currentMethod,true);
+				}
+			}
+		} //else
 	}	
 }
 
