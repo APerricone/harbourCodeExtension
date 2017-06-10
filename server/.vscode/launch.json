@@ -7,8 +7,8 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Avvia programma",
-            "program": "${workspaceRoot}\\src\\index.js"
+            "name": "Launch Program",
+            "program": "${workspaceRoot}/src/index.js"
         }
     ]
 }

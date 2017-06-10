@@ -1,8 +1,10 @@
 var fs = require("fs");
 var readline = require("readline");
 
-var procRegEx = /\s*((?:proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?)|func(?:t(?:i(?:o(?:n)?)?)?)?)\s+([a-z_][a-z0-9_]*)\s*\(([^\)]*)\)/i;
+var procRegEx = /\s*((?:proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?)|func(?:t(?:i(?:o(?:n)?)?)?)?)\s+([a-z_][a-z0-9_]*)\s*(?:\(([^\)]*)\))?/i;
 var methodRegEx = /\s*(meth(?:o(?:d)?)?)\s+(?:(?:(?:proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?)|func(?:t(?:i(?:o(?:n)?)?)?)?)\s+)?([a-z_][a-z0-9_]*)\s*(?:\(([^\)]*)\))?(?:\s*class\s+([a-z_][a-z0-9_]*))?/i
+var varListRegEx = /([a-z0-9_]+)(\s*as\s+[a-z]+\s*)?(?:\s*:=\s*(?:('(?:[^'],+)*[^']*'|"(?:[^"],+)*[^"]*"|\[(?:[^\]],+)*[^\]]*\]|{(?:[^}],+)*[^}]*}|[^,]*)))?,?\s*/ig
+//var testVLRE = "prova, pippo as numeric := 5\r\n, \t\tpluto := 'test, other', mickey := {'prova'=>{1,2,3}},tttr"
 var hb_funcRegEx = /HB_FUNC\s*\(\s*([A-Z0-9_]+)\s*\)/
 function Provider()
 {
@@ -46,10 +48,30 @@ function Info(name,kind,parent,document,startLine,startCol,endLine,endCol)
 	this.endCol = endCol;
 }
 
-/**
- * @param {string} line
- */
-Provider.prototype.parse = function(line)
+Provider.prototype.addInfo = function(name,kind,parent, search)
+{
+	if(search!==true) search=false;
+	parent = parent || '';
+	if(search)
+	{
+		var lines = this.currLine.split("\r\n");
+		var rr = new RegExp('\\b'+name.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&")+'\\b',"i")
+		for (var i = 0; i < lines.length; i++) {
+			var line = lines[i];
+			var m=rr.exec(line)
+			if(m)
+			{
+				this.funcList.push(new Info(name,kind,parent,this.currentDocument,
+					this.startLine+i,m.index,this.startLine+i,m.index+name.length));
+				return;
+			}			
+		}
+	}
+	this.funcList.push(new Info(name,kind,parent,this.currentDocument,
+		this.startLine,0,this.lineNr,1000));	
+}
+
+Provider.prototype.linePP = function(line)
 {
 	this.lineNr++;
 	if(this.comment)
@@ -67,19 +89,22 @@ Provider.prototype.parse = function(line)
 		this.currLine = line;
 	}
 	this.cont = line.endsWith(";") && !this.cMode;
-	if(this.cont) return;
-	line = this.currLine;
+}
+
+Provider.prototype.linePrepare = function()
+{
 	var justStart = true;
 	var precC = "",c;
 	var string = "";
-	if(line.trim().match(/^NOTE\s/i) || line.trim().length == 0)
+	if(this.currLine.trim().match(/^NOTE\s/i) || this.currLine.trim().length == 0)
 	{
+		this.currLine="";
 		return;
 	}
-	for(var i=0;i<line.length;i++)
+	for(var i=0;i<this.currLine.length;i++)
 	{
 		precC = c;
-		c = line[i];
+		c = this.currLine[i];
 		if(justStart)
 		{
 			justStart = (precC==" "||precC=='\t');
@@ -100,30 +125,31 @@ Provider.prototype.parse = function(line)
 		{
 			if(precC=="/")
 			{
-				var endC = line.indexOf("*/",i+1)
+				var endC = this.currLine.indexOf("*/",i+1)
 				if(endC>0)
 				{
-					line = line.substr(0,i-1) + 
+					this.currLine = this.currLine.substr(0,i-1) + 
 							" ".repeat(endC-i+3) +
-							line.substr(endC+2);
+							this.currLine.substr(endC+2);
 					continue;
 				} else
 				{
 					this.comment = true;
-					line = line.substr(0,i-1)
-					break;
+					this.currLine = this.currLine.substr(0,i-1)
+					return;
 				}
 			}
 			if(justStart)
 			{
 				// commented line: skip
+				this.currLine="";
 				return;
 			}
 		}
 		if((c=="/" && precC=="/")||(c=="&" && precC=="&"))
 		{
-			line = line.substr(0,i-1)
-			break;
+			this.currLine = this.currLine.substr(0,i-1)
+			return;
 		}
 		if(c=='"')
 		{
@@ -146,80 +172,110 @@ Provider.prototype.parse = function(line)
 			continue;
 		}
 	}
+}
 
-	if(line.trim().length==0) return;
+Provider.prototype.parseHarbour = function(words)
+{
+	if(this.currLine.indexOf("pragma")>=0 && this.currLine.indexOf("BEGINDUMP")>=0)
+	// && /\^s*#pragma\s+BEGINDUMP\s*$/.test(this.currLine)
+	{
+		this.cMode = true;
+		return;
+	}
+	if(words[0].length>=4)
+	{
+		if(words[0] == "class")
+		{
+			this.currentClass = words[1];
+			this.addInfo(words[1],'class')
+		}
+		if(words[0] == "endclass")
+		{
+			var toChange = this.funcList.find( v => v.name == this.currentClass && v.kind == 'class');
+			if(toChange)
+			{
+				toChange.endLine = this.lineNr;
+			}
+		}
+		if(words[0] == "data")
+		{
+			if(this.currentClass.length>0)
+			{
+				var list = words.slice(1).join(" ");
+				var added = false;
+				var m;
+				while(m=varListRegEx.exec(list))
+				{
+					added = true;
+					this.addInfo(m[1],'data',this.currentClass,true);
+				}
+				if(!added)
+					this.addInfo(words[1],'data',this.currentClass,true);
+			}
+		}
+
+		if(words[0] == "method".substr(0,words[0].length))
+		{
+			var r = methodRegEx.exec(this.currLine);
+			if(r)
+			{
+				this.currentClass = r[4] || this.currentClass;
+				this.addInfo(r[2],'method',this.currentClass);
+			}
+		} else
+		if(	words[0] == "procedure".substr(0,words[0].length) ||
+			words[1] == "procedure".substr(0,words[1].length) ||
+			words[0] == "function".substr(0,words[0].length) ||
+			words[1] == "function".substr(0,words[1].length) )
+		{
+			var r = procRegEx.exec(this.currLine);
+			if(r)
+			{
+				var kind = r[1].startsWith('p')? "procedure" : "function";
+				this.addInfo(r[2],kind);
+			}
+		} 
+	}	
+}
+
+Provider.prototype.parseC = function(words)
+{
+	if(this.currLine.indexOf("pragma")>=0 && this.currLine.indexOf("ENDDUMP")>=0)
+	// && /\^s*#pragma\s+ENDDUMP\s*$/.test(this.currLine)
+	{
+		this.cMode = false;
+		return;
+	}
+	if(this.currLine.indexOf("HB_FUNC")>=0)
+	{
+		var r = hb_funcRegEx.exec(this.currLine);
+		if(r)
+		{
+			this.addInfo(r[1],'C-FUNC');
+		}
+	}
+}
+/**
+ * @param {string} line
+ */
+Provider.prototype.parse = function(line)
+{
+	this.linePP(line);
+	if(this.comment || this.cont) return;
+	this.linePrepare();
+	if(this.currLine.trim().length==0) return;
 	/** @type{string[]} */
-	var words = line.split(/\s/).filter((el) => el.length!=0);
+	var words = this.currLine.split(/\s/).filter((el) => el.length!=0);
 	if(words.length==0) return;
 	words[0] = words[0].toLowerCase();
 	if(words.length>1) words[1] = words[1].toLowerCase(); else words[1] = "";
-	//console.log((this.cMode?"C":"H")+this.lineNr+">"+line);
+	//console.log((this.cMode?"C":"H")+this.lineNr+">"+this.currLine);
 	if(!this.cMode)
 	{
-		if(line.indexOf("pragma")>=0 && line.indexOf("BEGINDUMP")>=0)
-		// && /\^s*#pragma\s+BEGINDUMP\s*$/.test(line)
-		{
-			this.cMode = true;
-			return;
-		}
-		if(words[0].length>=4)
-		{
-			if(words[0] == "class")
-			{
-				this.currentClass = words[1];
-				this.funcList.push(new Info(words[1],'class','',this.currentDocument,
-						this.lineNr,0,this.lineNr,1000));
-			}
-			if(words[0] == "endclass")
-			{
-				var toChange = this.funcList.find( v => v.name == this.currentClass && v.kind == 'class');
-				if(toChange)
-				{
-					toChange.endLine = this.lineNr;
-				}
-			}
-
-			if(words[0] == "method".substr(0,words[0].length))
-			{
-				var r = methodRegEx.exec(line);
-				if(r)
-				{
-					this.currentClass = r[4] || this.currentClass;
-					this.funcList.push(new Info(r[2],'method',this.currentClass,this.currentDocument,
-						this.startLine,0,this.lineNr,1000));
-				}
-			} else
-			if(	words[0] == "procedure".substr(0,words[0].length) ||
-				words[1] == "procedure".substr(0,words[1].length) ||
-				words[0] == "function".substr(0,words[0].length) ||
-				words[1] == "function".substr(0,words[1].length) )
-			{
-				var r = procRegEx.exec(line);
-				if(r)
-				{
-					var kind = r[1].startsWith('p')? "procedure" : "function";
-					this.funcList.push(new Info(r[2],kind,"",this.currentDocument,
-						this.startLine,0,this.lineNr,1000));
-				}
-			} 
-		}
+		this.parseHarbour(words)
 	} else
 	{
-		if(line.indexOf("pragma")>=0 && line.indexOf("ENDDUMP")>=0)
-		// && /\^s*#pragma\s+ENDDUMP\s*$/.test(line)
-		{
-			this.cMode = false;
-			return;
-		}
-		if(line.indexOf("HB_FUNC")>=0)
-		{
-			var r = hb_funcRegEx.exec(line);
-			if(r)
-			{
-				this.funcList.push(new Info(r[1],"C-FUNC","",this.currentDocument,
-							this.lineNr,0,this.lineNr,1000));
-			}
-		}
+		this.parseC(words)
 	}
 }
 
@@ -227,12 +283,18 @@ Provider.prototype.parseFile = function(file,encoding)
 {
 	var providerThisContext = this;
 	this.Clear();
+	var startDoc = this.currentDocument;
+	this.currentDocument = file;
 	encoding = encoding || "utf8";
 	return new Promise((resolve,reject) =>
 	{
 		var reader = readline.createInterface({input:fs.createReadStream(file,encoding)});
 		reader.on("line",d => providerThisContext.parse(d));
-		reader.on("close",() => {resolve(providerThisContext.funcList);})
+		reader.on("close",() => 
+		{
+			providerThisContext.currentDocument = startDoc;
+			resolve(providerThisContext.funcList);
+		})
 	});
 }
 
