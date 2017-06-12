@@ -3,14 +3,14 @@
 class oggetto
    	DATA soo AS STRING
    	DATA noo AS NUMERIC
-   	DATA ioo
+   	DATA ioo, rdefrr
 	DATA newData
    	METHOD aBitmap( n )      INLINE ( If( empty(n) .or. (n > 0 .and. n <= 10), 5 , nil ) )
    	METHOD otherMedhod()
 endclass
 
 METHOD otherMedhod() CLASS oggetto
-	local test := ::soo
+	local test:= ::soo
 	if empty(::soo)
 		::soo := "nil"
 	endif

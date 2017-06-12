@@ -1,6 +1,6 @@
 {
   "name": "harbour-lang-server",
-  "description": "Server part of the visual studio code extension about harbour.",
+  "description": "Server part of Harbour language support for visual studio code.",
   "version": "0.0.1",
   "author": "aperricone",
   "main": "src/index.js",
