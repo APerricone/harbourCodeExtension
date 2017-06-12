@@ -31,7 +31,7 @@ proc main()
 	? i
 return
 
-proc AltraFunzione()
+func AltraFunzione()
 	local p := "sei fuori"
 	local a := {{'pp'=>3,'pi'=>3.14},{20,10},"AAA"}
 	memvar test,test2
@@ -41,7 +41,7 @@ proc AltraFunzione()
 	? p
 	? "più righe"
 	? "per provare"
-return
+return a
 
 proc Called()
 	memvar test2

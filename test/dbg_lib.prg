@@ -436,7 +436,7 @@ static function inBreakpoint()
 return idLine<>0
 
 static procedure AddModule(aInfo) 
-	local i, idx
+	local i, idx //, j, tmp, cc
 	for i:=1 to len(aInfo)
 		aInfo[i,1] := alltrim(aInfo[i,1])
 		if len(aInfo[i,1])=0
@@ -448,6 +448,16 @@ static procedure AddModule(aInfo)
 		else
 			t_oDebugInfo['aModules'][idx] := aInfo[i]
 		endif
+		/*
+		fAppend("test.dbg",aInfo[i,1]+str(aInfo[i,2]))
+		? aInfo[i,1],aInfo[i,2]
+		for j:=1 to len(aInfo[i,3])*8
+			tmp := Int(j/8)
+			cc := asc(substr(aInfo[i,3],tmp+1,1))
+			fAppend("test.dbg",str(j),str(HB_BITAND(HB_BITSHIFT(cc, -(j-tmp*8)),1)),str(cc))
+			//? j, HB_BITAND(HB_BITSHIFT(cc, -(j-tmp*8)),1), cc
+		next
+		*/
 	next
 return
 
