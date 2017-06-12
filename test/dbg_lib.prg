@@ -372,7 +372,7 @@ static function IsValidStopLine(cModule,nLine)
 	if tmp>len(t_oDebugInfo['aModules'][iModule,3])
 		return .F.
 	endif
-	cInfo = Asc(SubStr(t_oDebugInfo['aModules'][iModule,3],tmp))
+	cInfo = Asc(SubStr(t_oDebugInfo['aModules'][iModule,3],tmp+1))
 	nIdx -= tmp * 8
 	cInfo := HB_BITAND(HB_BITSHIFT(cInfo, -nIdx),1)
 return (cInfo = 1)
