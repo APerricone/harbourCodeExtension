@@ -9,6 +9,7 @@ All notable changes to the "harbour" extension will be documented in this file.
 
 ## 0.3.3
 - Fixed expression evaluation
+- better validation message when the error contains a regEx character
 
 ## 0.3.2
 - removed refused debug prints

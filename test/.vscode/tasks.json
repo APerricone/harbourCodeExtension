@@ -13,7 +13,7 @@
         {
             "taskName": "build",
             "isBuildCommand": true,
-            "args": [ "${relativeFile}", "-gtcgi", "-w", "-ql", "-b", "-lcode_dbg", "-L."],
+            "args": [ "-lcode_dbg", "-L.", "${relativeFile}", "-gtcgi", "-w", "-ql", "-b","-debug", "-gc3","-inc"],
             "problemMatcher": [
             {
                 "owner": "cpp",
@@ -82,7 +82,7 @@
         },
         {
             "taskName": "createLibrary",
-            "args": [ "dbg_lib", "-w", "-ql", "-ocode_dbg", "-hblib"],
+            "args": [ "dbg_lib", "-w", "-ql", "-ocode_dbg", "-debug","-gc3", "-hblib","-inc"],
             "problemMatcher": [
             {
                 "owner": "cpp",
