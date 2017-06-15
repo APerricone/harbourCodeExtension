@@ -176,6 +176,7 @@ harbourDebugSession.prototype.stackTraceRequest = function(response,args)
 {
 	this.command("STACK\r\n");
 	this.stack = response;
+	this.stackArgs = args;
 }
 
 harbourDebugSession.prototype.threadsRequest = function(response)
@@ -205,8 +206,11 @@ harbourDebugSession.prototype.sendStack = function(line)
 		j++;
 		if(j==nStack)
 		{
+			this.stackArgs.startFrame = this.stackArgs.startFrame || 0;
+			this.stackArgs.levels = this.stackArgs.levels || 20;
+			this.stackArgs.levels += this.stackArgs.startFrame;
 			this.stack.body = {
-				stackFrames: frames
+				stackFrames: frames.slice(this.stackArgs.startFrame, this.stackArgs.levels)
 			};
 			this.sendResponse(this.stack);
 			this.processLine = undefined;
@@ -428,7 +432,10 @@ harbourDebugSession.prototype.processBreak = function(line)
 	} else
 	{
 		dest.response.body.breakpoints[idBreak].verified = false;
-		dest.response.body.breakpoints[idBreak].message = "invalid line"
+		if(aInfo[4]=='notfound')
+			dest.response.body.breakpoints[idBreak].message = "module not found"
+		else
+			dest.response.body.breakpoints[idBreak].message = "invalid line"		
 		dest[aInfos[2]] = 1;
 	} 
 	this.checkBreakPoint(aInfos[1]);

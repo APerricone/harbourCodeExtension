@@ -356,30 +356,31 @@ static procedure sendCoumpoundVar(req, cParams )
 	hb_inetSend(t_oDebugInfo['socket'],"END"+CRLF)	
 return
 
+// returns -1 if the module is not valid, 0 if the line is not valid, 1 in case of valid line
 static function IsValidStopLine(cModule,nLine) 
 	LOCAL iModule
 	local nIdx, cInfo, tmp
 	cModule := alltrim(cModule)
 	iModule := aScan(t_oDebugInfo['aModules'],{|v| v[1]=cModule})
 	if iModule=0
-		return .F.
+		return -1
 	endif
 	if nLine<t_oDebugInfo['aModules'][iModule,2]
-		return .F.
+		return 0
 	endif
 	nIdx := nLine - t_oDebugInfo['aModules'][iModule,2]
 	tmp := Int(nIdx/8)
 	if tmp>len(t_oDebugInfo['aModules'][iModule,3])
-		return .F.
+		return 0
 	endif
 	cInfo = Asc(SubStr(t_oDebugInfo['aModules'][iModule,3],tmp+1))
 	nIdx -= tmp * 8
 	cInfo := HB_BITAND(HB_BITSHIFT(cInfo, -nIdx),1)
-return (cInfo = 1)
+return cInfo
 
 static procedure setBreakpoint(cInfo) 
 	LOCAL aInfos := hb_aTokens(cInfo,":"), idLine
-	local nReq, nLine
+	local nReq, nLine, nReason
 	nReq := val(aInfos[3])
 	if aInfos[1]=="-"
 		// remove
@@ -397,23 +398,27 @@ static procedure setBreakpoint(cInfo)
 		return
 	endif
 	nLine := nReq
-	while .not. IsValidStopLine(aInfos[2],nLine)
+	while (nReason:=IsValidStopLine(aInfos[2],nLine))!=1
 		nLine++
 		if (nLine-nReq)>2
 			exit
 		endif
 	enddo
-	if .not. IsValidStopLine(aInfos[2],nLine)
+	if nReason!=1
 		nLine := nReq - 1
-		while .not. IsValidStopLine(aInfos[2],nLine)
+		while (nReason:=IsValidStopLine(aInfos[2],nLine))!=1
 			nLine--
 			if (nReq-nLine)>2
 				exit
 			endif
 		enddo
 	endif
-	if .not. IsValidStopLine(aInfos[2],nLine)
-		hb_inetSend(t_oDebugInfo['socket'],"BREAK:"+aInfos[2]+":"+aInfos[3]+":-1:invalid"+CRLF)
+	if nReason!=1
+		if nReason==0
+			hb_inetSend(t_oDebugInfo['socket'],"BREAK:"+aInfos[2]+":"+aInfos[3]+":-1:invalid"+CRLF)
+		else
+			hb_inetSend(t_oDebugInfo['socket'],"BREAK:"+aInfos[2]+":"+aInfos[3]+":-1:notfound"+CRLF)
+		endif
 		return
 	endif
 	if .not. hb_HHasKey(t_oDebugInfo['aBreaks'],aInfos[2])
@@ -427,7 +432,7 @@ static procedure setBreakpoint(cInfo)
 return
 
 static function inBreakpoint() 
-	LOCAL aInfos := t_oDebugInfo['aStack'][len(t_oDebugInfo['aStack'])]
+	LOCAL aInfos := t_oDebugInfo['aStack',len(t_oDebugInfo['aStack'])]
 	local idLine, cFile := aInfos[HB_DBG_CS_MODULE]
 	if .not. hb_HHasKey(t_oDebugInfo['aBreaks'],cFile)
 		return .F.
@@ -519,14 +524,17 @@ static procedure sendExpression( xExpr )
 	ENDIF
 	hb_inetSend(t_oDebugInfo['socket'],"EXPRESSION:"+alltrim(str(level))+":"+cType+":"+xResult+CRLF)
 return
-/*
+
 STATIC PROCEDURE ErrorBlockCode( e )
 	t_oDebugInfo := __DEBUGITEM()
 	hb_inetSend(t_oDebugInfo['socket'],"ERROR:"+e:Description+CRLF)
 	t_oDebugInfo['lRunning'] := .F.
-	t_oDebugInfo['CheckSocket'](.T.)
+	CheckSocket(.T.)
 	__DEBUGITEM(t_oDebugInfo)
-*/
+	if t_oDebugInfo['errorBlock']!=nil
+		eval(t_oDebugInfo['errorBlock'], e)
+	endif
+
 PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 	local tmp
 	public t_oDebugInfo
@@ -546,7 +554,8 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 					'maxLevel' =>  nil, ;
 					'bInitStatics' =>  .F., ;
 					'bInitGlobals' =>  .F., ;
-					'bInitLines' =>  .F. ;
+					'bInitLines' =>  .F., ;
+					'errorBlock' => nil ;
 				}
 			endif
 			if at("_INITSTATICS", uParam1)<>0
@@ -589,7 +598,11 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			exit
 		case HB_DBG_SHOWLINE
 			//TODO check if ErrorBlock is setted by user and save user's errorBlock
-			//ErrorBlock( {| e | ErrorBlockCode( e ) } )
+			/*tmp := ErrorBlock( {| e | ErrorBlockCode( e ) } )
+			//? valtype(tmp)
+			if tmp<>nil .and. t_oDebugInfo['errorBlock'] = nil
+				t_oDebugInfo['errorBlock'] := tmp
+			endif*/
 			t_oDebugInfo['aStack'][len(t_oDebugInfo['aStack'])][HB_DBG_CS_LINE] := uParam1
 			CheckSocket()
 			__dbgInvokeDebug(.F.)
