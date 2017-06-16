@@ -4,6 +4,9 @@ All notable changes to the "harbour" extension will be documented in this file.
 ## Planned
 - Show matches on 'if-else-endif', 'for-exit-loop-next' etc...
 
+## 0.3.5
+- fixed crashes in debugger (need recompile the library too)
+
 ## 0.3.4
 - fixed double callstack with new VSCode
 

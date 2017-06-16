@@ -181,10 +181,11 @@ function toDeclareList(list)
 		var filter;
 		switch(i)
 		{
-			case 0: filter = /{[^{}]*}/; break;
-			case 1: filter = /\[[^\[\]]*\]/; break;
-			case 2: filter = /'[^']*'/; break;
-			case 3: filter = /"[^"]*"/; break;
+			case 0: filter = /{[^{}]*}/g; break;
+			case 1: filter = /\[[^\[\]]*\]/g; break;
+			case 2: filter = /\([^\(\)]*\)/g; break;
+			case 3: filter = /'[^']*'/g; break;
+			case 4: filter = /"[^"]*"/g; break;
 			default:
 				i=100;
 		}
@@ -270,13 +271,15 @@ Provider.prototype.parseHarbour = function(words)
 		} else
 		if(	words[0] == "local".substr(0,words[0].length) ||
 			words[0] == "public".substr(0,words[0].length) ||
-			words[0] == "private".substr(0,words[0].length))
+			words[0] == "private".substr(0,words[0].length) || 
+			words[0] == "static".substr(0,words[0].length))
 		{
-			if(this.currentMethod.length>0)
+			if(this.currentMethod.length>0 || words[0].startsWith("stat"))
 			{
 				var kind = "local";
 				if(words[0].startsWith("publ")) kind = "public";
-				if(words[0].startsWith("private")) kind = "private";
+				if(words[0].startsWith("priv")) kind = "private";
+				if(words[0].startsWith("stat")) kind = "static";
 				var list = toDeclareList(words.slice(1));
 				for (var i = 0; i < list.length; i++) 
 				{

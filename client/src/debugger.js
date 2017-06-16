@@ -432,7 +432,7 @@ harbourDebugSession.prototype.processBreak = function(line)
 	} else
 	{
 		dest.response.body.breakpoints[idBreak].verified = false;
-		if(aInfo[4]=='notfound')
+		if(aInfos[4]=='notfound')
 			dest.response.body.breakpoints[idBreak].message = "module not found"
 		else
 			dest.response.body.breakpoints[idBreak].message = "invalid line"		
