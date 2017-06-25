@@ -3,7 +3,7 @@
   "description": "Server part of Harbour language support for visual studio code.",
   "version": "0.0.1",
   "author": "aperricone",
-  "main": "src/index.js",
+  "main": "src/main.js",
   "engines": {
     "node": "*"
   },

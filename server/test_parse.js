@@ -1,4 +1,4 @@
-var provider = require('./provider.js');
+var provider = require('./src/provider.js');
 
 var p = new provider.Provider();
 p.parseFile("../test/dbg_test.prg").then(()=>
