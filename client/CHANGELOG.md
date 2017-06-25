@@ -4,6 +4,9 @@ All notable changes to the "harbour" extension will be documented in this file.
 ## Planned
 - Show matches on 'if-else-endif', 'for-exit-loop-next' etc...
 
+## 0.4.1
+ - send symbol kind in the correct way to have icons
+
 ## 0.4.0
  - added Language server
  - Added workspace symbol provider

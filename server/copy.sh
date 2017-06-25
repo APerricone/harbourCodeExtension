@@ -1,3 +1,3 @@
-cp -R src/ ../client/server/src
-cp  package.json ../client/server
-cp -R node_modules/ ../client/server/node_modules
+cp -Rvf src/ ../client/server
+cp -vf package.json ../client/server
+cp -Rvf node_modules/ ../client/server
