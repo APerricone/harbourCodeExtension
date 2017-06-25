@@ -45,6 +45,31 @@ function ParseFiles()
 var documents = new server.TextDocuments();
 documents.listen(connection);
 
+function kindTOVS(kind)
+{
+    switch(kind)
+    {
+        case "class":
+            return server.SymbolKind.Class;
+        case "method":
+            return server.SymbolKind.Method;
+        case "data":
+            return server.SymbolKind.Property;
+        case "function":
+        case "procedure":
+        case "function*":
+        case "procedure*":
+        case "C-FUNC":
+            return server.SymbolKind.Function;
+        case "local":
+        case "static":
+        case "public":
+        case "private":
+            return server.SymbolKind.Variable;
+    }
+    return kind;
+}
+
 connection.onDocumentSymbol((param)=>
 {
     var p = new provider.Provider
@@ -56,7 +81,7 @@ connection.onDocumentSymbol((param)=>
             var info = p.funcList[fn];
             dest.push(server.SymbolInformation.create(
                 info.name,
-                info.kind,
+                kindTOVS(info.kind),
                 server.Range.create(info.startLine,info.startCol,info.endLine,info.endCol),
                 param.textDocument.uri, info.parent)
             );
@@ -83,7 +108,7 @@ connection.onWorkspaceSymbol((param)=>
                 continue;
             dest.push(server.SymbolInformation.create(
                 info.name,
-                info.kind,
+                kindTOVS(info.kind),
                 server.Range.create(info.startLine,info.startCol,info.endLine,info.endCol),
                 file, info.parent));
         }

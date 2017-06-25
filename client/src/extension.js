@@ -1,7 +1,6 @@
 var vscode = require('vscode');
 var path = require('path');
 var validation = require('./validation.js');
-var provider = require('./provider.js');
 //var decorator = require('./decorator.js');
 var client = require('vscode-languageclient');
 
@@ -18,11 +17,12 @@ function activate(context) {
 	validation.activate(context);
 	//decorator.activate(context);
 
-	var serverModule = context.asAbsolutePath(path.join('..','server')); //,'src', 'main.js'));
+	var serverModuleDbg = context.asAbsolutePath(path.join('..','server'));
+	var serverModule = context.asAbsolutePath('server');
 	var debugOptions = { execArgv: ["--nolazy", "--debug-brk=21780"] };
 	var serverOptions = {
 		run : { module: serverModule, transport: client.TransportKind.ipc },
-		debug: { module: serverModule, transport: client.TransportKind.ipc , options: debugOptions }
+		debug: { module: serverModuleDbg, transport: client.TransportKind.ipc , options: debugOptions }
 	}
 	var clientOptions = {
 		documentSelector: ['harbour'],
