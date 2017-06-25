@@ -1,7 +1,7 @@
 var vscode = require('vscode');
 var path = require('path');
 var validation = require('./validation.js');
-//var decorator = require('./decorator.js');
+var decorator = require('./decorator.js');
 var client = require('vscode-languageclient');
 
 var diagnosticCollection;
@@ -23,7 +23,8 @@ function activate(context) {
 	var serverOptions = {
 		run : { module: serverModule, transport: client.TransportKind.ipc },
 		debug: { module: serverModuleDbg, transport: client.TransportKind.ipc , options: debugOptions }
-	}
+	} 
+
 	var clientOptions = {
 		documentSelector: ['harbour'],
 		synchronize: {
