@@ -5,9 +5,9 @@
 	"tasks": [
 		{
 			"taskName": "copy to client",
-			"command": "copy.sh",
+			"command": "${workspaceRoot}/copy.sh",
 			"windows": {
-				"command": "copy.bat"
+				"command": "${workspaceRoot}/copy.bat"
 			}
 		}
 	]
