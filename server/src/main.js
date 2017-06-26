@@ -12,13 +12,7 @@ var workspaceRoot;
 var files;
 connection.onInitialize(params => 
 {
-    workspaceRoot = undefined;
-    if (params.rootUri)
-    {
-    // other scheme of uri unsupported
-        if(workspaceRoot.startsWith("file"))
-	        workspaceRoot = params.rootUri.substr(7);
-    }
+    workspaceRoot = params.rootUri;
     if(!workspaceRoot)
     {
         if(path.sep=="\\") //window
@@ -42,8 +36,10 @@ function ParseFiles()
     files = {};
     // other scheme of uri unsupported
     if(!workspaceRoot.startsWith("file")) return;
-    var path = workspaceRoot.substr(7);
-	fs.readdir(path,function(err,ff)
+    var workspacePath = workspaceRoot.substr(7);
+    if(path.sep == "\\")
+        workspacePath = workspaceRoot.substr(8).replace("%3A",":")
+	fs.readdir(workspacePath,function(err,ff)
     {
         if(ff==undefined) return;
         for (var i = 0; i < ff.length; i++) {
@@ -51,7 +47,7 @@ function ParseFiles()
             if(fileName.substr(-4).toLowerCase() != ".prg") continue;
             var fileUri = workspaceRoot+"/"+encodeURI(fileName)
             var pp = new provider.Provider();
-            pp.parseFile(path+"/"+fileName);
+            pp.parseFile(workspacePath+"/"+fileName);
             files[fileUri] = pp;
         }
     });
@@ -119,7 +115,7 @@ connection.onWorkspaceSymbol((param)=>
                 info.kind!="procedure" && 
                 info.kind!="function")
                 continue;
-            if(param.query.length>0 && info.name.toLowerCase().indexOf(param.query)==-1)
+            if(param.query.length>0 && info.name.toLowerCase().indexOf(src)==-1)
                 continue;
             dest.push(server.SymbolInformation.create(
                 info.name,
