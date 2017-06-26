@@ -4,6 +4,9 @@ All notable changes to the "harbour" extension will be documented in this file.
 ## Planned
 - Show matches on 'if-else-endif', 'for-exit-loop-next' etc...
 
+## 0.4.2
+ - fixed some windows issues
+
 ## 0.4.1
  - send symbol kind in the correct way to have icons
 
