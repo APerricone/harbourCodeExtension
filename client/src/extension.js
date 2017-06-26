@@ -1,8 +1,8 @@
 var vscode = require('vscode');
 var path = require('path');
 var validation = require('./validation.js');
-var provider = require('./provider.js');
 //var decorator = require('./decorator.js');
+var client = require('vscode-languageclient');
 
 var diagnosticCollection;
 
@@ -17,10 +17,22 @@ function activate(context) {
 	validation.activate(context);
 	//decorator.activate(context);
 
-	context.subscriptions.push(vscode.languages.registerDocumentSymbolProvider(
-		{ "language": 'harbour'},
-		new provider.Provider()));
-}
+	var serverModuleDbg = context.asAbsolutePath(path.join('..','server'));
+	var serverModule = context.asAbsolutePath('server');
+	var debugOptions = { execArgv: ["--nolazy", "--debug-brk=21780"] };
+	var serverOptions = {
+		run : { module: serverModule, transport: client.TransportKind.ipc },
+		debug: { module: serverModuleDbg, transport: client.TransportKind.ipc , options: debugOptions }
+	}
+	var clientOptions = {
+		documentSelector: ['harbour'],
+		synchronize: {
+			configurationSection: 'harbour'
+		}
+	}
+	context.subscriptions.push(new client.LanguageClient('HarbourServer', 
+		'Harbour Server', serverOptions, clientOptions).start());
+}	
 
 function deactivate() {
 	 validation.deactivate();

@@ -15,12 +15,13 @@ Provider.prototype.Clear = function()
 	this.currLine = "";
 	this.lineNr = -1;
 	this.startLine = 0;
+	this.lastCodeLine = 0;
 	//** @type{array} */
 	this.funcList = [];
 	this.cMode = false;
 	this.currentDocument = "";
-	this.currentClass = "";
-	this.currentMethod = "";
+	this.currentClass = undefined;
+	this.currentMethod = undefined;
 }
 
 /**
@@ -36,13 +37,21 @@ Provider.prototype.Clear = function()
  */
 function Info(name,kind,parent,document,startLine,startCol,endLine,endCol)
 {
+	/** @type {string} */
 	this.name = name;
+	/** @type {string} */
 	this.kind = kind;
+	/** @type {string} */
 	this.parent = parent;
+	/** @type {string} */
 	this.document = document;
+	/** @type {number} */
 	this.startLine = startLine;
+	/** @type {number} */
 	this.startCol = startCol;
+	/** @type {number} */
 	this.endLine = endLine;
+	/** @type {number} */
 	this.endCol = endCol;
 }
 
@@ -59,14 +68,17 @@ Provider.prototype.addInfo = function(name,kind,parent, search)
 			var m=rr.exec(line)
 			if(m)
 			{
-				this.funcList.push(new Info(name,kind,parent,this.currentDocument,
-					this.startLine+i,m.index,this.startLine+i,m.index+name.length));
-				return;
+				var ii = new Info(name,kind,parent,this.currentDocument,
+					this.startLine+i,m.index,this.startLine+i,m.index+name.length);
+				this.funcList.push(ii);
+				return ii;
 			}			
 		}
 	}
-	this.funcList.push(new Info(name,kind,parent,this.currentDocument,
-		this.startLine,0,this.lineNr,1000));	
+	var ii = new Info(name,kind,parent,this.currentDocument,
+		this.startLine,0,this.lineNr,1000);
+	this.funcList.push(ii);
+	return ii;
 }
 
 Provider.prototype.linePP = function(line)
@@ -212,26 +224,26 @@ Provider.prototype.parseHarbour = function(words)
 	{
 		if(words[0] == "class")
 		{
-			this.currentClass = words[1];
-			this.addInfo(words[1],'class')
+			if(this.currentMethod) this.currentMethod.endLine = this.lastCodeLine;
+			this.currentClass = this.addInfo(words[1],'class')
 		} else
 		if(words[0] == "endclass")
 		{
-			var toChange = this.funcList.find( v => v.name == this.currentClass && v.kind == 'class');
-			if(toChange)
+			if(this.currentClass)
 			{
-				toChange.endLine = this.lineNr;
+				if(this.currentMethod) this.currentMethod.endLine = this.lastCodeLine;
+				this.currentClass.endLine = this.lineNr;
 			}
 		} else
 		if(words[0] == "data")
 		{
-			if(this.currentClass.length>0)
+			if(this.currentClass>0)
 			{	
 				var list = toDeclareList(words.slice(1));
 				for (var i = 0; i < list.length; i++) 
 				{
 					var m = list[i].split(/\s/).filter((el) => el.length!=0);
-					this.addInfo(m[0],'data',this.currentClass,true);
+					this.addInfo(m[0],'data',this.currentClass.name,true);
 				}
 			}
 		} else
@@ -240,9 +252,13 @@ Provider.prototype.parseHarbour = function(words)
 			var r = methodRegEx.exec(this.currLine);
 			if(r)
 			{
-				this.currentClass = r[4] || this.currentClass;
-				this.addInfo(r[2],'method',this.currentClass);
-				this.currentMethod = r[2];
+				var className
+				if(this.currentClass)
+					className = r[4] || this.currentClass.name;
+				else
+					className = r[4] || "??";
+				if(this.currentMethod) this.currentMethod.endLine = this.lastCodeLine;
+				this.currentMethod = this.addInfo(r[2],'method',className);
 			}
 		} else
 		if(	words[0] == "procedure".substr(0,words[0].length) ||
@@ -265,8 +281,8 @@ Provider.prototype.parseHarbour = function(words)
 			{
 				var kind = r[1].startsWith('p')? "procedure" : "function";
 				if(words[0].startsWith("stat")) kind+="*"; 
-				this.addInfo(r[2],kind);
-				this.currentMethod = r[2];
+				if(this.currentMethod) this.currentMethod.endLine = this.lastCodeLine;
+				this.currentMethod = this.addInfo(r[2],kind);
 			}
 		} else
 		if(	words[0] == "local".substr(0,words[0].length) ||
@@ -274,7 +290,7 @@ Provider.prototype.parseHarbour = function(words)
 			words[0] == "private".substr(0,words[0].length) || 
 			words[0] == "static".substr(0,words[0].length))
 		{
-			if(this.currentMethod.length>0 || words[0].startsWith("stat"))
+			if(this.currentMethod || words[0].startsWith("stat"))
 			{
 				var kind = "local";
 				if(words[0].startsWith("publ")) kind = "public";
@@ -283,8 +299,8 @@ Provider.prototype.parseHarbour = function(words)
 				var list = toDeclareList(words.slice(1));
 				for (var i = 0; i < list.length; i++) 
 				{
-					var m = list[i].split(/\s/).filter((el) => el.length!=0);
-					this.addInfo(m[0],kind,this.currentMethod,true);
+					var m = list[i].split(/[\s:=]/).filter((el) => el.length!=0);
+					this.addInfo(m[0],kind,this.currentMethod.name,true);
 				}
 			}
 		} //else
@@ -330,6 +346,23 @@ Provider.prototype.parse = function(line)
 	{
 		this.parseC(words)
 	}
+	this.lastCodeLine = this.lineNr;
+}
+
+Provider.prototype.parseString = function(txt)
+{
+	var providerThisContext = this;
+	this.Clear();
+	var lines = txt.split(/\r?\n/);
+	for (var i = 0; i < lines.length; i++) {
+		providerThisContext.parse(lines[i])
+	}
+	providerThisContext.endParse();
+}
+
+Provider.prototype.endParse = function()
+{
+	if(this.currentMethod) this.currentMethod.endLine = this.lastCodeLine;
 }
 
 Provider.prototype.parseFile = function(file,encoding)
@@ -345,6 +378,7 @@ Provider.prototype.parseFile = function(file,encoding)
 		reader.on("line",d => providerThisContext.parse(d));
 		reader.on("close",() => 
 		{
+			providerThisContext.endParse();
 			providerThisContext.currentDocument = startDoc;
 			resolve(providerThisContext.funcList);
 		})

@@ -11,7 +11,7 @@ the versione 0.3 has a new debugger library, you must update it!!
 - Debug support
 - Diagnostic infos
 - Symbol Definitions Within a Document provider (access it by pressing <kbd>CTRL</kbd>+<kbd>P</kbd> then <kbd>@</kbd>)
-- [TODO] Symbol Definitions in folder provider
+- Symbol Definitions in folder provider (access it by pressing <kbd>CTRL</kbd>+<kbd>P</kbd> then <kbd>#</kbd>)
 
 > Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
 
