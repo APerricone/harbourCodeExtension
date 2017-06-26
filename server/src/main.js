@@ -1,6 +1,7 @@
 var provider = require('./provider.js');
 var server = require('vscode-languageserver')
 var fs = require("fs");
+var path = require("path");
 
 var connection = server.createConnection(
         new server.IPCMessageReader(process), 
@@ -9,8 +10,22 @@ var connection = server.createConnection(
 /** @type {string} */
 var workspaceRoot;
 var files;
-connection.onInitialize(params => {
-	workspaceRoot = params.rootUri;
+connection.onInitialize(params => 
+{
+    workspaceRoot = undefined;
+    if (params.rootUri)
+    {
+    // other scheme of uri unsupported
+        if(workspaceRoot.startsWith("file"))
+	        workspaceRoot = params.rootUri.substr(7);
+    }
+    if(!workspaceRoot)
+    {
+        if(path.sep=="\\") //window
+            workspaceRoot = "file://"+encodeURI(params.rootPath.replace(/\\/g,"/"));
+        else
+            workspaceRoot = "file://"+encodeURI(params.rootPath);
+    }
     ParseFiles()
 	return {
 		capabilities: {
@@ -111,6 +126,8 @@ connection.onWorkspaceSymbol((param)=>
                 kindTOVS(info.kind),
                 server.Range.create(info.startLine,info.startCol,info.endLine,info.endCol),
                 file, info.parent));
+            if(dest.length>100)
+                return [];
         }
     }
     return dest;
