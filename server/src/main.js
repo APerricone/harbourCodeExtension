@@ -26,7 +26,7 @@ connection.onInitialize(params =>
             documentSymbolProvider: true,
             workspaceSymbolProvider: true,
 			// Tell the client that the server works in FULL text document sync mode
-			textDocumentSync: 2,
+			textDocumentSync: 1,
 		}
 	}
 });
@@ -55,6 +55,12 @@ function ParseFiles()
 
 var documents = new server.TextDocuments();
 documents.listen(connection);
+documents.onDidSave((e)=>
+{
+    var pp = new provider.Provider();
+    files[e.document.uri] = pp;
+    pp.parseString(e.document.getText());
+})
 
 function kindTOVS(kind)
 {
