@@ -300,7 +300,9 @@ Provider.prototype.parseHarbour = function(words)
 				for (var i = 0; i < list.length; i++) 
 				{
 					var m = list[i].split(/[\s:=]/).filter((el) => el.length!=0);
-					this.addInfo(m[0],kind,this.currentMethod.name,true);
+					if(m[0])
+						this.addInfo(m[0],kind,
+								this.currentMethod?this.currentMethod.name : "",true);
 				}
 			}
 		} //else

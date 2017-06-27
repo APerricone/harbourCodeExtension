@@ -306,20 +306,52 @@ static function getValue(req)
 					v := hb_HGetDef(v,aIndices[i],nil)
 					exit
 				case "O"
-					v :=  __objSendMsg(v,aIndices[i])
+					v :=  __dbgObjGetValue(val(aInfos[2]),v,aIndices[i])
 			endswitch
 		next
 	endif	
 return v
 
+STATIC FUNCTION __dbgObjGetValue( nProcLevel, oObject, cVar )
+
+   LOCAL xResult
+   LOCAL oErr
+
+#ifdef __XHARBOUR__
+   TRY
+      xResult := dbgSENDMSG( nProcLevel, oObject, cVar )
+   CATCH
+      TRY
+         xResult := dbgSENDMSG( 0, oObject, cVar )
+      CATCH
+         xResult := oErr:description
+      END
+   END
+#else
+   BEGIN SEQUENCE WITH {|| Break() }
+      xResult := __dbgSENDMSG( nProcLevel, oObject, cVar )
+
+   RECOVER
+      BEGIN SEQUENCE WITH {| oErr | Break( oErr ) }
+         /* Try to access variables using class code level */
+         xResult := __dbgSENDMSG( 0, oObject, cVar )
+      RECOVER USING oErr
+         xResult := oErr:description
+      END SEQUENCE
+   END SEQUENCE
+#endif
+   RETURN xResult
+
 static procedure sendCoumpoundVar(req, cParams ) 
 	local value := getValue(@req)
+	local aInfos := hb_aTokens(req,":")
 	local aParams := fixVarCParams(cParams,1,len(value))
 	local iStart := aParams[2]
 	local iCount := aParams[3]
 	local i, idx,vSend, cLine, aData
 	if valtype(value) == "O"
-		aData := __objGetValueList(value)
+		//aData := __objGetValueList(value) // , value:aExcept())
+		aData :=   __objGetMsgList( value )
 		aParams := fixVarCParams(cParams,1,len(aData))
 		iStart := aParams[2]
 		iCount := aParams[3]
@@ -344,8 +376,8 @@ static procedure sendCoumpoundVar(req, cParams )
 				vSend:=hb_HGetDef(value,idx,nil)
 				exit
 			case "O"
-				idx := aData[i,1]
-				vSend := aData[i,2]
+				idx := aData[i]
+				vSend := __dbgObjGetValue(VAL(aInfos[2]),value, aData[i])
 				exit
 		endswitch
 		cLine := req + idx + ":" +;

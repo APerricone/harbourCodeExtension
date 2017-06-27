@@ -1,7 +1,9 @@
 #include <hbclass.ch>
 
 class oggetto
+protected:
    	DATA soo AS STRING
+exported:
    	DATA noo AS NUMERIC
    	DATA ioo, rdefrr
 	DATA newData
