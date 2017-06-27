@@ -25,6 +25,7 @@ connection.onInitialize(params =>
 		capabilities: {
             documentSymbolProvider: true,
             workspaceSymbolProvider: true,
+            definitionProvider: true,
 			// Tell the client that the server works in FULL text document sync mode
 			textDocumentSync: 1,
 		}
@@ -99,7 +100,8 @@ connection.onDocumentSymbol((param)=>
             dest.push(server.SymbolInformation.create(
                 info.name,
                 kindTOVS(info.kind),
-                server.Range.create(info.startLine,info.startCol,info.endLine,info.endCol),
+                server.Range.create(info.startLine,info.startCol,
+                                    info.endLine,info.endCol),
                 param.textDocument.uri, info.parent)
             );
         }        
@@ -121,12 +123,14 @@ connection.onWorkspaceSymbol((param)=>
                 info.kind!="procedure" && 
                 info.kind!="function")
                 continue;
-            if(param.query.length>0 && info.name.toLowerCase().indexOf(src)==-1)
+            if(param.query.length>0 && 
+            	info.name.toLowerCase().indexOf(src)==-1)
                 continue;
             dest.push(server.SymbolInformation.create(
                 info.name,
                 kindTOVS(info.kind),
-                server.Range.create(info.startLine,info.startCol,info.endLine,info.endCol),
+                server.Range.create(info.startLine,info.startCol,
+                                    info.endLine,info.endCol),
                 file, info.parent));
             if(dest.length>100)
                 return [];
@@ -134,6 +138,50 @@ connection.onWorkspaceSymbol((param)=>
     }
     return dest;
 });
+
+connection.onDefinition((params)=>
+{
+    var doc = documents.get(params.textDocument.uri);
+    /** @type {string} */
+    var pos = doc.offsetAt(params.position);
+    var text = doc.getText().substr(Math.max(pos-20,0),40);
+    var pos = pos<20? pos : 20;
+    var word;
+    var r = /\b[a-z][a-z0-9]*\b/gi
+    while(word = r.exec(text))
+    {
+        if(word.index<=pos && word.index+word[0].length>pos)
+            break;
+    }
+    if(!word) return [];
+    word=word[0].toLowerCase();
+    var dest = [];
+    for (var file in files) if (files.hasOwnProperty(file)) {
+        var pp = files[file];
+        for (var fn in pp.funcList) if (pp.funcList.hasOwnProperty(fn)) {
+            /** @type {provider.Info} */
+            var info = pp.funcList[fn];
+            if(info.name.toLowerCase() != word)
+                continue;
+            if(info.kind.endsWith("*") && file!=doc.uri)
+                continue;
+            if(info.kind=='local')
+            {
+                if(file!=doc.uri)
+                    continue;
+                var parent = pp.funcList.find(v=> v.name = info.parent);
+                if(parent.startLine>params.position.line)
+                    continue;
+                if(parent.endLine<params.position.line)
+                    continue;
+            }
+            dest.push(server.Location.create(file,
+                server.Range.create(info.startLine,info.startCol,
+                                    info.endLine,info.endCol)));
+        }
+    }
+    return dest;
+})
 /*
 connection.onDidChangeTextDocument(params => {
     var p = new provider.Provider();
