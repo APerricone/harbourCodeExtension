@@ -184,9 +184,9 @@ Provider.prototype.linePrepare = function()
 	}
 }
 
-function toDeclareList(list)
+Provider.prototype.parseDeclareList = function(list,kind,parent)
 {
-	list=list.join(" ");
+	//list=list.join(" ");
 	//console.log("-1:"+list);
 	for(var i=0;i<10;i++)
 	{
@@ -208,9 +208,17 @@ function toDeclareList(list)
 		} while(old.length!=list.length)
 		//console.log(i+":"+list);
 	}
-	list=list.replace(":="," ")
-	return list.split(",");
+	list=list.replace(/:=/g,"").split(",");
+	//return list.split(",");
+	for (var i = 0; i < list.length; i++) 
+	{
+		var m = list[i].split(/\s/).filter((el) => el.length!=0);
+		this.addInfo(m[0],kind,parent,true);
+	}
+
 }
+
+
 
 Provider.prototype.parseHarbour = function(words)
 {
@@ -239,12 +247,7 @@ Provider.prototype.parseHarbour = function(words)
 		{
 			if(this.currentClass>0)
 			{	
-				var list = toDeclareList(words.slice(1));
-				for (var i = 0; i < list.length; i++) 
-				{
-					var m = list[i].split(/\s/).filter((el) => el.length!=0);
-					this.addInfo(m[0],'data',this.currentClass.name,true);
-				}
+				this.parseDeclareList(words.slice(1).join(" "),'data',this.currentClass.name)
 			}
 		} else
 		if(words[0] == "method".substr(0,words[0].length))
@@ -283,6 +286,9 @@ Provider.prototype.parseHarbour = function(words)
 				if(words[0].startsWith("stat")) kind+="*"; 
 				if(this.currentMethod) this.currentMethod.endLine = this.lastCodeLine;
 				this.currentMethod = this.addInfo(r[2],kind);
+				if(r[3] && r[3].length)
+					this.parseDeclareList(r[3],"param",r[2]);
+
 			}
 		} else
 		if(	words[0] == "local".substr(0,words[0].length) ||
@@ -296,14 +302,7 @@ Provider.prototype.parseHarbour = function(words)
 				if(words[0].startsWith("publ")) kind = "public";
 				if(words[0].startsWith("priv")) kind = "private";
 				if(words[0].startsWith("stat")) kind = "static";
-				var list = toDeclareList(words.slice(1));
-				for (var i = 0; i < list.length; i++) 
-				{
-					var m = list[i].split(/[\s:=]/).filter((el) => el.length!=0);
-					if(m[0])
-						this.addInfo(m[0],kind,
-								this.currentMethod?this.currentMethod.name : "",true);
-				}
+				this.parseDeclareList(words.slice(1).join(" "),kind,this.currentMethod?this.currentMethod.name : "");
 			}
 		} //else
 	}	

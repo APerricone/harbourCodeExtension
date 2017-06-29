@@ -83,6 +83,7 @@ function kindTOVS(kind)
         case "static":
         case "public":
         case "private":
+        case "param":
             return server.SymbolKind.Variable;
     }
     return kind;
@@ -147,10 +148,10 @@ connection.onDefinition((params)=>
     var text = doc.getText().substr(Math.max(pos-20,0),40);
     var pos = pos<20? pos : 20;
     var word;
-    var r = /\b[a-z][a-z0-9]*\b/gi
+    var r = /\b[a-z_][a-z0-9_]*\b/gi
     while(word = r.exec(text))
     {
-        if(word.index<=pos && word.index+word[0].length>pos)
+        if(word.index<=pos && word.index+word[0].length>=pos)
             break;
     }
     if(!word) return [];
@@ -169,7 +170,7 @@ connection.onDefinition((params)=>
             {
                 if(file!=doc.uri)
                     continue;
-                var parent = pp.funcList.find(v=> v.name = info.parent);
+                var parent = pp.funcList.find(v=> v.name == info.parent);
                 if(parent.startLine>params.position.line)
                     continue;
                 if(parent.endLine<params.position.line)

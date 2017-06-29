@@ -15,6 +15,12 @@
             "type": "node",
             "request": "launch",
             "name": "Launch Program"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "test_parse",
+            "program": "${workspaceRoot}/test_parse.js"
         }
     ]
 }

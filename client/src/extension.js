@@ -15,7 +15,7 @@ function activate(context) {
 		}
 	});
 	validation.activate(context);
-	//decorator.activate(context);
+	decorator.activate(context);
 
 	var serverModuleDbg = context.asAbsolutePath(path.join('..','server'));
 	var serverModule = context.asAbsolutePath('server');
