@@ -2,7 +2,7 @@
     "name": "harbour",
     "displayName": "harbour",
     "description": "Harbour language support for visual studio code",
-    "version": "0.4.3",
+    "version": "0.4.4",
     "publisher": "aperricone",
     "icon": "harbourIcon.png",
     "main": "./src/extension",

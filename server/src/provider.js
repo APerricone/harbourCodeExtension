@@ -272,7 +272,7 @@ Provider.prototype.parseHarbour = function(words)
 					words[0] == "init" ||
 					words[0] == "exit"
 				) &&
-				words[1].length>4 && 
+				words[1].length>=4 && 
 				(
 					words[1] == "procedure".substr(0,words[1].length) ||
 					words[1] == "function".substr(0,words[1].length)

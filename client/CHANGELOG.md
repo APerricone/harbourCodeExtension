@@ -1,8 +1,9 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
-## Planned
-- Show matches on 'if-else-endif', 'for-exit-loop-next' etc...
+## 0.4.4
+- Show matches on 'if-else-endif', 'for-exit-loop-next' (in test)
+- Added "go to definition" that works only on current workspace.
 
 ## 0.4.3
  - fixed some windows issues
