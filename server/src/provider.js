@@ -213,7 +213,8 @@ Provider.prototype.parseDeclareList = function(list,kind,parent)
 	for (var i = 0; i < list.length; i++) 
 	{
 		var m = list[i].split(/\s/).filter((el) => el.length!=0);
-		this.addInfo(m[0],kind,parent,true);
+		if(m.length>0)
+			this.addInfo(m[0],kind,parent,true);
 	}
 
 }
