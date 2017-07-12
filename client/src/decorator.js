@@ -25,6 +25,10 @@ function activate(context)
 				var t=e;
 			});*/
 	}, null, context.subscriptions);
+	/*vscode.windows.onDidChange(editor =>
+	{
+
+	});*/
 	setDecorator(vscode.window.activeTextEditor);
 
 	vscode.window.onDidChangeTextEditorSelection((e) => showGroups(e) );
@@ -35,7 +39,7 @@ function setDecorator(editor)
 	if(!editor)
 		return;
 	var regExs = [	/\b((if)|else|elseif|(endif))\b/ig,
-					/\b((for)|loop|exit|(next))\b/ig,
+					/\b((for(?:\s+each)?)|loop|exit|(next))\b/ig,
 					/\b((switch|do\s+case)|case|otherwise|exit|(endswitch|endcase))\b/ig,
 					/\b((do\s+while)|loop|exit|(enddo))\b/ig];
 	var text = editor.document.getText();
@@ -60,7 +64,8 @@ function setDecorator(editor)
 				currGroup.push(new vscode.Range(startPos, endPos));
 			if(match[3]) 
 			{
-				groups.push(currGroup)
+				if(currGroup)
+					groups.push(currGroup)
 				if(stack.length>0)
 					currGroup=stack.pop();
 				else
@@ -70,8 +75,6 @@ function setDecorator(editor)
 		if(currGroup)
 			groups.push(currGroup)
 	}
-	//editor.setDecorations(decoration, places);
-	//vscode.getCodeEditor(editor).onDidChangeCursorPosition((e) => showGroups());
 }
 
 function showGroups(evt)
