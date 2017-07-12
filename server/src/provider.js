@@ -246,7 +246,7 @@ Provider.prototype.parseHarbour = function(words)
 		} else
 		if(words[0] == "data")
 		{
-			if(this.currentClass>0)
+			if(this.currentClass)
 			{	
 				this.parseDeclareList(words.slice(1).join(" "),'data',this.currentClass.name)
 			}

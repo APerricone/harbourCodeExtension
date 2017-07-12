@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
+## 0.4.5
+- added data and parameter kind of symbols provider
+- added "do case" in decorator
+
 ## 0.4.4
 - Show matches on 'if-else-endif', 'for-exit-loop-next' (in test)
 - Added "go to definition" that works only on current workspace.

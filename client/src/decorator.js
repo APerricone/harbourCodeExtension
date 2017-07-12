@@ -36,7 +36,7 @@ function setDecorator(editor)
 		return;
 	var regExs = [	/\b((if)|else|elseif|(endif))\b/ig,
 					/\b((for)|loop|exit|(next))\b/ig,
-					/\b((switch)|case|otherwise|exit|(endswitch))\b/ig,
+					/\b((switch|do\s+case)|case|otherwise|exit|(endswitch|endcase))\b/ig,
 					/\b((do\s+while)|loop|exit|(enddo))\b/ig];
 	var text = editor.document.getText();
 	var places = [];
