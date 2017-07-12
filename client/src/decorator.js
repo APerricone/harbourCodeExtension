@@ -25,12 +25,13 @@ function activate(context)
 				var t=e;
 			});*/
 	}, null, context.subscriptions);
-	/*vscode.windows.onDidChange(editor =>
-	{
-
-	});*/
 	setDecorator(vscode.window.activeTextEditor);
-
+	vscode.workspace.onDidChangeTextDocument(evt =>
+	{
+		if (evt.document.uri == vscode.window.activeTextEditor.document.uri) {
+			setDecorator(vscode.window.activeTextEditor);
+		}
+	});
 	vscode.window.onDidChangeTextEditorSelection((e) => showGroups(e) );
 }
 
@@ -52,13 +53,13 @@ function setDecorator(editor)
 		var regEx = regExs[i];
 		while (match = regEx.exec(text)) 
 		{
+			const startPos = editor.document.positionAt(match.index);
 			if(match[2])
 			{
 				if(currGroup)
 					stack.push(currGroup)
 				currGroup=[];
 			}
-			const startPos = editor.document.positionAt(match.index);
 			const endPos = editor.document.positionAt(match.index + match[0].length);
 			if(currGroup)
 				currGroup.push(new vscode.Range(startPos, endPos));
