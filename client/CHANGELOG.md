@@ -1,10 +1,13 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
+## 0.5.1
+- minimal optimization on debugger
+
 ## 0.5.0
 - restored version counter
 
-## 0.5.0
+## 0.4.7
 - fixed debugger
 
 ## 0.4.6

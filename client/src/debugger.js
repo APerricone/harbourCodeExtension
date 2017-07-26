@@ -175,7 +175,8 @@ harbourDebugSession.prototype.command = function(cmd)
  */
 harbourDebugSession.prototype.stackTraceRequest = function(response,args)
 {
-	this.command("STACK\r\n");
+	if(this.stack.length==0)
+		this.command("STACK\r\n");
 	this.stack.push(response);
 	this.stackArgs.push(args);
 }
@@ -207,15 +208,18 @@ harbourDebugSession.prototype.sendStack = function(line)
 		j++;
 		if(j==nStack)
 		{
-			var args = this.stackArgs.shift();
-			var resp = this.stack.shift();
-			args.startFrame = args.startFrame || 0;
-			args.levels = args.levels || 100;
-			args.levels += args.startFrame;
-			resp.body = {
-				stackFrames: frames.slice(args.startFrame, args.levels)
-			};
-			this.sendResponse(resp);
+			while(this.stack.length>0)
+			{
+				var args = this.stackArgs.shift();
+				var resp = this.stack.shift();
+				args.startFrame = args.startFrame || 0;
+				args.levels = args.levels || 100;
+				args.levels += args.startFrame;
+				resp.body = {
+					stackFrames: frames.slice(args.startFrame, args.levels)
+				};
+				this.sendResponse(resp);
+			}
 			this.processLine = undefined;
 		}
 	}
