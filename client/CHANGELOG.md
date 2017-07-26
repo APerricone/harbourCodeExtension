@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
+## 0.4.7
+- fixed debugger
+
 ## 0.4.6
 - removed decorator (i don't like if)
 - fixed square brace preceded by an upper case character (it is not string)

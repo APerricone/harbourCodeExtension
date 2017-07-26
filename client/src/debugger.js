@@ -12,8 +12,6 @@ var cp = require("child_process");
  */
 var harbourDebugSession = function()
 {
-	/** @type{vscode-debugadapter.StackTraceResponse} */
-	this.stack = [];
 	/** @type{child_process.child_process} */
 	this.process = null;
 	/** @type{net.socket} */
@@ -28,7 +26,8 @@ var harbourDebugSession = function()
 	/** @type{string[]} */
 	this.variableCommands = [];
 	/** @type{DebugProtocol.StackResponse} */
-	this.stack = null;
+	this.stack = [];
+	this.stackArgs = [];
 	this.justStart = true;
 	/** @type{string} */
 	this.queue = "";
@@ -99,7 +98,9 @@ harbourDebugSession.prototype.processInput = function(buff)
  */
 harbourDebugSession.prototype.initializeRequest = function (response, args) 
 {
+	response.body = response.body || {};
 	response.body.supportsConfigurationDoneRequest = true;
+	response.body.supportsDelayedStackTraceLoading = false;
 	//response.body.supportsEvaluateForHovers = true; too risky
 	this.sendResponse(response);
 };
@@ -175,8 +176,8 @@ harbourDebugSession.prototype.command = function(cmd)
 harbourDebugSession.prototype.stackTraceRequest = function(response,args)
 {
 	this.command("STACK\r\n");
-	this.stack = response;
-	this.stackArgs = args;
+	this.stack.push(response);
+	this.stackArgs.push(args);
 }
 
 harbourDebugSession.prototype.threadsRequest = function(response)
@@ -206,13 +207,15 @@ harbourDebugSession.prototype.sendStack = function(line)
 		j++;
 		if(j==nStack)
 		{
-			this.stackArgs.startFrame = this.stackArgs.startFrame || 0;
-			this.stackArgs.levels = this.stackArgs.levels || 20;
-			this.stackArgs.levels += this.stackArgs.startFrame;
-			this.stack.body = {
-				stackFrames: frames.slice(this.stackArgs.startFrame, this.stackArgs.levels)
+			var args = this.stackArgs.pop();
+			var resp = this.stack.pop();
+			args.startFrame = args.startFrame || 0;
+			args.levels = args.levels || 100;
+			args.levels += args.startFrame;
+			resp.body = {
+				stackFrames: frames.slice(args.startFrame, args.levels)
 			};
-			this.sendResponse(this.stack);
+			this.sendResponse(resp);
 			this.processLine = undefined;
 		}
 	}
