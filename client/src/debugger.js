@@ -207,8 +207,8 @@ harbourDebugSession.prototype.sendStack = function(line)
 		j++;
 		if(j==nStack)
 		{
-			var args = this.stackArgs.pop();
-			var resp = this.stack.pop();
+			var args = this.stackArgs.shift();
+			var resp = this.stack.shift();
 			args.startFrame = args.startFrame || 0;
 			args.levels = args.levels || 100;
 			args.levels += args.startFrame;
