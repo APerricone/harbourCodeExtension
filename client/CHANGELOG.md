@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
+## 0.5.2
+- debugger: better support for object expression, need recompile the library from test\dbg_lib.prg
+
 ## 0.5.1
 - minimal optimization on debugger
 
