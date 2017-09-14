@@ -1,5 +1,8 @@
 #include <hbclass.ch>
 
+STATIC TestStatic
+VAR TestLocal
+
 class oggetto
 protected:
    	DATA soo AS STRING
@@ -24,6 +27,9 @@ proc main( )
 	local c := oggetto():New()
 	local bs := "{|a,c| QOut(c:otherMedhod()) }"
 	local b := {|a,c| QOut(c:otherMedhod()) }
+	STATIC TestStatic2
+	TestStatic := {1,1,2,3,5,8,13,21,34,55,89,144}
+	TestStatic2 := {1,1,2,3,5,8,13,21,34,55,89,144}
 	c:newData := {1,2,3,4,5}
 	c:ioo := oggetto():New()
 	c:ioo:newData := {6,7,8,9,10}

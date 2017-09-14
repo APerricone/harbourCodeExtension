@@ -347,7 +347,7 @@ static procedure sendCoumpoundVar(req, cParams )
 	local aInfos := hb_aTokens(req,":")
 	local aParams := fixVarCParams(cParams,1,len(value))
 	local iStart := aParams[2]
-	local iCount := aParams[3]
+	local iCount := aParams[3], nMax := len(value)
 	local i, idx,vSend, cLine, aData
 	//? "sendCoumpoundVar",req,cParams
 	if valtype(value) == "O"
@@ -356,6 +356,7 @@ static procedure sendCoumpoundVar(req, cParams )
 		aParams := fixVarCParams(cParams,1,len(aData))
 		iStart := aParams[2]
 		iCount := aParams[3]
+		nMax := len(aData)
 	endif
 	hb_inetSend(t_oDebugInfo['socket'],req+CRLF)
 	if right(req,1)<>":"
@@ -363,7 +364,7 @@ static procedure sendCoumpoundVar(req, cParams )
 	endif
 	for i:=iStart to iStart+iCount
 	//for i:=1 to nVars
-		if i > len(Value)
+		if i > nMax
 			loop
 		endif
 		switch(valtype(value))
@@ -525,7 +526,7 @@ static function evalExpression( xExpr, level )
 	// replace all proc statics
 	for i:=1 to len(aStack[HB_DBG_CS_STATICS])
 		xExpr := replaceExpression(xExpr, @__dbg, aStack[HB_DBG_CS_STATICS,i,HB_DBG_VAR_NAME], ;
-					__dbgVMVarSGet(aStack[HB_DBG_CS_STATICS,i,HB_DBG_VAR_FRAME],aStack[HB_DBG_CS_LOCALS,i,HB_DBG_VAR_INDEX]))
+					__dbgVMVarSGet(__dbgProcLevel()-aStack[HB_DBG_CS_STATICS,i,HB_DBG_VAR_FRAME],aStack[HB_DBG_CS_STATICS,i,HB_DBG_VAR_INDEX]))
 	next
 	// replace all public
 	for i:=1 to __mvDbgInfo( HB_MV_PUBLIC )
@@ -608,15 +609,21 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			aAdd(t_oDebugInfo['aStack'], tmp)
 			exit
 		case HB_DBG_LOCALNAME
-			aAdd(t_oDebugInfo['aStack'][len(t_oDebugInfo['aStack'])][HB_DBG_CS_LOCALS], {uParam2, uParam1, "L", __dbgProcLevel()-1})
+			if t_oDebugInfo['bInitGlobals']
+				//? "LOCALNAME" + len(t_oDebugInfo['aStack'])
+			else
+				aAdd(t_oDebugInfo['aStack'][len(t_oDebugInfo['aStack'])][HB_DBG_CS_LOCALS], {uParam2, uParam1, "L", __dbgProcLevel()-1})
+			endif
 			exit
 		case HB_DBG_STATICNAME
 			if t_oDebugInfo['bInitStatics']
-				//TODO
+				//? "STATICNAME - bInitStatics", uParam1, uParam2, uParam3
 			elseif t_oDebugInfo['bInitGlobals']
-				//TODO
+				//? "STATICNAME - bInitGlobals", uParam1, uParam2, uParam3
 			else
-				aAdd(t_oDebugInfo['aStack'][len(t_oDebugInfo['aStack'])][HB_DBG_CS_STATICS], {uParam3, uParam1, "S", uParam2})
+				//? "STATICNAME", uParam1, uParam2, uParam3, valtype(uParam1), valtype(uParam2), valtype(uParam3) 
+				//aEval(uParam1,{|x,n| QOut(n,valtype(x),x)})
+				aAdd(t_oDebugInfo['aStack'][len(t_oDebugInfo['aStack'])][HB_DBG_CS_STATICS], {uParam3, uParam2, "S", __dbgProcLevel()})
 			endif
 			exit
 		case HB_DBG_ENDPROC

@@ -18,7 +18,7 @@ function deactivate()
 	 diagnosticCollection.dispose();
 }
 
-var valRegEx = /^\r?([^\(]*)\((\d+)\)\s+(Warning|Error)\s+([^\r\n]*)/
+var valRegEx = /^\r?(?:([^\(]*)\((\d+)\)\s+)?(Warning|Error)\s+([^\r\n]*)/
 function validate(textDocument)
 {
 	if(textDocument.languageId !== 'harbour' )
@@ -27,14 +27,16 @@ function validate(textDocument)
 	if(!section.validating)
 		return;
 	var args = ["-s", "-q0", "-m", "-n0", "-w"+section.warningLevel, textDocument.fileName ];
-	for (var i = 0; i < section.extraIncludePaths.length; i++) {
+	for (var i = 0; i < section.extraIncludePaths.length; i++) 
+	{
 		var path = section.extraIncludePaths[i];
 		args.push("-i"+path);
 	}
+	args = args.concat(section.extraOptions.split(" "));
 	var process = cp.spawn(section.compilerExecutable,args, { cwd: vscode.workspace.path });
 	process.on("error", e=>
 	{
-		vscode.window.showWarningMessage(`unable to start ${section.compilerExecutable}, check the "harbour.compilerExecutable" vlaue`);
+		vscode.window.showWarningMessage(`unable to start ${section.compilerExecutable}, check the "harbour.compilerExecutable" value`);
 	});
 	var diagnostics = {};
 	diagnostics[textDocument.fileName] = [];
@@ -51,7 +53,8 @@ function validate(textDocument)
 			var r = valRegEx.exec(subLine);
 			if(r)
 			{
-				var lineNr = parseInt(r[2])-1;
+				if(!r[1]) r[1]="";
+				var lineNr = r[2]? parseInt(r[2])-1 : 0;
 				var subject = r[4].match(/'([^']+)'/g);
 				if(subject && subject.length>1 && subject[1].indexOf("(")>=0)
 				{

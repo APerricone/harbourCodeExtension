@@ -160,7 +160,7 @@
 				},
 				{
 					"name": "string.square.harbour",
-					"begin": "(?<![a-zA-Z0-9_\\]])\\s*\\[",
+					"begin": "(?<![a-zA-Z0-9_\\]\\(\\)])\\s*\\[",
 					"end": "\\]|\\n"
 				}
 			]
