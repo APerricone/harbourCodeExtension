@@ -96,8 +96,8 @@
                     "body": {
                         "type": "harbour-dbg",
                         "request": "launch",
-                        "name": "${2:Launch ${1:Program}}",
-                        "program": "^\"\\${workspaceRoot}/${1:Program}\"",
+                        "name": "Launch ${2:Program}",
+                        "program": "^\"\\${workspaceRoot}/${2:Program}\"",
                         "workspaceRoot": "^\"\\${workspaceRoot}\""
                         }
                 } 
