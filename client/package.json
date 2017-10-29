@@ -79,6 +79,16 @@
             "runtime": "node",
 
             "languages": ["harbour"],
+            "initialConfigurations": [
+                {
+                    "type": "harbour-dbg",
+                    "request": "launch",
+                    "name": "Launch Program",
+                    "program": "${workspaceRoot}/Program",
+                    "workspaceRoot": "${workspaceRoot}"
+                } 
+                
+            ],
             "configurationSnippets": [
                 {
                     "label": "Harbour",
@@ -87,7 +97,8 @@
                         "type": "harbour-dbg",
                         "request": "launch",
                         "name": "${2:Launch ${1:Program}}",
-                        "program": "^\"\\${workspaceRoot}/${1:Program}\""
+                        "program": "^\"\\${workspaceRoot}/${1:Program}\"",
+                        "workspaceRoot": "^\"\\${workspaceRoot}\""
                         }
                 } 
             ],

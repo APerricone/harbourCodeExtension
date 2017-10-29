@@ -177,7 +177,7 @@ Provider.prototype.linePrepare = function()
 		}
 		if(c=="[")
 		{
-			if(/[a-zA-Z0-9_]/.test(precC))
+			if(/[a-zA-Z0-9_\[]/.test(precC))
 				string="]";
 			continue;
 		}
