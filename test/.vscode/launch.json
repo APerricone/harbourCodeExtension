@@ -25,7 +25,8 @@
 			"request": "launch",
 			"name": "Launch currentFile",
 			"program": "${workspaceRoot}/${fileBasenameNoExtension}",
-			"workspaceRoot": "${workspaceRoot}"
+			"workspaceRoot": "${workspaceRoot}",
+			"debugServer": 4711
 		}
 	]
 }

@@ -1,8 +1,29 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
-## Planned
-- Show matches on 'if-else-endif', 'for-exit-loop-next' etc...
+## 0.5.2
+- debugger: better support for object expression, need recompile the library from test\dbg_lib.prg
+
+## 0.5.1
+- minimal optimization on debugger
+
+## 0.5.0
+- restored version counter
+
+## 0.4.7
+- fixed debugger
+
+## 0.4.6
+- removed decorator (i don't like if)
+- fixed square brace preceded by an upper case character (it is not string)
+
+## 0.4.5
+- added data and parameter kind of symbols provider
+- added "do case" in decorator
+
+## 0.4.4
+- Show matches on 'if-else-endif', 'for-exit-loop-next' (in test)
+- Added "go to definition" that works only on current workspace.
 
 ## 0.4.3
  - fixed some windows issues

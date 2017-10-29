@@ -213,7 +213,8 @@ Provider.prototype.parseDeclareList = function(list,kind,parent)
 	for (var i = 0; i < list.length; i++) 
 	{
 		var m = list[i].split(/\s/).filter((el) => el.length!=0);
-		this.addInfo(m[0],kind,parent,true);
+		if(m.length>0)
+			this.addInfo(m[0],kind,parent,true);
 	}
 
 }
@@ -245,7 +246,7 @@ Provider.prototype.parseHarbour = function(words)
 		} else
 		if(words[0] == "data")
 		{
-			if(this.currentClass>0)
+			if(this.currentClass)
 			{	
 				this.parseDeclareList(words.slice(1).join(" "),'data',this.currentClass.name)
 			}
@@ -272,7 +273,7 @@ Provider.prototype.parseHarbour = function(words)
 					words[0] == "init" ||
 					words[0] == "exit"
 				) &&
-				words[1].length>4 && 
+				words[1].length>=4 && 
 				(
 					words[1] == "procedure".substr(0,words[1].length) ||
 					words[1] == "function".substr(0,words[1].length)

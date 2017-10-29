@@ -19,11 +19,14 @@ METHOD otherMedhod() CLASS oggetto
 return ::soo + " " + str(::noo)
 
 
-proc main()
+proc main( )
 	local i as numeric
 	local c := oggetto():New()
 	local bs := "{|a,c| QOut(c:otherMedhod()) }"
 	local b := {|a,c| QOut(c:otherMedhod()) }
+	c:newData := {1,2,3,4,5}
+	c:ioo := oggetto():New()
+	c:ioo:newData := {6,7,8,9,10}
 	AltD()
 	? "Perry"
 	eval(&bs,"",c)
@@ -33,7 +36,7 @@ proc main()
 	? i
 return
 
-func AltraFunzione()
+func AltraFunzione( )
 	local p := "sei fuori"
 	local a := {{'pp'=>3,'pi'=>3.14},{20,10},"AAA"}
 	memvar test,test2

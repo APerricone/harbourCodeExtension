@@ -26,7 +26,12 @@ function activate(context)
 			});*/
 	}, null, context.subscriptions);
 	setDecorator(vscode.window.activeTextEditor);
-
+	vscode.workspace.onDidChangeTextDocument(evt =>
+	{
+		if (evt.document.uri == vscode.window.activeTextEditor.document.uri) {
+			setDecorator(vscode.window.activeTextEditor);
+		}
+	});
 	vscode.window.onDidChangeTextEditorSelection((e) => showGroups(e) );
 }
 
@@ -35,8 +40,8 @@ function setDecorator(editor)
 	if(!editor)
 		return;
 	var regExs = [	/\b((if)|else|elseif|(endif))\b/ig,
-					/\b((for)|loop|exit|(next))\b/ig,
-					/\b((switch)|case|otherwise|exit|(endswitch))\b/ig,
+					/\b((for(?:\s+each)?)|loop|exit|(next))\b/ig,
+					/\b((switch|do\s+case)|case|otherwise|exit|(endswitch|endcase))\b/ig,
 					/\b((do\s+while)|loop|exit|(enddo))\b/ig];
 	var text = editor.document.getText();
 	var places = [];
@@ -48,19 +53,20 @@ function setDecorator(editor)
 		var regEx = regExs[i];
 		while (match = regEx.exec(text)) 
 		{
+			const startPos = editor.document.positionAt(match.index);
 			if(match[2])
 			{
 				if(currGroup)
 					stack.push(currGroup)
 				currGroup=[];
 			}
-			const startPos = editor.document.positionAt(match.index);
 			const endPos = editor.document.positionAt(match.index + match[0].length);
 			if(currGroup)
 				currGroup.push(new vscode.Range(startPos, endPos));
 			if(match[3]) 
 			{
-				groups.push(currGroup)
+				if(currGroup)
+					groups.push(currGroup)
 				if(stack.length>0)
 					currGroup=stack.pop();
 				else
@@ -70,8 +76,6 @@ function setDecorator(editor)
 		if(currGroup)
 			groups.push(currGroup)
 	}
-	//editor.setDecorations(decoration, places);
-	//vscode.getCodeEditor(editor).onDidChangeCursorPosition((e) => showGroups());
 }
 
 function showGroups(evt)

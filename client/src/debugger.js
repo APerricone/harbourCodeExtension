@@ -12,8 +12,6 @@ var cp = require("child_process");
  */
 var harbourDebugSession = function()
 {
-	/** @type{vscode-debugadapter.StackTraceResponse} */
-	this.stack = [];
 	/** @type{child_process.child_process} */
 	this.process = null;
 	/** @type{net.socket} */
@@ -28,7 +26,8 @@ var harbourDebugSession = function()
 	/** @type{string[]} */
 	this.variableCommands = [];
 	/** @type{DebugProtocol.StackResponse} */
-	this.stack = null;
+	this.stack = [];
+	this.stackArgs = [];
 	this.justStart = true;
 	/** @type{string} */
 	this.queue = "";
@@ -99,7 +98,9 @@ harbourDebugSession.prototype.processInput = function(buff)
  */
 harbourDebugSession.prototype.initializeRequest = function (response, args) 
 {
+	response.body = response.body || {};
 	response.body.supportsConfigurationDoneRequest = true;
+	response.body.supportsDelayedStackTraceLoading = false;
 	//response.body.supportsEvaluateForHovers = true; too risky
 	this.sendResponse(response);
 };
@@ -174,9 +175,10 @@ harbourDebugSession.prototype.command = function(cmd)
  */
 harbourDebugSession.prototype.stackTraceRequest = function(response,args)
 {
-	this.command("STACK\r\n");
-	this.stack = response;
-	this.stackArgs = args;
+	if(this.stack.length==0)
+		this.command("STACK\r\n");
+	this.stack.push(response);
+	this.stackArgs.push(args);
 }
 
 harbourDebugSession.prototype.threadsRequest = function(response)
@@ -206,13 +208,18 @@ harbourDebugSession.prototype.sendStack = function(line)
 		j++;
 		if(j==nStack)
 		{
-			this.stackArgs.startFrame = this.stackArgs.startFrame || 0;
-			this.stackArgs.levels = this.stackArgs.levels || 20;
-			this.stackArgs.levels += this.stackArgs.startFrame;
-			this.stack.body = {
-				stackFrames: frames.slice(this.stackArgs.startFrame, this.stackArgs.levels)
-			};
-			this.sendResponse(this.stack);
+			while(this.stack.length>0)
+			{
+				var args = this.stackArgs.shift();
+				var resp = this.stack.shift();
+				args.startFrame = args.startFrame || 0;
+				args.levels = args.levels || 100;
+				args.levels += args.startFrame;
+				resp.body = {
+					stackFrames: frames.slice(args.startFrame, args.levels)
+				};
+				this.sendResponse(resp);
+			}
 			this.processLine = undefined;
 		}
 	}
@@ -262,7 +269,15 @@ harbourDebugSession.prototype.getVarReference = function(line)
 {
 	var r = this.variableCommands.indexOf(line);
 	if(r>=0) return r+1;
+	var infos = line.split(":");
+	if(infos.length>4)
+	{ //the value can contains : , we need to rejoin it.
+		infos[2] = infos.splice(2).join(";").slice(0,-1);
+		infos.length = 3;
+		line = infos.join(":")+":"
+	}
 	this.variableCommands.push(line)
+	//this.sendEvent(new debugadapter.OutputEvent("added variable command:'"+line+"'\r\n","stdout"))
 	return this.variableCommands.length;
 }
 
@@ -463,7 +478,7 @@ harbourDebugSession.prototype.evaluateRequest = function(response,args)
 	this.evaluateResponse = response;
 	this.evaluateResponse.body = {};
 	this.evaluateResponse.body.result = args.expression; 
-	this.command(`EXPRESSION\r\n${args.frameId+1 || this.currentStack}:${args.expression}\r\n`)	
+	this.command(`EXPRESSION\r\n${args.frameId+1 || this.currentStack}:${args.expression.replace(/:/g,";")}\r\n`)	
 }
 
 /**
@@ -476,7 +491,7 @@ harbourDebugSession.prototype.processExpression = function(line)
 	var infos = line.split(":");
 	if(infos.length>4)
 	{ //the value can contains : , we need to rejoin it.
-		infos[3] = infos.splice(3).join(":");
+		infos[3] = infos.splice(3).join(";");
 	}
 	var line = "EXP:" + infos[1] + ":" + this.evaluateResponse.body.result + ":";
 	this.evaluateResponse.body = 

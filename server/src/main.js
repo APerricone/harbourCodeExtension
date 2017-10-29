@@ -166,7 +166,7 @@ connection.onDefinition((params)=>
                 continue;
             if(info.kind.endsWith("*") && file!=doc.uri)
                 continue;
-            if(info.kind=='local')
+            if(info.kind=='local' || info.kind=='param')
             {
                 if(file!=doc.uri)
                     continue;

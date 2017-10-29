@@ -287,7 +287,7 @@ static function getValue(req)
 			exit
 		case "EXP"
 			// TODO: aInfos[3] can include a : 
-			v := evalExpression(aInfos[3], val(aInfos[2]))
+			v := evalExpression( aInfos[3], val(aInfos[2]))
 	endswitch
 	// some variable changes its type during execution. mha
 	if at(valtype(v),"AHO") == 0
@@ -349,6 +349,7 @@ static procedure sendCoumpoundVar(req, cParams )
 	local iStart := aParams[2]
 	local iCount := aParams[3]
 	local i, idx,vSend, cLine, aData
+	//? "sendCoumpoundVar",req,cParams
 	if valtype(value) == "O"
 		//aData := __objGetValueList(value) // , value:aExcept())
 		aData :=   __objGetMsgList( value )
@@ -513,7 +514,9 @@ return xExpr
 static function evalExpression( xExpr, level ) 
 	local oErr, xResult, __dbg := {}
 	local i, cName, v
- 	local aStack := t_oDebugInfo['aStack',len(t_oDebugInfo['aStack'])-level+1]
+	local aStack := t_oDebugInfo['aStack',len(t_oDebugInfo['aStack'])-level+1]
+	//? "Expression:", xExpr
+	xExpr := strTran(xExpr,";",":")
 	// replace all locals
 	for i:=1 to len(aStack[HB_DBG_CS_LOCALS])
 		xExpr := replaceExpression(xExpr, @__dbg, aStack[HB_DBG_CS_LOCALS,i,HB_DBG_VAR_NAME], ;
