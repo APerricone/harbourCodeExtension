@@ -123,30 +123,74 @@
 				}
 			]
 		},
+		"escapes": {
+			"patterns": [
+				{
+					"name": "constant.character.escape.harbour",
+					"match": "\\\\u\\h{4}|\\\\U\\h{8}"
+				},
+				{
+					"name": "constant.character.escape.harbour",
+					"match": "\\\\['\"?\\\\abfnrtv]"
+				},
+				{
+					"name": "constant.character.escape.harbour",
+					"match": "\\\\[0-7]{1,3}"
+				},
+				{
+					"name": "constant.character.escape.harbour",
+					"match": "\\\\x\\h+"
+				}
+			]
+		},
 		"strings": {
 			"patterns": [
 				{
+					"begin": "^\\s*(#pragma)\\s+(__text|__stream)(?:\\s*\\|([^\n]*))*",
+					"end": "^\\s*(#pragma)\\s+(__endtext)",
+					"contentName": "string.multiline.harbour",
+					"beginCaptures": {
+						"1": { "name": "meta.preprocessor.pragma.harbour" },
+						"2": { "name": "keyword.text.harbor" },
+						"3": { "patterns": [
+							{"include":"source.harbour"},
+							{
+								"name": "variable.string.replace.harbour",
+								"match": "%s"
+							}
+						] }
+					},
+					"endCaptures": {
+						"1": { "name": "meta.preprocessor.pragma.harbour" },
+						"2": { "name": "keyword.text.harbor" }
+					}
+				},
+				{
+					"begin": "^\\s*(#pragma)\\s+(__cstream)(?:\\s*\\|([^\n]*))*",
+					"end": "^\\s*(#pragma)\\s+(__endtext)",
+					"contentName": "string.multiline.harbour",
+					"beginCaptures": {
+						"1": { "name": "meta.preprocessor.pragma.harbour" },
+						"2": { "name": "keyword.text.harbor" },
+						"3": { "patterns": [
+							{"include":"source.harbour"},
+							{
+								"name": "variable.string.replace.harbour",
+								"match": "%s"
+							}
+						] }
+					},
+					"endCaptures": {
+						"1": { "name": "meta.preprocessor.pragma.harbour" },
+						"2": { "name": "keyword.text.harbor" }
+					},
+					"patterns": [{"include":"#escapes"}]
+				},
+				{
 					"name": "string.escaped.harbour",
 					"begin": "[eE]\"",
-					"end": "\"",
-					"patterns": [
-						{
-							"match": "\\\\u\\h{4}|\\\\U\\h{8}",
-							"name": "constant.character.escape.harbour"
-						},
-						{
-							"match": "\\\\['\"?\\\\abfnrtv]",
-							"name": "constant.character.escape.harbour"
-						},
-						{
-							"match": "\\\\[0-7]{1,3}",
-							"name": "constant.character.escape.harbour"
-						},
-						{
-							"match": "\\\\x\\h+",
-							"name": "constant.character.escape.harbour"
-						}
-					]					
+					"end": "\"|\\n",
+					"patterns": [{"include":"#escapes"}]
 				},
 				{
 					"name": "string.quoted.double.harbour",
@@ -171,11 +215,11 @@
 					"begin": "(?i:^\\s*(#pragma)\\s+(BEGINDUMP))",
 					"end": "(?i:^\\s*(#pragma)\\s+(ENDDUMP))",
 					"contentName": "source.c.embedded.harbour",
-					"begincaptures": {
+					"beginCaptures": {
 						"1": { "name": "meta.preprocessor.pragma.harbour" },
 						"2": { "name": "keyword.dump.harbor" }
 					},
-					"endcaptures": {
+					"endCaptures": {
 						"1": { "name": "meta.preprocessor.pragma.harbour" },
 						"2": { "name": "keyword.dump.harbor" }
 					},
