@@ -28,3 +28,5 @@ test/errors.exe
 test/hb_out.log
 test/out.txt
 client/syntaxes/harbour.tmLanguage
+client/npm-debug.log
+client/npm-debug.log

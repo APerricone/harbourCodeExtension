@@ -55,7 +55,7 @@
 				},
 				{
 					"name": "comment.startline.asterisk.harbour",
-					"match": "^\\s*\\*\\s+(.*)"
+					"match": "^\\s*\\*(.*)"
 				}
 			]
 		},
