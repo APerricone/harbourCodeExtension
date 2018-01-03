@@ -3,7 +3,7 @@
 This is an extension for visual studio code about harbour programming language, it is still W.I.P. :)
 
 ## Warning
-the versione 0.3 has a new debugger library, you must update it!!
+the version 0.3 has a new debugger library, you must update it!!
 
 ## Features
 
@@ -25,6 +25,7 @@ This extension contributes the following settings:
 * `harbour.validating`: enable/disable the validation every open and save of harbour files.
 * `harbour.compilerExecutable`: sometime is necessary to set the path of the harbour executable to make validation works.
 * `harbour.extraIncludePaths`: add path where found the includes to avoid "file not found" error.
+* `harbour.extraOptions`: other options to pass to harbour compiler.
 * `harbour.warningLevel`: sets the warning level for validation.
 
 ## How to use the debugger<a name="DEBUG"></a>

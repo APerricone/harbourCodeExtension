@@ -2,7 +2,7 @@
     "name": "harbour",
     "displayName": "harbour",
     "description": "Harbour language support for visual studio code",
-    "version": "0.5.2",
+    "version": "0.5.5",
     "publisher": "aperricone",
     "icon": "harbourIcon.png",
     "main": "./src/extension",
@@ -39,6 +39,11 @@
                     "type": "string",
                     "description": "complete path of the harbour executable.",
                     "default": "harbour"
+                    },
+                "harbour.extraOptions": {
+                    "type": "string",
+                    "description": "other options to pass to harbour compiler.",
+                    "default": ""
                     },
                 "harbour.extraIncludePaths": {
                     "type": "array",

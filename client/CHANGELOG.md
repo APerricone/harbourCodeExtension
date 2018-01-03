@@ -1,6 +1,16 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
+## 0.5.5
+- added support for multiline text using #pragma
+
+## 0.5.4
+- added debugger initial configuration to allow creation of launch.json with harbour
+- minor fixes on tmlanguage.
+
+## 0.5.3
+- validation: added harbour.extraOptions to send extra options to harbour compiler.
+
 ## 0.5.2
 - debugger: better support for object expression, need recompile the library from test\dbg_lib.prg
 
