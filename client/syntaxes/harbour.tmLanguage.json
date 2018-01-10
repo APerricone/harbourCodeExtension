@@ -146,8 +146,8 @@
 		"strings": {
 			"patterns": [
 				{
-					"begin": "^\\s*(#pragma)\\s+(__text|__stream)(?:\\s*\\|([^\n]*))*",
-					"end": "^\\s*(#pragma)\\s+(__endtext)",
+					"begin": "(?i:^\\s*(#pragma)\\s+(__text|__stream)(?:\\s*\\|([^\n]*))*)",
+					"end": "(?i:^\\s*(#pragma)\\s+(__endtext))",
 					"contentName": "string.multiline.harbour",
 					"beginCaptures": {
 						"1": { "name": "meta.preprocessor.pragma.harbour" },
@@ -166,8 +166,8 @@
 					}
 				},
 				{
-					"begin": "^\\s*(#pragma)\\s+(__cstream)(?:\\s*\\|([^\n]*))*",
-					"end": "^\\s*(#pragma)\\s+(__endtext)",
+					"begin": "(?i:^\\s*(#pragma)\\s+(__cstream)(?:\\s*\\|([^\n]*))*)",
+					"end": "(?i:^\\s*(#pragma)\\s+(__endtext))",
 					"contentName": "string.multiline.harbour",
 					"beginCaptures": {
 						"1": { "name": "meta.preprocessor.pragma.harbour" },

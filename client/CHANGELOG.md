@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
+## 0.5.6
+- minor fixes on syntax
+
 ## 0.5.5
 - added support for multiline text using #pragma
 
