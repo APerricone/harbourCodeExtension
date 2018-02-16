@@ -256,6 +256,11 @@ static procedure sendFromInfo(prefix, cParams, HB_MV, lLocal)
 			endif
 		endif
 		value := __mvDbgInfo( HB_MV, i, @cName )
+		if HB_MV = HB_MV_PUBLIC
+			if cName = "T_ODEBUGINFO"
+				loop //skip debug info
+			endif
+		endif
 		// PRI::i:
 		cLine := left(prefix,3) + "::" + alltrim(str(i)) + "::" +;
 				  cName + ":" + valtype(value) + ":" + format(value)
@@ -267,7 +272,7 @@ return
 
 static function getValue(req) 
 	local aInfos := hb_aTokens(req,":")
-	local v, i, aIndices
+	local v, i, aIndices, cName
 	switch aInfos[1]
 		case "LOC"
 			v := __dbgVMVarLGet(__dbgProcLevel()-val(aInfos[2]),val(aInfos[3]))
@@ -280,10 +285,10 @@ static function getValue(req)
 			v := __dbgVMVarSGet(val(aInfos[2]),val(aInfos[3]))
 			exit
 		case "PRI"
-			v := __mvDbgInfo(HB_MV_PRIVATE,val(aInfos[3]))
+			v := __mvDbgInfo(HB_MV_PRIVATE,val(aInfos[3]), @cName)
 			exit
 		case "PUB"
-			v := __mvDbgInfo(HB_MV_PUBLIC,val(aInfos[3]))
+			v := __mvDbgInfo(HB_MV_PUBLIC,val(aInfos[3]), @cName)
 			exit
 		case "EXP"
 			// TODO: aInfos[3] can include a : 
@@ -302,8 +307,11 @@ static function getValue(req)
 					v:=v[val(aIndices[i])]
 					exit
 				case "H"
-					//TODO: support not character hashes keys
-					v := hb_HGetDef(v,aIndices[i],nil)
+					if i>len(v)
+						v := nil
+					else
+						v := hb_HValueAt(v,val(aIndices[i]))
+					endif
 					exit
 				case "O"
 					v :=  __dbgObjGetValue(val(aInfos[2]),v,aIndices[i])
@@ -348,7 +356,7 @@ static procedure sendCoumpoundVar(req, cParams )
 	local aParams := fixVarCParams(cParams,1,len(value))
 	local iStart := aParams[2]
 	local iCount := aParams[3], nMax := len(value)
-	local i, idx,vSend, cLine, aData
+	local i, idx,vSend, cLine, aData, idx2
 	//? "sendCoumpoundVar",req,cParams
 	if valtype(value) == "O"
 		//aData := __objGetValueList(value) // , value:aExcept())
@@ -369,21 +377,21 @@ static procedure sendCoumpoundVar(req, cParams )
 		endif
 		switch(valtype(value))
 			case "A"
-				idx := alltrim(str(i))
+				idx2 := idx := alltrim(str(i))
 				vSend:=value[i]
 				exit
 			case "H"
-				idx:=hb_HKeyAt(value,i)
-				//TODO: support not character hashes keys
-				vSend:=hb_HGetDef(value,idx,nil)
+				vSend:=hb_HValueAt(value,i)
+				idx2 := format(hb_HKeyAt(value,i))
+				idx := alltrim(str(i))
 				exit
 			case "O"
-				idx := aData[i]
+				idx2 := idx := aData[i]
 				vSend := __dbgObjGetValue(VAL(aInfos[2]),value, aData[i])
 				exit
 		endswitch
 		cLine := req + idx + ":" +;
-				  idx + ":" + valtype(vSend) + ":" + format(vSend)
+			idx2 + ":" + valtype(vSend) + ":" + format(vSend)
 		hb_inetSend(t_oDebugInfo['socket'],cLine + CRLF )
 	next
 

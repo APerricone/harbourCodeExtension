@@ -1,6 +1,13 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
+## 0.5.7
+- Fixed public and private hash and array watch (Thanks to Lailton Fernando Mariano for found the bug)
+- Added support for non string hash keys
+- removed "Globals" and "Externals" scope until they are not supported.
+
+**need recompile the library from test\dbg_lib.prg**
+
 ## 0.5.6
 - minor fixes on syntax
 

@@ -1,7 +1,6 @@
 #include <hbclass.ch>
 
 STATIC TestStatic
-VAR TestLocal
 
 class oggetto
 protected:
@@ -27,7 +26,7 @@ proc main( )
 	local c := oggetto():New()
 	local bs := "{|a,c| QOut(c:otherMedhod()) }"
 	local b := {|a,c| QOut(c:otherMedhod()) }
-	STATIC TestStatic2
+	STATIC TestStatic, TestStatic2
 	TestStatic := {1,1,2,3,5,8,13,21,34,55,89,144}
 	TestStatic2 := {1,1,2,3,5,8,13,21,34,55,89,144}
 	c:newData := {1,2,3,4,5}
@@ -44,10 +43,11 @@ return
 
 func AltraFunzione( )
 	local p := "sei fuori"
-	local a := {{'pp'=>3,'pi'=>3.14},{20,10},"AAA"}
-	memvar test,test2
-	public test := "non io"
-	private test2 := "altro"
+	local a := {{'ciao'=>'belli'},{20,10},"AAA"}
+	memvar test,test2,hh
+	public test := {"non io"}
+	public hh := {'pp'=>3,'pi'=>3.14,4=>{1,2}}
+	private test2 := {"altro"}
 	Called()
 	? p
 	? "più righe"
