@@ -1,7 +1,6 @@
 #include <hbclass.ch>
 
 STATIC TestStatic
-VAR TestLocal
 
 class oggetto
 protected:
@@ -21,13 +20,12 @@ METHOD otherMedhod() CLASS oggetto
 	endif
 return ::soo + " " + str(::noo)
 
-
 proc main( )
 	local i as numeric
 	local c := oggetto():New()
 	local bs := "{|a,c| QOut(c:otherMedhod()) }"
-	local b := {|a,c| QOut(c:otherMedhod()) }
-	STATIC TestStatic2
+	local b := {|c| QOut(c:otherMedhod()) }
+	STATIC TestStatic, TestStatic2
 	TestStatic := {1,1,2,3,5,8,13,21,34,55,89,144}
 	TestStatic2 := {1,1,2,3,5,8,13,21,34,55,89,144}
 	c:newData := {1,2,3,4,5}
@@ -40,14 +38,16 @@ proc main( )
 	AltraFunzione()
 	? i:=2
 	? i
+	TestLib()
 return
 
 func AltraFunzione( )
 	local p := "sei fuori"
-	local a := {{'pp'=>3,'pi'=>3.14},{20,10},"AAA"}
-	memvar test,test2
-	public test := "non io"
-	private test2 := "altro"
+	local a := {{'ciao'=>'belli'},{20,10},"AAA"}
+	memvar test,test2,hh
+	public test := {"non io"}
+	public hh := {'pp'=>3,'pi'=>3.14,4=>{1,2}}
+	private test2 := {"altro"}
 	Called()
 	? p
 	? "più righe"
@@ -62,6 +62,24 @@ proc Called()
 	local test := "1978-06-11 17:10:23.324"
 	? test2
 	
+
+proc TestLib()
+	LOCAL bb := {|| TestLibInside()}
+	FakeLib(bb)
+
+proc TestLibInside()
+	LOCAL bb := {|a| TestLibInside2(a)}
+	FakeLib(bb,4)
+
+proc TestLibInside2(v)
+	LOCAL a := "a"
+	? a,v
+
+#pragma /B-
+proc FakeLib(bBlock,par)
+	eval(bBlock, par)
+
+#pragma /B+
 
 /* notes from src/debug/debugger.prg:
 	__DbgEntry ACTIVATE -> breakpoint arrived,

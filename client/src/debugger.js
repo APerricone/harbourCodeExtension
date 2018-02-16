@@ -243,9 +243,9 @@ harbourDebugSession.prototype.scopesRequest = function(response, args)
 			new debugadapter.Scope("Public",2),
 			new debugadapter.Scope("Private local",3),
 			new debugadapter.Scope("Private external",4),
-			new debugadapter.Scope("Statics",5),
-			new debugadapter.Scope("Globals",6),
-			new debugadapter.Scope("Externals",7)
+			new debugadapter.Scope("Statics",5)
+			//new debugadapter.Scope("Globals",6),
+			//new debugadapter.Scope("Externals",7)
 		]
 	};
 	this.sendResponse(response)
