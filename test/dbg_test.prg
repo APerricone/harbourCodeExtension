@@ -20,12 +20,11 @@ METHOD otherMedhod() CLASS oggetto
 	endif
 return ::soo + " " + str(::noo)
 
-
 proc main( )
 	local i as numeric
 	local c := oggetto():New()
 	local bs := "{|a,c| QOut(c:otherMedhod()) }"
-	local b := {|a,c| QOut(c:otherMedhod()) }
+	local b := {|c| QOut(c:otherMedhod()) }
 	STATIC TestStatic, TestStatic2
 	TestStatic := {1,1,2,3,5,8,13,21,34,55,89,144}
 	TestStatic2 := {1,1,2,3,5,8,13,21,34,55,89,144}
@@ -39,6 +38,7 @@ proc main( )
 	AltraFunzione()
 	? i:=2
 	? i
+	TestLib()
 return
 
 func AltraFunzione( )
@@ -62,6 +62,24 @@ proc Called()
 	local test := "1978-06-11 17:10:23.324"
 	? test2
 	
+
+proc TestLib()
+	LOCAL bb := {|| TestLibInside()}
+	FakeLib(bb)
+
+proc TestLibInside()
+	LOCAL bb := {|a| TestLibInside2(a)}
+	FakeLib(bb,4)
+
+proc TestLibInside2(v)
+	LOCAL a := "a"
+	? a,v
+
+#pragma /B-
+proc FakeLib(bBlock,par)
+	eval(bBlock, par)
+
+#pragma /B+
 
 /* notes from src/debug/debugger.prg:
 	__DbgEntry ACTIVATE -> breakpoint arrived,
