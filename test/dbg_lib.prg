@@ -404,7 +404,7 @@ return
 static function IsValidStopLine(cModule,nLine) 
 	LOCAL iModule
 	LOCAL t_oDebugInfo := __DEBUGITEM()
-	local nIdx, cInfo, tmp
+	local nIdx, nInfo, tmp
 	cModule := alltrim(cModule)
 	iModule := aScan(t_oDebugInfo['aModules'],{|v| v[1]=cModule})
 	if iModule=0
@@ -415,13 +415,11 @@ static function IsValidStopLine(cModule,nLine)
 	endif
 	nIdx := nLine - t_oDebugInfo['aModules'][iModule,2]
 	tmp := Int(nIdx/8)
-	if tmp>len(t_oDebugInfo['aModules'][iModule,3])
+	if tmp>=len(t_oDebugInfo['aModules'][iModule,3])
 		return 0
 	endif
-	cInfo = Asc(SubStr(t_oDebugInfo['aModules'][iModule,3],tmp+1))
-	nIdx -= tmp * 8
-	cInfo := HB_BITAND(HB_BITSHIFT(cInfo, -nIdx),1)
-return cInfo
+	nInfo = Asc(SubStr(t_oDebugInfo['aModules'][iModule,3],tmp+1,1))
+return HB_BITAND(HB_BITSHIFT(nInfo, -(nIdx-tmp*8)),1)
 
 static procedure setBreakpoint(cInfo) 
 	LOCAL aInfos := hb_aTokens(cInfo,":"), idLine
@@ -488,9 +486,18 @@ static function inBreakpoint()
 	idLine := aScan(aBreaks[cFile], {|v| v=nLine })
 return idLine<>0
 
+//#define SAVEMODULES 
 static procedure AddModule(aInfo) 
-	local i, idx //, j, tmp, cc
 	LOCAL t_oDebugInfo := __DEBUGITEM()
+	local i, idx
+	#ifdef SAVEMODULES
+		local j, tmp, cc,fFileModules
+		if !file("modules.dbg")
+			fclose(fcreate("modules.dbg"))
+		endif
+		fFileModules := fopen("modules.dbg",1+64)
+		fSeek(fFileModules,0,2)
+	#endif
 	for i:=1 to len(aInfo)
 		aInfo[i,1] := alltrim(aInfo[i,1])
 		if len(aInfo[i,1])=0
@@ -502,17 +509,20 @@ static procedure AddModule(aInfo)
 		else
 			t_oDebugInfo['aModules'][idx] := aInfo[i]
 		endif
-		/*
-		fAppend("test.dbg",aInfo[i,1]+str(aInfo[i,2]))
-		? aInfo[i,1],aInfo[i,2]
-		for j:=1 to len(aInfo[i,3])*8
-			tmp := Int(j/8)
-			cc := asc(substr(aInfo[i,3],tmp+1,1))
-			fAppend("test.dbg",str(j),str(HB_BITAND(HB_BITSHIFT(cc, -(j-tmp*8)),1)),str(cc))
-			//? j, HB_BITAND(HB_BITSHIFT(cc, -(j-tmp*8)),1), cc
-		next
-		*/
+		
+		#ifdef SAVEMODULES
+			fWrite(fFileModules,aInfo[i,1]+str(aInfo[i,2])+e"\r\n")
+			for j:=1 to len(aInfo[i,3])*8
+				tmp := Int(j/8)
+				cc := asc(substr(aInfo[i,3],tmp+1,1))
+				fWrite(fFileModules,str(j+aInfo[i,2])+str(HB_BITAND(HB_BITSHIFT(cc, -(j-tmp*8)),1))+str(cc)+e"\r\n")
+				//? j, HB_BITAND(HB_BITSHIFT(cc, -(j-tmp*8)),1), cc
+			next
+		#endif
 	next
+	#ifdef SAVEMODULES
+		fclose(fFileModules)
+	#endif
 return
 
 static function replaceExpression(xExpr, __dbg, name, value) 
@@ -611,6 +621,10 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 					'bInitLines' =>  .F., ;
 					'errorBlock' => nil ;
 				}
+				__DEBUGITEM(t_oDebugInfo)
+				#ifdef SAVEMODULES
+					ferase("modules.dbg")
+				#endif
 			endif
 			if at("_INITSTATICS", uParam1)<>0
 				t_oDebugInfo['bInitStatics'] := .T.
@@ -674,7 +688,6 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			__dbgInvokeDebug(.F.)
 			exit
 	endswitch
-	__DEBUGITEM(t_oDebugInfo)
 
 #pragma BEGINDUMP
 

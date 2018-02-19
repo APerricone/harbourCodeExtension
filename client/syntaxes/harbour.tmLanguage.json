@@ -62,11 +62,11 @@
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.harbour",
-				"match": "\\b(?i:if|ELSEIF|ELSE|end\\s*(?:if|while|case|do|switch|class)?|for(?:\\s+each)?|to|next|do|while|switch|case|endcase|otherwise|exit|loop)\\b"
+				"match": "\\b(?i:if|ELSEIF|ELSE|end\\s*(if|while|case|do|switch|class)?|for(\\s+each)?|to|next|do|while|switch|case|endcase|otherwise|exit|loop)\\b"
 			},
 			{
 				"name": "keyword.function.harbour",				
-				"match": "\\b(?i:static|retu(?:r?(?:n))?|method|proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?|func(?:t(?:i(?:o(?:n)?)?)?)?)\\b"
+				"match": "\\b(?i:static|retu(rn?)?|method|proc(e(d(u(re?)?)?)?)?|func(t(i(on?)?)?)?)\\b"
 			},
 			{
 				"name": "keyword.declarations.harbour",
@@ -85,7 +85,7 @@
 			},
 			{
 				"name": "keyword.classes.harbour",
-				"match": "\\b(?i:(?:end)?class(?:data)?|method|data|message|init|constructor|destructor|hidden:|exported:)\\b"
+				"match": "\\b(?i:(end)?class(data)?|method|data|message|init|constructor|destructor|hidden:|exported:)\\b"
 			},
 			{
 				"name": "keyword.operator.logical.harbour",
@@ -94,7 +94,7 @@
 			{
 				"name": "meta.preprocessor.include.harbour",
 				"begin": "(?i:^\\s*#include\\s)",
-				"end": "(?=(?://|&&|/\\*))|(?<!;)(?=\n)",
+				"end": "(?=//|&&|/\\*)|(?<!;)(?=\\n)",
 				"patterns": [
 					{
 						"include": "#strings"
@@ -119,7 +119,11 @@
 				},
 				{
 					"name": "constant.time.quoted.harbour",
-					"match": "[tT]\"\\d{4}[-/\\.](?:0\\d|1[0-2])[-/\\.](?:[0-2]\\d|3[0-1])(?:\\s(?:[0-1]?\\d|2[0-3])(?::[0-5]?\\d(?::[0-5]?\\d(?:\\.\\d{1,3})?)?)?)?\""
+					"match": "[tT]\"\\d{1,4}[-/\\.](0\\d|1[0-2])[-/\\.]([0-2]\\d|3[0-1])(\\s([0-1]?\\d|2[0-3])(:[0-5]?\\d(:[0-5]?\\d(\\.\\d{1,3})?)?)?)?\""
+				},
+				{
+					"name": "constant.time.curly.harbour",
+					"match": "{\\s*\\^\\s*(\\d+[-/]\\d+[-/]\\d+\\s?)?(\\d+(:\\d+(:\\d+(\\.\\d+)?)?)?)?\\s+}"
 				}
 			]
 		},
