@@ -1,3 +1,12 @@
+/// Add some line empty
+/// it is necessary to test the offset 
+/// of modules inside the harbourd debug
+/// system.
+/// no code unltil line 14
+/// include, static are not code :)
+
+
+///OK
 #include <hbclass.ch>
 
 STATIC TestStatic
@@ -75,11 +84,11 @@ proc TestLibInside2(v)
 	LOCAL a := "a"
 	? a,v
 
-#pragma /B-
+#pragma -B-
 proc FakeLib(bBlock,par)
 	eval(bBlock, par)
 
-#pragma /B+
+#pragma -B+
 
 /* notes from src/debug/debugger.prg:
 	__DbgEntry ACTIVATE -> breakpoint arrived,
