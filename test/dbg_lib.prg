@@ -577,7 +577,7 @@ static procedure sendExpression( xExpr )
 	ENDIF
 	hb_inetSend(t_oDebugInfo['socket'],"EXPRESSION:"+alltrim(str(level))+":"+cType+":"+xResult+CRLF)
 return
-
+/*
 STATIC PROCEDURE ErrorBlockCode( e )
 	LOCAL t_oDebugInfo := __DEBUGITEM()
 	hb_inetSend(t_oDebugInfo['socket'],"ERROR:"+e:Description+CRLF)
@@ -587,6 +587,7 @@ STATIC PROCEDURE ErrorBlockCode( e )
 	if t_oDebugInfo['errorBlock']!=nil
 		eval(t_oDebugInfo['errorBlock'], e)
 	endif
+*/
 
 PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 	local tmp

@@ -82,7 +82,7 @@
         },
         {
             "taskName": "createLibrary",
-            "args": [ "dbg_lib", "-w", "-ql", "-ocode_dbg", "-debug","-gc3", "-hblib","-inc"],
+            "args": [ "dbg_lib", "-w", "-ql", "-ocode_dbg","-gc3", "-hblib","-inc"],
             "problemMatcher": [
             {
                 "owner": "cpp",
