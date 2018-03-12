@@ -26,6 +26,9 @@ connection.onInitialize(params =>
             documentSymbolProvider: true,
             workspaceSymbolProvider: true,
             definitionProvider: true,
+            signatureHelpProvider: {
+                triggerCharacters: ['(']
+            },
 			// Tell the client that the server works in FULL text document sync mode
 			textDocumentSync: 1,
 		}
@@ -178,10 +181,81 @@ connection.onDefinition((params)=>
             }
             dest.push(server.Location.create(file,
                 server.Range.create(info.startLine,info.startCol,
-                                    info.endLine,info.endCol)));
+                                info.endLine,info.endCol)));
         }
     }
     return dest;
+})
+
+connection.onSignatureHelp((params)=>
+{
+    var doc = documents.get(params.textDocument.uri);
+    var pos = doc.offsetAt(params.position)-1;
+    /** @type {string} */
+    var text = doc.getText();
+    // find (
+    var nP = 0;
+    var nC = 0;
+    while(nP!=0 || text[pos]!='(')
+    {
+        switch (text[pos]) {
+            case '(': nP--; break;
+            case ')': nP++; break;
+            case ',': if(nP==0) nC++; break;
+            case '\n': 
+                if ((text[pos-1]=='\r' && text[pos-2]==';') || text[pos-1]==';')
+                    break;
+                return undefined;
+                break;
+        }
+        pos--;
+    }
+    pos--;
+    var rge = /[0-9a-z_]/i;
+    var word = "";
+    while(rge.test(text[pos]))
+    {
+        word = text[pos]+word;
+        pos--;
+    }
+    word=word.toLowerCase();
+    var signatures = [];
+    for (var file in files) if (files.hasOwnProperty(file)) {
+        var pp = files[file];
+        for (var fn in pp.funcList) if (pp.funcList.hasOwnProperty(fn)) {
+            /** @type {provider.Info} */
+            var info = pp.funcList[fn];
+            if(!info.kind.startsWith("method") && !info.kind.startsWith("procedure") && !info.kind.startsWith("function"))
+                continue;
+            if(info.name.toLowerCase() != word)
+                continue;
+            if(info.kind.endsWith("*") && file!=doc.uri)
+                continue;
+            var s = {}
+            if (info.kind.startsWith("method"))
+                s["label"] = info.parent+":"+info.name;
+            else
+                s["label"] = info.name;
+            s["label"] += "("
+            var subParams = [];
+            for (var fn in pp.funcList) if (pp.funcList.hasOwnProperty(fn)) {
+                /** @type {provider.Info} */
+                var subinfo = pp.funcList[fn];
+                if(subinfo.parent==info.name && subinfo.kind=="param")
+                {
+                    subParams.push({"label":subinfo.name})
+                    if(!s.label.endsWith("("))
+                        s.label += ", "
+                    s.label+=subinfo.name
+                }
+            }
+            s["label"] += ")"
+            s["parameters"]=subParams;
+            if(subParams.length>=nC)
+                signatures.push(s);
+        }
+    }
+    return {signatures:signatures, activeParameter:nC}
 })
 /*
 connection.onDidChangeTextDocument(params => {

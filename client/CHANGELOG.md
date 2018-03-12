@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
+## 0.5.8
+- Added support for Signature help
+
 ## 0.5.7
 - Fixed public and private hash and array watch (Thanks to Lailton Fernando Mariano for found the bug)
 - Added support for non string hash keys

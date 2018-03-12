@@ -9,12 +9,15 @@
             "request": "attach",
             "name": "Attach",
             "port": 21780,
-			"protocol": "legacy"
+            "protocol": "inspector"
         },
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program"
+            "name": "Launch Program",
+            "args": [
+                "-v"
+            ]
         },
         {
             "type": "node",
