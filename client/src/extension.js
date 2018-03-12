@@ -19,20 +19,19 @@ function activate(context) {
 
 	var serverModuleDbg = context.asAbsolutePath(path.join('..','server'));
 	var serverModule = context.asAbsolutePath('server');
-	var debugOptions = { execArgv: ["--nolazy", "--debug-brk=21780"] };
+	var debugOptions = { execArgv: ["--nolazy", "--inspect=21780"] };
 	var serverOptions = {
 		run : { module: serverModule, transport: client.TransportKind.ipc },
 		debug: { module: serverModuleDbg, transport: client.TransportKind.ipc , options: debugOptions }
 	} 
-
 	var clientOptions = {
 		documentSelector: ['harbour'],
 		synchronize: {
 			configurationSection: 'harbour'
 		}
 	}
-	context.subscriptions.push(new client.LanguageClient('HarbourServer', 
-		'Harbour Server', serverOptions, clientOptions).start());
+	var cl = new client.LanguageClient('HarbourServer', 'Harbour Server', serverOptions, clientOptions);
+	context.subscriptions.push(cl.start());
 }	
 
 function deactivate() {

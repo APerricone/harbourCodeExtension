@@ -1,19 +1,17 @@
 {
   "name": "harbour-lang-server",
   "description": "Server part of Harbour language support for visual studio code.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "aperricone",
   "main": "src/main.js",
   "engines": {
     "node": "*"
   },
   "dependencies": {
-    "vscode-languageserver": "^3.1.0"
+    "vscode-languageserver": "^3.5.1"
   },
   "devDependencies": {
-    "@types/node": "^6.0.52"
+    "@types/node": "^6.0.102"
   },
-  "scripts": {
-  }
+  "scripts": {}
 }
-

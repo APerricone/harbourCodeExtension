@@ -2,7 +2,7 @@
     "name": "harbour",
     "displayName": "harbour",
     "description": "Harbour language support for visual studio code",
-    "version": "0.5.7",
+    "version": "0.5.8",
     "publisher": "aperricone",
     "icon": "harbourIcon.png",
     "main": "./src/extension",
@@ -12,7 +12,7 @@
     "activationEvents": [
         "onLanguage:harbour"
     ],
-     "engines": {
+    "engines": {
         "vscode": "^1.11.0"
     },
     "categories": [
@@ -21,9 +21,9 @@
         "Linters"
     ],
     "dependencies": {
-        "vscode-debugprotocol": "^1.19.0",
-        "vscode-debugadapter": "^1.19.0",
-        "vscode-languageclient": "^3.3.0"
+        "vscode-debugadapter": "^1.27.0",
+        "vscode-debugprotocol": "^1.27.0",
+        "vscode-languageclient": "^3.5.1"
     },
     "contributes": {
         "configuration": {
@@ -34,111 +34,132 @@
                     "type": "boolean",
                     "description": "Every time a file is opened or saved the executable is called to validate the code(Lint).",
                     "default": true
-                    },
+                },
                 "harbour.compilerExecutable": {
                     "type": "string",
                     "description": "complete path of the harbour executable.",
                     "default": "harbour"
-                    },
+                },
                 "harbour.extraOptions": {
                     "type": "string",
                     "description": "other options to pass to harbour compiler.",
                     "default": ""
-                    },
+                },
                 "harbour.extraIncludePaths": {
                     "type": "array",
                     "description": "Extra include paths to use during the compilation.",
                     "items": {
                         "type": "string",
                         "default": ""
-                        }
-                    },
+                    }
+                },
                 "harbour.warningLevel": {
                     "type": "number",
                     "default": 1,
                     "maximum": 3,
                     "minimum": 0,
                     "description": "Warning level."
-                    }
+                }
             }
         },
-        "languages": [{
-            "id": "harbour",
-            "aliases": ["Harbour", "xHarbour", "FlagShip", "Clipper", "xBase"],
-            "extensions": ["prg", "ch"],
-            "configuration": "./syntaxes/language-configuration.json"
-        }],
-        "grammars": [{
-            "language": "harbour",
-            "scopeName": "source.harbour",
-            "path": "./syntaxes/harbour.tmLanguage.json",
-            "embeddedLanguages": {
-                "source.c": "c"
+        "languages": [
+            {
+                "id": "harbour",
+                "aliases": [
+                    "Harbour",
+                    "xHarbour",
+                    "FlagShip",
+                    "Clipper",
+                    "xBase"
+                ],
+                "extensions": [
+                    "prg",
+                    "ch"
+                ],
+                "configuration": "./syntaxes/language-configuration.json"
             }
-        }],
-        "breakpoints": [{"language": "harbour"}],
-        "debuggers": [{
-            "type": "harbour-dbg",
-            "label": "Harbour",
-            "program": "./src/debugger.js",
-            "runtime": "node",
-
-            "languages": ["harbour"],
-            "initialConfigurations": [
-                {
-                    "type": "harbour-dbg",
-                    "request": "launch",
-                    "name": "Launch Program",
-                    "program": "${workspaceRoot}/Program",
-                    "workspaceRoot": "${workspaceRoot}"
-                } 
-                
-            ],
-            "configurationSnippets": [
-                {
-                    "label": "Harbour",
-                    "description": "Debug a harbour program with debug symbols",
-                    "body": {
+        ],
+        "grammars": [
+            {
+                "language": "harbour",
+                "scopeName": "source.harbour",
+                "path": "./syntaxes/harbour.tmLanguage.json",
+                "embeddedLanguages": {
+                    "source.c": "c"
+                }
+            }
+        ],
+        "breakpoints": [
+            {
+                "language": "harbour"
+            }
+        ],
+        "debuggers": [
+            {
+                "type": "harbour-dbg",
+                "label": "Harbour",
+                "program": "./src/debugger.js",
+                "runtime": "node",
+                "languages": [
+                    "harbour"
+                ],
+                "initialConfigurations": [
+                    {
                         "type": "harbour-dbg",
                         "request": "launch",
-                        "name": "Launch ${2:Program}",
-                        "program": "^\"\\${workspaceRoot}/${2:Program}\"",
-                        "workspaceRoot": "^\"\\${workspaceRoot}\""
+                        "name": "Launch Program",
+                        "program": "${workspaceRoot}/Program",
+                        "workspaceRoot": "${workspaceRoot}"
+                    }
+                ],
+                "configurationSnippets": [
+                    {
+                        "label": "Harbour",
+                        "description": "Debug a harbour program with debug symbols",
+                        "body": {
+                            "type": "harbour-dbg",
+                            "request": "launch",
+                            "name": "Launch ${2:Program}",
+                            "program": "^\"\\${workspaceRoot}/${2:Program}\"",
+                            "workspaceRoot": "^\"\\${workspaceRoot}\""
                         }
-                } 
-            ],
-            "configurationAttributes": {
-                "launch":{
-                    "required": [ "program"],
-                    "properties":{
-                        "workspaceRoot":{
-                            "type": "string",
-                            "default": "${workspaceRoot}"  
-                        },
-                        "program": {
-                            "type": "string",
-                            "description": "Absolute path of executable."
-                        },
-                        "workingDir": {
-                            "type": "string",
-                            "description": "Working directory.",
-                            "default": "${workspaceRoot}/"
-                        },
-                        "arguments":{
-                            "type": "array",
-                            "description": "arguments to pass to executable.",
-                            "items": {
-                                "type": "string"
+                    }
+                ],
+                "configurationAttributes": {
+                    "launch": {
+                        "required": [
+                            "program"
+                        ],
+                        "properties": {
+                            "workspaceRoot": {
+                                "type": "string",
+                                "default": "${workspaceRoot}"
+                            },
+                            "program": {
+                                "type": "string",
+                                "description": "Absolute path of executable."
+                            },
+                            "workingDir": {
+                                "type": "string",
+                                "description": "Working directory.",
+                                "default": "${workspaceRoot}/"
+                            },
+                            "arguments": {
+                                "type": "array",
+                                "description": "arguments to pass to executable.",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "stopOnEntry": {
+                                "type": "boolean",
+                                "description": "Automatically stop after launch.",
+                                "default": false
                             }
-                        },
-                        "stopOnEntry": {
-                            "type": "boolean",
-                            "description": "Automatically stop after launch.",
-                            "default": false
                         }
                     }
                 }
             }
-        }]
+        ]
     }
 }
