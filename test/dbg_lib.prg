@@ -527,13 +527,14 @@ return
 
 static function replaceExpression(xExpr, __dbg, name, value) 
 	local aMatches := HB_REGEXALL("\b"+name+"\b",xExpr,.F./*CASE*/,/*line*/,/*nMat*/,/*nGet*/,.F.)
-	local i
+	local i, cVal
 	if len(aMatches)=0
 		return xExpr
 	endif
 	aadd(__dbg, value )
+	cVal := "__dbg[" + allTrim(str(len(__dbg))) +"]"
 	for i:=len(aMatches) to 1 step -1
-		xExpr := left(xExpr,aMatches[i,1,2]-1) + "__dbg[" + allTrim(str(len(__dbg))) +"]" + substr(xExpr,aMatches[i,1,3]+1)
+		xExpr := left(xExpr,aMatches[i,1,2]-1) + cVal + substr(xExpr,aMatches[i,1,3]+1)
 	next
 return xExpr
 
@@ -544,6 +545,7 @@ static function evalExpression( xExpr, level )
 	local aStack := t_oDebugInfo['aStack',len(t_oDebugInfo['aStack'])-level+1]
 	//? "Expression:", xExpr
 	xExpr := strTran(xExpr,";",":")
+	xExpr := strTran(xExpr,"::","self:")
 	// replace all locals
 	for i:=1 to len(aStack[HB_DBG_CS_LOCALS])
 		xExpr := replaceExpression(xExpr, @__dbg, aStack[HB_DBG_CS_LOCALS,i,HB_DBG_VAR_NAME], ;
@@ -565,11 +567,13 @@ static function evalExpression( xExpr, level )
 		xExpr := replaceExpression(xExpr, @__dbg, cName, v)
 	next
 	// ******
+	t_oDebugInfo['lRunning'] := .T.
 	BEGIN SEQUENCE WITH {|oErr| BREAK( oErr ) }
 		xResult := Eval(&("{|__dbg| "+xExpr+"}"),__dbg)
 	RECOVER USING oErr
 		xResult := oErr
 	END SEQUENCE
+	t_oDebugInfo['lRunning'] := .F.
 return xResult
 
 static procedure sendExpression( xExpr ) 
@@ -649,7 +653,7 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			exit
 		case HB_DBG_STATICNAME
 			if t_oDebugInfo['bInitStatics']
-				//? "STATICNAME - bInitStatics", uParam1, uParam2, uParam3
+				//? "STATICNAME - bInitStatics", uParam1, uParam2, uParam3, valtype(uParam1), valtype(uParam2), valtype(uParam3)
 			elseif t_oDebugInfo['bInitGlobals']
 				//? "STATICNAME - bInitGlobals", uParam1, uParam2, uParam3
 			else
