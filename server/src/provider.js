@@ -241,10 +241,13 @@ Provider.prototype.parseHarbour = function(words)
 	}
 	if(words[0].length>=4)
 	{
-		if(words[0] == "class")
+		if((words[0] == "class") || (words[0]=="create" && words[1]=="class"))
 		{
 			if(this.currentMethod) this.currentMethod.endLine = this.lastCodeLine;
-			this.currentClass = this.addInfo(words1,'class')
+			if(words[0]=="create")
+				this.currentClass = this.addInfo(words[2],'class')
+			else
+				this.currentClass = this.addInfo(words1,'class')
 		} else
 		if(words[0] == "endclass")
 		{
@@ -269,7 +272,7 @@ Provider.prototype.parseHarbour = function(words)
 				if(r[4] && r[4].length &&
 					(this.currentClass && this.currentClass.name!=r[4]) || (!this.currentClass))
 				{
-					this.currentClass = this.funcList.find((v)=> v.name = r[4]);
+					this.currentClass = this.funcList.find((v)=> v.name == r[4]);
 				}
 				if(this.currentMethod) this.currentMethod.endLine = this.lastCodeLine;
 				this.currentMethod = this.addInfo(r[2],'method',this.currentClass);
