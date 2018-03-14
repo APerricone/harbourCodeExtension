@@ -7,9 +7,9 @@ p.parseFile("../test/dbg_test.prg").then(()=>
         if (p.funcList.hasOwnProperty(fn)) {
             var info = p.funcList[fn];
             var msg = `${info.kind}: ${info.name}`;
-            if(info.parent.length>0)
+            if(info.parent)
             {
-                msg+= ` of ${info.parent}`
+                msg+= ` of ${info.parent.name}`
             }
             msg+= ` in ${info.document}(${info.startLine}:${info.startCol})-(${info.endLine}:${info.endCol})`
             console.log(msg)

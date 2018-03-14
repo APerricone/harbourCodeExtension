@@ -2,6 +2,7 @@ var provider = require('./provider.js');
 var server = require('vscode-languageserver')
 var fs = require("fs");
 var path = require("path");
+var Uri = require("vscode-uri").default;
 
 var connection = server.createConnection(
         new server.IPCMessageReader(process), 
@@ -35,26 +36,48 @@ connection.onInitialize(params =>
 	}
 });
 
-function ParseFiles() 
+function ParseDir(dir)
 {
-    files = {};
-    // other scheme of uri unsupported
-    if(!workspaceRoot.startsWith("file")) return;
-    var workspacePath = workspaceRoot.substr(7);
-    if(path.sep == "\\")
-        workspacePath = workspaceRoot.substr(8).replace("%3A",":")
-	fs.readdir(workspacePath,function(err,ff)
+	fs.readdir(dir,function(err,ff)
     {
         if(ff==undefined) return;
         for (var i = 0; i < ff.length; i++) {
             var fileName = ff[i];
-            if(fileName.substr(-4).toLowerCase() != ".prg") continue;
-            var fileUri = workspaceRoot+"/"+encodeURI(fileName)
-            var pp = new provider.Provider();
-            pp.parseFile(workspacePath+"/"+fileName);
-            files[fileUri] = pp;
+            if(fileName.substr(-4).toLowerCase() == ".prg")
+            {
+                var fileUri = Uri.file(dir+"/"+fileName)
+                var pp = new provider.Provider();
+                pp.parseFile(dir+"/"+fileName);
+                files[fileUri.toString()] = pp;    
+            } else
+            if(fileName.indexOf(".")<0)
+            {
+                checkDir(dir+"/"+fileName)
+            }
         }
     });
+}
+
+function checkDir(dir)
+{
+    fs.stat(dir, function(err, stat)
+    {
+        if (stat && stat.isDirectory())
+        {
+          ParseDir(dir)
+        }
+    });
+
+}
+
+function ParseFiles() 
+{
+    files = {};
+    // other scheme of uri unsupported
+    /** @type {vscode-uri.default} */
+    var uri = Uri.parse(workspaceRoot);
+    if(uri.scheme != "file") return;
+    ParseDir(uri.fsPath);
 }
 
 var documents = new server.TextDocuments();
@@ -106,7 +129,7 @@ connection.onDocumentSymbol((param)=>
                 kindTOVS(info.kind),
                 server.Range.create(info.startLine,info.startCol,
                                     info.endLine,info.endCol),
-                param.textDocument.uri, info.parent)
+                param.textDocument.uri, info.parent?info.parent.name:"")
             );
         }        
     };
@@ -135,7 +158,7 @@ connection.onWorkspaceSymbol((param)=>
                 kindTOVS(info.kind),
                 server.Range.create(info.startLine,info.startCol,
                                     info.endLine,info.endCol),
-                file, info.parent));
+                file, info.parent?info.parent.name:""));
             if(dest.length>100)
                 return [];
         }
@@ -173,11 +196,14 @@ connection.onDefinition((params)=>
             {
                 if(file!=doc.uri)
                     continue;
-                var parent = pp.funcList.find(v=> v.name == info.parent);
-                if(parent.startLine>params.position.line)
-                    continue;
-                if(parent.endLine<params.position.line)
-                    continue;
+                var parent = info.parent;
+                if(parent)
+                {
+                    if(parent.startLine>params.position.line)
+                        continue;
+                    if(parent.endLine<params.position.line)
+                        continue;
+                }            
             }
             dest.push(server.Location.create(file,
                 server.Range.create(info.startLine,info.startCol,
@@ -220,11 +246,13 @@ connection.onSignatureHelp((params)=>
     }
     word=word.toLowerCase();
     var signatures = [];
-    for (var file in files) if (files.hasOwnProperty(file)) {
+    for (var file in files) if (files.hasOwnProperty(file)) 
+    {
         var pp = files[file];
-        for (var fn in pp.funcList) if (pp.funcList.hasOwnProperty(fn)) {
+        for (var iSign=0;iSign<pp.funcList.length;iSign++)
+        {
             /** @type {provider.Info} */
-            var info = pp.funcList[fn];
+            var info = pp.funcList[iSign];
             if(!info.kind.startsWith("method") && !info.kind.startsWith("procedure") && !info.kind.startsWith("function"))
                 continue;
             if(info.name.toLowerCase() != word)
@@ -233,25 +261,30 @@ connection.onSignatureHelp((params)=>
                 continue;
             var s = {}
             if (info.kind.startsWith("method"))
-                s["label"] = info.parent+":"+info.name;
+                if(info.parent)
+                    s["label"] = info.parent.name+":"+info.name;
+                else
+                    s["label"] = "??:"+info.name;
             else
                 s["label"] = info.name;
             s["label"] += "("
             var subParams = [];
-            for (var fn in pp.funcList) if (pp.funcList.hasOwnProperty(fn)) {
+            for (var iParam=iSign+1;iParam<pp.funcList.length;iParam++)
+            {
                 /** @type {provider.Info} */
-                var subinfo = pp.funcList[fn];
-                if(subinfo.parent==info.name && subinfo.kind=="param")
+                var subinfo = pp.funcList[iParam];
+                if(subinfo.parent==info && subinfo.kind=="param")
                 {
                     subParams.push({"label":subinfo.name})
                     if(!s.label.endsWith("("))
                         s.label += ", "
                     s.label+=subinfo.name
-                }
+                } else
+                    break;
             }
             s["label"] += ")"
             s["parameters"]=subParams;
-            if(subParams.length>=nC)
+            if(subParams.length>nC)
                 signatures.push(s);
         }
     }

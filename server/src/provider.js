@@ -28,7 +28,7 @@ Provider.prototype.Clear = function()
  * @constructor
  * @param {string} name 
  * @param {string} kind 
- * @param {string} parent 
+ * @param {Info} parent 
  * @param {string} document 
  * @param {number} startLine 
  * @param {number} startCol 
@@ -41,7 +41,7 @@ function Info(name,kind,parent,document,startLine,startCol,endLine,endCol)
 	this.name = name;
 	/** @type {string} */
 	this.kind = kind;
-	/** @type {string} */
+	/** @type {Info} */
 	this.parent = parent;
 	/** @type {string} */
 	this.document = document;
@@ -58,7 +58,6 @@ function Info(name,kind,parent,document,startLine,startCol,endLine,endCol)
 Provider.prototype.addInfo = function(name,kind,parent, search)
 {
 	if(search!==true) search=false;
-	parent = parent || '';
 	if(search)
 	{
 		var lines = this.currLine.split("\r\n");
@@ -201,6 +200,7 @@ Provider.prototype.parseDeclareList = function(list,kind,parent)
 			case 3: filter = /\([^\(\)]*\)/g; break;
 			case 4: filter = /'[^']*'/g; break;
 			case 5: filter = /"[^"]*"/g; break;
+			case 6: filter = /;\r?\n/g; break;
 		}
 		if (filter == undefined)
 			break;
@@ -211,18 +211,16 @@ Provider.prototype.parseDeclareList = function(list,kind,parent)
 		} while(old.length!=list.length)
 		//console.log(i+":"+list);
 	}
-	list=list.replace(/:=/g,"").split(",");
+	list=list.split(",");
 	//return list.split(",");
 	for (var i = 0; i < list.length; i++) 
 	{
-		var m = list[i].split(/\s/).filter((el) => el.length!=0);
+		var m = list[i].split(/\s+/).filter((el) => el.length!=0);
 		if(m.length>0)
 			this.addInfo(m[0],kind,parent,true);
 	}
 
 }
-
-
 
 Provider.prototype.parseHarbour = function(words)
 {
@@ -232,12 +230,21 @@ Provider.prototype.parseHarbour = function(words)
 		this.cMode = true;
 		return;
 	}
+	var words1 = "";
+	if(words.length>1)
+	{
+		words1 = words[1];
+		words[1] = words[1].toLowerCase(); 
+	} else
+	{
+		words[1] = "";
+	}
 	if(words[0].length>=4)
 	{
 		if(words[0] == "class")
 		{
 			if(this.currentMethod) this.currentMethod.endLine = this.lastCodeLine;
-			this.currentClass = this.addInfo(words[1],'class')
+			this.currentClass = this.addInfo(words1,'class')
 		} else
 		if(words[0] == "endclass")
 		{
@@ -251,7 +258,7 @@ Provider.prototype.parseHarbour = function(words)
 		{
 			if(this.currentClass)
 			{	
-				this.parseDeclareList(words.slice(1).join(" "),'data',this.currentClass.name)
+				this.parseDeclareList(words.slice(1).join(" "),'data',this.currentClass)
 			}
 		} else
 		if(words[0] == "method".substr(0,words[0].length))
@@ -259,13 +266,15 @@ Provider.prototype.parseHarbour = function(words)
 			var r = methodRegEx.exec(this.currLine);
 			if(r)
 			{
-				var className
-				if(this.currentClass)
-					className = r[4] || this.currentClass.name;
-				else
-					className = r[4] || "??";
+				if(r[4] && r[4].length &&
+					(this.currentClass && this.currentClass.name!=r[4]) || (!this.currentClass))
+				{
+					this.currentClass = this.funcList.find((v)=> v.name = r[4]);
+				}
 				if(this.currentMethod) this.currentMethod.endLine = this.lastCodeLine;
-				this.currentMethod = this.addInfo(r[2],'method',className);
+				this.currentMethod = this.addInfo(r[2],'method',this.currentClass);
+				if(r[3] && r[3].length)
+					this.parseDeclareList(r[3],"param",this.currentMethod);
 			}
 		} else
 		if(	words[0] == "procedure".substr(0,words[0].length) ||
@@ -291,7 +300,7 @@ Provider.prototype.parseHarbour = function(words)
 				if(this.currentMethod) this.currentMethod.endLine = this.lastCodeLine;
 				this.currentMethod = this.addInfo(r[2],kind);
 				if(r[3] && r[3].length)
-					this.parseDeclareList(r[3],"param",r[2]);
+					this.parseDeclareList(r[3],"param",this.currentMethod);
 
 			}
 		} else
@@ -306,7 +315,7 @@ Provider.prototype.parseHarbour = function(words)
 				if(words[0].startsWith("publ")) kind = "public";
 				if(words[0].startsWith("priv")) kind = "private";
 				if(words[0].startsWith("stat")) kind = "static";
-				this.parseDeclareList(words.slice(1).join(" "),kind,this.currentMethod?this.currentMethod.name : "");
+				this.parseDeclareList(words.slice(1).join(" "),kind,this.currentMethod);
 			}
 		} //else
 	}	
@@ -342,7 +351,6 @@ Provider.prototype.parse = function(line)
 	var words = this.currLine.split(/\s/).filter((el) => el.length!=0);
 	if(words.length==0) return;
 	words[0] = words[0].toLowerCase();
-	if(words.length>1) words[1] = words[1].toLowerCase(); else words[1] = "";
 	//console.log((this.cMode?"C":"H")+this.lineNr+">"+this.currLine);
 	if(!this.cMode)
 	{

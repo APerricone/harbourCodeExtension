@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
+## 0.5.9
+- Fixed signature help on method and on multiline declaration
+- Added looking on sub folder for workspace symbol
+
 ## 0.5.8
 - Added support for Signature help
 
