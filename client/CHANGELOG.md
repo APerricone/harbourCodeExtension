@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
+## ------
+- Added problem matcher for harbour
+
 ## 0.5.10
 - Fixed crash on server in particular case
 
