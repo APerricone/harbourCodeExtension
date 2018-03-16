@@ -31,6 +31,7 @@ var harbourDebugSession = function()
 	this.justStart = true;
 	/** @type{string} */
 	this.queue = "";
+	this.evaluateResponses = [];
 }
 
 harbourDebugSession.prototype = new debugadapter.DebugSession();
@@ -137,7 +138,7 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
 		tc.queue = "";
 	}).listen(port);
 	// starts the program
-	console.error("start the program");
+	console.debug("start the program");
 	if(args.arguments)
 		this.process = cp.spawn(args.program, args.arguments, { cwd:args.workingDir });
 	else
@@ -475,9 +476,9 @@ harbourDebugSession.prototype.checkBreakPoint = function(src)
 
 harbourDebugSession.prototype.evaluateRequest = function(response,args)
 {
-	this.evaluateResponse = response;
-	this.evaluateResponse.body = {};
-	this.evaluateResponse.body.result = args.expression; 
+	response.body = {};
+	response.body.result = args.expression; 
+	this.evaluateResponses.push(response);
 	this.command(`EXPRESSION\r\n${args.frameId+1 || this.currentStack}:${args.expression.replace(/:/g,";")}\r\n`)	
 }
 
@@ -493,10 +494,10 @@ harbourDebugSession.prototype.processExpression = function(line)
 	{ //the value can contains : , we need to rejoin it.
 		infos[3] = infos.splice(3).join(";");
 	}
-	var line = "EXP:" + infos[1] + ":" + this.evaluateResponse.body.result + ":";
-	this.evaluateResponse.body = 
-		this.getVariableFormat(this.evaluateResponse.body,infos[2],infos[3],"result",line);
-	this.sendResponse(this.evaluateResponse);	
+	var resp = this.evaluateResponses.shift();
+	var line = "EXP:" + infos[1] + ":" + resp.body.result + ":";
+	resp.body = this.getVariableFormat(resp.body,infos[2],infos[3],"result",line);
+	this.sendResponse(resp);	
 }
 
 

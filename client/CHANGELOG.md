@@ -1,7 +1,8 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
-## ------
+## 0.5.11
+- Fixed debugger expression managing
 - Added problem matcher for harbour
 
 ## 0.5.10
