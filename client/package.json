@@ -74,7 +74,8 @@
                 ],
                 "extensions": [
                     "prg",
-                    "ch"
+                    "ch",
+                    "hbx"
                 ],
                 "configuration": "./syntaxes/language-configuration.json"
             }

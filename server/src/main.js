@@ -11,6 +11,8 @@ var connection = server.createConnection(
 /** @type {string} */
 var workspaceRoot;
 var files;
+/** @type {Array} */
+var docs;
 connection.onInitialize(params => 
 {
     workspaceRoot = params.rootUri;
@@ -21,6 +23,11 @@ connection.onInitialize(params =>
         else
             workspaceRoot = "file://"+encodeURI(params.rootPath);
     }
+    fs.readFile(path.resolve(__dirname, 'hbdocs.json'),(err,data) =>
+    {
+        if(!err)
+            docs = JSON.parse(data);
+    });
     ParseFiles()
 	return {
 		capabilities: {
@@ -219,7 +226,7 @@ connection.onSignatureHelp((params)=>
     var pos = doc.offsetAt(params.position)-1;
     /** @type {string} */
     var text = doc.getText();
-    // find (
+    // backwards find (
     var nP = 0;
     var nC = 0;
     while(nP!=0 || text[pos]!='(')
@@ -238,13 +245,35 @@ connection.onSignatureHelp((params)=>
     }
     pos--;
     var rge = /[0-9a-z_]/i;
-    var word = "";
+    var word = "", className = undefined;
     while(rge.test(text[pos]))
     {
         word = text[pos]+word;
         pos--;
     }
     word=word.toLowerCase();
+    if(word=="new")
+    {
+        var prec = text.substring(pos-2,pos+1);
+        if(prec = "():")
+        {
+            pos-=3;
+            className="";
+            while(rge.test(text[pos]))
+            {
+                className = text[pos]+className;
+                pos--;
+            }
+            className = className.toLowerCase();
+        }
+    }
+    var signatures = [].concat(getStdHelp(word, nC));
+    signatures = signatures.concat(getWorkspaceSignatures(word, className, nC));
+    return {signatures:signatures, activeParameter:nC}
+})
+
+function getWorkspaceSignatures(word, className, nC)
+{
     var signatures = [];
     for (var file in files) if (files.hasOwnProperty(file)) 
     {
@@ -262,9 +291,17 @@ connection.onSignatureHelp((params)=>
             var s = {}
             if (info.kind.startsWith("method"))
                 if(info.parent)
+                {
                     s["label"] = info.parent.name+":"+info.name;
+                    if(className && className!=info.parent.name.toLowerCase())
+                        continue;
+                }
                 else
+                {
                     s["label"] = "??:"+info.name;
+                    if(className)
+                        continue;
+                }
             else
                 s["label"] = info.name;
             s["label"] += "("
@@ -288,8 +325,36 @@ connection.onSignatureHelp((params)=>
                 signatures.push(s);
         }
     }
-    return {signatures:signatures, activeParameter:nC}
-})
+    return signatures;
+}
+
+function getStdHelp(word, nC)
+{
+    var signatures = [];
+    for (var i = 0; i < docs.length; i++)
+    {
+        if (docs[i].name.toLowerCase() == word)
+        {
+            var s = {};
+            s["label"] = docs[i].label;
+            s["documentation"] = docs[i].documentation;
+            var subParams = [];
+            for (var iParam = 0; iParam < docs[i].arguments.length; iParam++)
+            {
+                subParams.push({
+                    "label": docs[i].arguments[iParam].label,
+                    "documentation": docs[i].arguments[iParam].documentation
+                });
+            }
+            s["parameters"] = subParams;
+            if (subParams.length > nC)
+                signatures.push(s);
+        }
+    }
+    return signatures;
+}
+
+
 /*
 connection.onDidChangeTextDocument(params => {
     var p = new provider.Provider();

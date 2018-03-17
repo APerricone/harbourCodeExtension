@@ -24,6 +24,12 @@
             "request": "launch",
             "name": "test_parse",
             "program": "${workspaceRoot}/test_parse.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "parseHBDoc",
+            "program": "${workspaceRoot}/parseHBDoc.js"
         }
     ]
 }

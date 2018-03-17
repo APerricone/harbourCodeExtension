@@ -1,0 +1,5632 @@
+[
+ {
+  "label": "__AtPrompt( <nRow>, <nCol>, <cPrompt>, [<xMsg>] ) --> .F.",
+  "documentation": "Display a menu item on screen and define a message",
+  "arguments": [
+   {
+    "label": "<nRow>",
+    "documentation": "<nRow> is the row number to display the menu <cPrompt>. Value could range from zero to MaxRow()."
+   },
+   {
+    "label": "<nCol>",
+    "documentation": "<nCol> is the column number to display the menu <cPrompt>. Value could range from zero to MaxCol()."
+   },
+   {
+    "label": "<cPrompt>",
+    "documentation": "<cPrompt> is the menu item character string to display."
+   },
+   {
+    "label": "<xMsg>",
+    "documentation": "<xMsg> define a message to display each time this menu item is"
+   },
+   {
+    "label": "<xMsg>",
+    "documentation": "highlighted. <xMsg> could be a character string or code block that"
+   },
+   {
+    "label": "<xMsg>",
+    "documentation": "is evaluated to a character string. If <xMsg> is not specified or of the wrong type, an empty string (\"\") would be used."
+   }
+  ],
+  "name": "__AtPrompt"
+ },
+ {
+  "label": "__dbCopyStruct( <cFileName>, [<aFieldList>] )",
+  "documentation": "Create a new database based on current database structure",
+  "arguments": [
+   {
+    "label": "<cFileName>",
+    "documentation": "<cFileName> is the name of the new database file to create. (.dbf) is the default extension if none is given."
+   },
+   {
+    "label": "<aFieldList>",
+    "documentation": "<aFieldList> is an array where each element is a field name. Names could be specified as uppercase or lowercase."
+   }
+  ],
+  "name": "__dbCopyStruct"
+ },
+ {
+  "label": "__dbCopyXStruct( <cFileName> ) --> lSuccess",
+  "documentation": "Copy current database structure into a definition file",
+  "arguments": [
+   {
+    "label": "<cFileName>",
+    "documentation": "<cFileName> is the name of target definition file to create. (.dbf) is the default extension if none is given."
+   }
+  ],
+  "name": "__dbCopyXStruct"
+ },
+ {
+  "label": "__dbCreate( <cFileName>, [<cFileFrom>], [<cRDDName>], [<lNew>], [<cAlias>] ) --> lUsed",
+  "documentation": "Create structure extended file or use one to create new file",
+  "arguments": [
+   {
+    "label": "<cFileName>",
+    "documentation": "<cFileName> is the target file name to create and then open. (.dbf) is the default extension if none is given."
+   },
+   {
+    "label": "<cFileFrom>",
+    "documentation": "<cFileFrom> is an optional structure extended file name from which"
+   },
+   {
+    "label": "<cFileName>",
+    "documentation": "the target file <cFileName> is going to be built. If omitted, a new"
+   },
+   {
+    "label": "<cFileName>",
+    "documentation": "empty structure extended file with the name <cFileName> is created and opened in the current work-area."
+   },
+   {
+    "label": "<cRDDName>",
+    "documentation": "<cRDDName> is RDD name to create target with. If omitted, the default RDD is used."
+   },
+   {
+    "label": "<lNew>",
+    "documentation": "<lNew> is an optional logical expression, (.T.) opens the target file"
+   },
+   {
+    "label": "<cFileName>",
+    "documentation": "name <cFileName> in the next available unused work-area and makes it the current work-area. (.F.) opens the target file in the current"
+   },
+   {
+    "label": "<lNew>",
+    "documentation": "work-area. Default value is (.F.). The value of <lNew> is ignored if"
+   },
+   {
+    "label": "<cFileFrom>",
+    "documentation": "<cFileFrom> is not specified."
+   },
+   {
+    "label": "<cAlias>",
+    "documentation": "<cAlias> is an optional alias to USE the target file with. If not"
+   },
+   {
+    "label": "<cFileName>",
+    "documentation": "specified, alias is based on the root name of <cFileName>."
+   }
+  ],
+  "name": "__dbCreate"
+ },
+ {
+  "label": "__dbDelim( <lExport>, <xcFile>, [<xcDelim>], [<aFields>], [<bFor>], [<bWhile>], [<nNext>], [<nRecord>], <lRest>  )",
+  "documentation": "Copies the contents of a database to a delimited text file or appends the contents of a delimited text file to a database.",
+  "arguments": [
+   {
+    "label": "<lExport>",
+    "documentation": "<lExport> If set to .T., copies records to a delimited file. If set to .F., append records from a delimited file."
+   },
+   {
+    "label": "<xcFile>",
+    "documentation": "<xcFile> The name of the text file to copy to or append from. If a file extension is not specified, \".txt\" is used by default."
+   },
+   {
+    "label": "<xcDelim>",
+    "documentation": "<xcDelim> Either the character to use as the character field delimiter (only the first character is used). or \"BLANK\" (not case sensitive), which eliminates the character field delimiters and sets the field separator to a single space instead of a comma."
+   },
+   {
+    "label": "<aFields>",
+    "documentation": "<aFields> An aray of field names to limit the processint to. If not specified, or if empty, then all fields are processed."
+   },
+   {
+    "label": "<bFor>",
+    "documentation": "<bFor> An optional code block containing a FOR expression that will reduce the number of records to be processed."
+   },
+   {
+    "label": "<bWhile>",
+    "documentation": "<bWhile> An optional code block containing a WHILE expression that will reduce the number of records to be processed."
+   },
+   {
+    "label": "<nNext>",
+    "documentation": "<nNext> If present, but nRecord is not present, specifies to process this number of records, starting with the current record. A value of 0 means to process no records."
+   },
+   {
+    "label": "<nRecord>",
+    "documentation": "<nRecord> If present, specifies the only record to process. A"
+   },
+   {
+    "label": "<nNext>",
+    "documentation": "value of 0 means to process no records. Overrides <nNext> and <lRest>."
+   },
+   {
+    "label": "<lRest>",
+    "documentation": "<lRest> If <lExport> is .T., then if <lRest> is set to .T. and there are no"
+   },
+   {
+    "label": "<nRecord>",
+    "documentation": "<nRecord>, <nNext>, or <bWhile> arguments, processes all records from current to last."
+   }
+  ],
+  "name": "__dbDelim"
+ },
+ {
+  "label": "__dbSDF( <lExport>, <xcFile>, [<aFields>], [<bFor>], [<bWhile>], [<nNext>], [<nRecord>], <lRest>  )",
+  "documentation": "Copies the contents of a database to an SDF text file or appends the contents of an SDF text file to a database.",
+  "arguments": [
+   {
+    "label": "<lExport>",
+    "documentation": "<lExport> If set to .T., copies records to an SDF file. If set to .F., append records from an SDF file."
+   },
+   {
+    "label": "<xcFile>",
+    "documentation": "<xcFile> The name of the text file to copy to or append from. If a file extension is not specified, \".txt\" is used by default."
+   },
+   {
+    "label": "<aFields>",
+    "documentation": "<aFields> An aray of field names to limit the processint to. If not specified, or if empty, then all fields are processed."
+   },
+   {
+    "label": "<bFor>",
+    "documentation": "<bFor> An optional code block containing a FOR expression that will reduce the number of records to be processed."
+   },
+   {
+    "label": "<bWhile>",
+    "documentation": "<bWhile> An optional code block containing a WHILE expression that will reduce the number of records to be processed."
+   },
+   {
+    "label": "<nNext>",
+    "documentation": "<nNext> If present, but <nRecord> is not present, specifies to process this number of records, starting with the current record. A value of 0 means to process no records."
+   },
+   {
+    "label": "<nRecord>",
+    "documentation": "<nRecord> If present, specifies the only record to process. A"
+   },
+   {
+    "label": "<nNext>",
+    "documentation": "value of 0 means to process no records. Overrides <nNext> and <lRest>."
+   },
+   {
+    "label": "<lRest>",
+    "documentation": "<lRest> If <lExport> is .T., then if <lRest> is set to .T. and there are no"
+   },
+   {
+    "label": "<nRecord>",
+    "documentation": "<nRecord>, <nNext>, or <bWhile> arguments, processes all records from current to last."
+   }
+  ],
+  "name": "__dbSDF"
+ },
+ {
+  "label": "__dbStructFilter( <aStruct>, [<aFieldList>] ) --> aStructFiltered",
+  "documentation": "Filter a database structure array",
+  "arguments": [
+   {
+    "label": "<aStruct>",
+    "documentation": "<aStruct> is a multidimensional array with database fields structure, which is usually the output from dbStruct(), where each array element has the following structure:"
+   },
+   {
+    "label": "<table>",
+    "documentation": "<table> Position   Description    dbstruct.ch 1          cFieldName     DBS_NAME 2          cFieldType     DBS_TYPE 3          nFieldLength   DBS_LEN 4          nDecimals      DBS_DEC"
+   },
+   {
+    "label": "</table>",
+    "documentation": "</table>"
+   },
+   {
+    "label": "<aFieldList>",
+    "documentation": "<aFieldList> is an array where each element is a field name. Names could be specified as uppercase or lowercase."
+   }
+  ],
+  "name": "__dbStructFilter",
+  "return": {
+   "name": "<aStruct>",
+   "help": "original  array."
+  }
+ },
+ {
+  "label": "__Dir( [<cFileMask>] ) --> NIL",
+  "documentation": "Display listings of files",
+  "arguments": [
+   {
+    "label": "<cFileMask>",
+    "documentation": "<cFileMask> File mask to include in the function return. It could contain path and standard wildcard characters as supported by your"
+   },
+   {
+    "label": "<cFileMask>",
+    "documentation": "OS (like * and ?). If <cFileMask> contains no path, then SET DEFAULT path is used to display files in the mask."
+   }
+  ],
+  "name": "__Dir"
+ },
+ {
+  "label": "__FLedit( <aStruct>, [<aFieldList>] ) --> aStructFiltered",
+  "documentation": "Filter a database structure array",
+  "arguments": [
+   {
+    "label": "<aStruct>",
+    "documentation": "<aStruct> is a multidimensional array with database fields structure, which is usually the output from dbStruct(), where each array element has the following structure:"
+   },
+   {
+    "label": "<table>",
+    "documentation": "<table> Position   Description    dbstruct.ch 1          cFieldName     DBS_NAME 2          cFieldType     DBS_TYPE 3          nFieldLength   DBS_LEN 4          nDecimals      DBS_DEC"
+   },
+   {
+    "label": "</table>",
+    "documentation": "</table>"
+   },
+   {
+    "label": "<aFieldList>",
+    "documentation": "<aFieldList> is an array where each element is a field name. Names could be specified as uppercase or lowercase."
+   }
+  ],
+  "name": "__FLedit",
+  "return": {
+   "name": "<aStruct>",
+   "help": "array."
+  }
+ },
+ {
+  "label": "__Input( <cMessage> ) --> <cString>",
+  "documentation": "Stops application",
+  "arguments": [
+   {
+    "label": "<cMessage>",
+    "documentation": "<cMessage> is any valid expression."
+   }
+  ],
+  "name": "__Input",
+  "return": {
+   "name": "<cString>",
+   "help": "input value macroed"
+  }
+ },
+ {
+  "label": "__MenuTo( <bBlock>, <cVariable> ) --> nChoice",
+  "documentation": "Invoked a menu defined by set of @...PROMPT",
+  "arguments": [
+   {
+    "label": "<bBlock>",
+    "documentation": "<bBlock> is a set/get code block for variable named <cVariable>."
+   },
+   {
+    "label": "<cVariable>",
+    "documentation": "<cVariable> is a character string that contain the name of the variable to hold the menu choices, if this variable does not exist"
+   },
+   {
+    "label": "<cVariable>",
+    "documentation": "a PRIVATE variable with the name <cVariable> would be created to hold the result."
+   }
+  ],
+  "name": "__MenuTo"
+ },
+ {
+  "label": "__mvClear()",
+  "documentation": "This function releases all PRIVATE and PUBLIC variables",
+  "arguments": [],
+  "name": "__mvClear"
+ },
+ {
+  "label": "__mvDbgInfo( <nScope> [, <nPosition> [, @<cVarName>] ] )",
+  "documentation": "This function returns the information about the variables for debugger",
+  "arguments": [
+   {
+    "label": "<nScope>",
+    "documentation": "<nScope> = the scope of variables for which an information is asked Supported values (defined in hbmemvar.ch) HB_MV_PUBLIC HB_MV_PRIVATE (or any other value)"
+   },
+   {
+    "label": "<nPosition>",
+    "documentation": "<nPosition> = the position of asked variable on the list of variables with specified scope - it should start from position 1"
+   },
+   {
+    "label": "<cVarName>",
+    "documentation": "<cVarName> = the value is filled with a variable name if passed by"
+   },
+   {
+    "label": "<nPosition>",
+    "documentation": "reference and <nPosition> is specified"
+   }
+  ],
+  "name": "__mvDbgInfo"
+ },
+ {
+  "label": "__mvExist( <cVarName> ) --> <lVariableExist>",
+  "documentation": "Determine if a given name is a PUBLIC or PRIVATE memory variable",
+  "arguments": [
+   {
+    "label": "<cVarName>",
+    "documentation": "<cVarName> - string that specifies the name of variable to check"
+   }
+  ],
+  "name": "__mvExist",
+  "return": {
+   "name": "<cVarName>",
+   "help": "__mvExist() return TRUE (.T.) if a MEMVAR named  exist."
+  }
+ },
+ {
+  "label": "__mvGet( <cVarName> [, <xValue>] ) --> <xValue>",
+  "documentation": "This function set the value of memory variable",
+  "arguments": [
+   {
+    "label": "<cVarName>",
+    "documentation": "<cVarName> - string that specifies the name of variable"
+   },
+   {
+    "label": "<xValue>",
+    "documentation": "<xValue>   - a value of any type that will be set - if it is not specified then NIL is assumed"
+   }
+  ],
+  "name": "__mvGet",
+  "return": {
+   "name": "<xValue>",
+   "help": "A value assigned to the given variable."
+  }
+ },
+ {
+  "label": "__mvGet( <cVarName> ) --> <xVar>",
+  "documentation": "This function returns value of memory variable",
+  "arguments": [
+   {
+    "label": "<cVarName>",
+    "documentation": "<cVarName> - string that specifies the name of variable"
+   }
+  ],
+  "name": "__mvGet",
+  "return": {
+   "name": "<xVar>",
+   "help": "The value of variable"
+  }
+ },
+ {
+  "label": "__mvPrivate( <variable_name> )",
+  "documentation": "This function creates a PRIVATE variable",
+  "arguments": [
+   {
+    "label": "<variable_name>",
+    "documentation": "<variable_name> = either a string that contains the variable's name or an one-dimensional array of strings with variable names No skeleton are allowed here."
+   }
+  ],
+  "name": "__mvPrivate"
+ },
+ {
+  "label": "__mvPublic( <variable_name> )",
+  "documentation": "This function creates a PUBLIC variable",
+  "arguments": [
+   {
+    "label": "<variable_name>",
+    "documentation": "<variable_name> = either a string that contains the variable's name or an one-dimensional array of strings with variable names No skeleton are allowed here."
+   }
+  ],
+  "name": "__mvPublic"
+ },
+ {
+  "label": "__mvRelease( <skeleton>, <include_exclude_flag> )",
+  "documentation": "This function releases PRIVATE variables",
+  "arguments": [
+   {
+    "label": "<skeleton>",
+    "documentation": "<skeleton> = string that contains the wildcard mask for variables' names that will be released. Supported wildcards: '*' and '?'"
+   },
+   {
+    "label": "<include_exclude_flag>",
+    "documentation": "<include_exclude_flag> = logical value that specifies if variables that match passed skeleton should be either included in deletion (if .T.) or excluded from deletion (if .F.)"
+   }
+  ],
+  "name": "__mvRelease"
+ },
+ {
+  "label": "__mvScope( <cVarName> )",
+  "documentation": "If variable exists then returns its scope.",
+  "arguments": [
+   {
+    "label": "<cVarName>",
+    "documentation": "<cVarName> = a string with a variable name to check"
+   }
+  ],
+  "name": "__mvScope"
+ },
+ {
+  "label": "__mvXRelease( <variable_name> )",
+  "documentation": "This function releases value stored in PRIVATE or PUBLIC variable",
+  "arguments": [
+   {
+    "label": "<variable_name>",
+    "documentation": "<variable_name> = either a string that contains the variable's name or an one-dimensional array of strings with variable names No skeleton are allowed here."
+   }
+  ],
+  "name": "__mvXRelease"
+ },
+ {
+  "label": "__NoNoAlert()",
+  "documentation": "Override //NOALERT command-line switch",
+  "arguments": [],
+  "name": "__NoNoAlert"
+ },
+ {
+  "label": "__objAddData( <oObject>, <cDataName> ) --> oObject",
+  "documentation": "Add a VAR to an already existing class",
+  "arguments": [
+   {
+    "label": "<oObject>",
+    "documentation": "<oObject> is the object to work on."
+   },
+   {
+    "label": "<cDataName>",
+    "documentation": "<cDataName> is the symbol name of the new VAR to add."
+   }
+  ],
+  "name": "__objAddData",
+  "return": {
+   "name": "<oObject>",
+   "help": "__objAddData() return a reference to ."
+  }
+ },
+ {
+  "label": "__objAddInline( <oObject>, <cInlineName>, <bInline> ) --> oObject",
+  "documentation": "Add an INLINE to an already existing class",
+  "arguments": [
+   {
+    "label": "<oObject>",
+    "documentation": "<oObject> is the object to work on."
+   },
+   {
+    "label": "<cInlineName>",
+    "documentation": "<cInlineName> is the symbol name of the new INLINE to add."
+   },
+   {
+    "label": "<bInline>",
+    "documentation": "<bInline> is a code block to associate with the INLINE method."
+   }
+  ],
+  "name": "__objAddInline",
+  "return": {
+   "name": "<oObject>",
+   "help": "__objAddInline() return a reference to ."
+  }
+ },
+ {
+  "label": "__objAddMethod( <oObject>, <cMethodName>, <nFuncPtr> ) --> oObject",
+  "documentation": "Add a METHOD to an already existing class",
+  "arguments": [
+   {
+    "label": "<oObject>",
+    "documentation": "<oObject> is the object to work on."
+   },
+   {
+    "label": "<cMethodName>",
+    "documentation": "<cMethodName> is the symbol name of the new METHOD to add."
+   },
+   {
+    "label": "<nFuncPtr>",
+    "documentation": "<nFuncPtr> is a pointer to a function to associate with the method."
+   }
+  ],
+  "name": "__objAddMethod",
+  "return": {
+   "name": "<oObject>",
+   "help": "__objAddMethod() return a reference to ."
+  }
+ },
+ {
+  "label": "__objDelInline( <oObject>, <cSymbol> ) --> oObject",
+  "documentation": "Delete a METHOD INLINE from class",
+  "arguments": [
+   {
+    "label": "<oObject>",
+    "documentation": "<oObject> is the object to work on."
+   },
+   {
+    "label": "<cSymbol>",
+    "documentation": "<cSymbol> is the symbol name of METHOD or INLINE method to be deleted (removed) from the object."
+   }
+  ],
+  "name": "__objDelInline",
+  "return": {
+   "name": "<oObject>",
+   "help": "__objDelInMethod() return a reference to ."
+  }
+ },
+ {
+  "label": "__objDelMethod( <oObject>, <cSymbol> ) --> oObject",
+  "documentation": "Delete a METHOD  from class",
+  "arguments": [
+   {
+    "label": "<oObject>",
+    "documentation": "<oObject> is the object to work on."
+   },
+   {
+    "label": "<cSymbol>",
+    "documentation": "<cSymbol> is the symbol name of METHOD or INLINE method to be deleted (removed) from the object."
+   }
+  ],
+  "name": "__objDelMethod",
+  "return": {
+   "name": "<oObject>",
+   "help": "__objDelMethod() return a reference to ."
+  }
+ },
+ {
+  "label": "__objDelMethod( <oObject>, <cDataName> ) --> oObject",
+  "documentation": "Delete a VAR (instance variable) from class",
+  "arguments": [
+   {
+    "label": "<oObject>",
+    "documentation": "<oObject> is the object to work on."
+   },
+   {
+    "label": "<cDataName>",
+    "documentation": "<cDataName> is the symbol name of VAR to be deleted (removed) from the object."
+   }
+  ],
+  "name": "__objDelMethod",
+  "return": {
+   "name": "<oObject>",
+   "help": "__objDelData() return a reference to ."
+  }
+ },
+ {
+  "label": "__objDerivedFrom( <oObject>, <xSuper> ) --> lIsParent",
+  "documentation": "Determine whether a class is derived from another class",
+  "arguments": [
+   {
+    "label": "<oObject>",
+    "documentation": "<oObject> is the object to check."
+   },
+   {
+    "label": "<xSuper>",
+    "documentation": "<xSuper> is the object that may be a parent. <xSuper> can be either an Object or a Character string with the class name."
+   }
+  ],
+  "name": "__objDerivedFrom",
+  "return": {
+   "name": "<xSuper>",
+   "help": "derived from ."
+  }
+ },
+ {
+  "label": "__objGetMethodList( <oObject> ) --> aMethodNames",
+  "documentation": "Return names of all METHOD for a given object",
+  "arguments": [
+   {
+    "label": "<oObject>",
+    "documentation": "<oObject> is an object to scan."
+   }
+  ],
+  "name": "__objGetMethodList"
+ },
+ {
+  "label": "__objGetMsgList( <oObject>, [<lData>], [nClassType] ) --> aNames",
+  "documentation": "Return names of all VAR or METHOD for a given object",
+  "arguments": [
+   {
+    "label": "<oObject>",
+    "documentation": "<oObject> is an object to scan."
+   },
+   {
+    "label": "<lData>",
+    "documentation": "<lData> is an optional logical value that specifies the information to return. A value of .T. instruct the function to return list of all VAR names, .F. return list of all METHOD names. Default value is .T."
+   },
+   {
+    "label": "<nClassType>",
+    "documentation": "<nClassType> is on optional numeric code for selecting which class type to return. Default value is HB_MSGLISTALL, returning the whole list."
+   }
+  ],
+  "name": "__objGetMsgList"
+ },
+ {
+  "label": "__objGetValueList( <oObject>, [<aExcept>] ) --> aData",
+  "documentation": "Return an array of VAR names and values for a given object",
+  "arguments": [
+   {
+    "label": "<oObject>",
+    "documentation": "<oObject> is an object to scan."
+   },
+   {
+    "label": "<aExcept>",
+    "documentation": "<aExcept> is an optional array with VAR names you want to exclude from the scan."
+   }
+  ],
+  "name": "__objGetValueList"
+ },
+ {
+  "label": "__objHasData( <oObject>, <cSymbol> ) --> lExist",
+  "documentation": "Determine whether a symbol exist in object as VAR",
+  "arguments": [
+   {
+    "label": "<oObject>",
+    "documentation": "<oObject> is an object to scan."
+   },
+   {
+    "label": "<cSymbol>",
+    "documentation": "<cSymbol> is the name of the symbol to look for."
+   }
+  ],
+  "name": "__objHasData",
+  "return": {
+   "name": "<cSymbol>",
+   "help": "__objHasData() return .T. if the given  exist as VAR (instance variable) in object <oObject), .F. if it does not exist."
+  }
+ },
+ {
+  "label": "__objHasMethod( <oObject>, <cSymbol> ) --> lExist",
+  "documentation": "Determine whether a symbol exist in object as METHOD",
+  "arguments": [
+   {
+    "label": "<oObject>",
+    "documentation": "<oObject> is an object to scan."
+   },
+   {
+    "label": "<cSymbol>",
+    "documentation": "<cSymbol> is the name of the symbol to look for."
+   }
+  ],
+  "name": "__objHasMethod",
+  "return": {
+   "name": "<cSymbol>",
+   "help": "__objHasMethod() return .T. if the given  exist as METHOD (class function) in object <oObject), .F. if it does not exist."
+  }
+ },
+ {
+  "label": "__objModInline( <oObject>, <cInlineName>, <bInline> ) --> oObject",
+  "documentation": "Modify (replace) an INLINE method in an already existing class",
+  "arguments": [
+   {
+    "label": "<oObject>",
+    "documentation": "<oObject> is the object to work on."
+   },
+   {
+    "label": "<cInlineName>",
+    "documentation": "<cInlineName> is the symbol name of the INLINE method to modify."
+   },
+   {
+    "label": "<bInline>",
+    "documentation": "<bInline> is a new code block to associate with the INLINE method."
+   }
+  ],
+  "name": "__objModInline",
+  "return": {
+   "name": "<oObject>",
+   "help": "__objModInline() return a reference to ."
+  }
+ },
+ {
+  "label": "__objModMethod( <oObject>, <cMethodName>, <nFuncPtr> ) --> oObject",
+  "documentation": "Modify (replace) a METHOD in an already existing class",
+  "arguments": [
+   {
+    "label": "<oObject>",
+    "documentation": "<oObject> is the object to work on."
+   },
+   {
+    "label": "<cMethodName>",
+    "documentation": "<cMethodName> is the symbol name of the METHOD to modify."
+   },
+   {
+    "label": "<nFuncPtr>",
+    "documentation": "<nFuncPtr> is a pointer to a new function to associate with the method."
+   }
+  ],
+  "name": "__objModMethod",
+  "return": {
+   "name": "<oObject>",
+   "help": "__objModMethod() return a reference to ."
+  }
+ },
+ {
+  "label": "__objSetValueList( <oObject>, <aData> ) --> oObject",
+  "documentation": "Set object with an array of VAR names and values",
+  "arguments": [
+   {
+    "label": "<oObject>",
+    "documentation": "<oObject> is an object to set."
+   },
+   {
+    "label": "<aData>",
+    "documentation": "<aData> is a 2D array with a pair of instance variables and values for setting those variable."
+   }
+  ],
+  "name": "__objSetValueList",
+  "return": {
+   "name": "<oObject>",
+   "help": "__objSetValueList() return a reference to ."
+  }
+ },
+ {
+  "label": "__Quit()",
+  "documentation": "Terminates an application.",
+  "arguments": [],
+  "name": "__Quit"
+ },
+ {
+  "label": "__Run( <cCommand> )",
+  "documentation": "Run an external program.",
+  "arguments": [
+   {
+    "label": "<cCommand>",
+    "documentation": "<cCommand> Command to execute."
+   }
+  ],
+  "name": "__Run"
+ },
+ {
+  "label": "__SetCentury([<lFlag> | <cOnOff> ] ) --> lPreviousValue",
+  "documentation": "Set the Current Century",
+  "arguments": [
+   {
+    "label": "<lFlag>",
+    "documentation": "optional <lFlag> or <cOnOff> (not case sensitive) .T. or \"ON\" to enable the century setting (4-digit years) .F. or \"OFF\" to disable the century setting (2-digit years)"
+   }
+  ],
+  "name": "__SetCentury"
+ },
+ {
+  "label": "__SetFunction( <nFunctionKey>, [<cString>] ) --> NIL",
+  "documentation": "Assign a character string to a function key",
+  "arguments": [
+   {
+    "label": "<nFunctionKey>",
+    "documentation": "<nFunctionKey> is a number in the range 1..40 that represent the function key to be assigned."
+   },
+   {
+    "label": "<cString>",
+    "documentation": "<cString> is a character string to set. If <cString> is not specified, the function key is going to be set to NIL releasing by that any previous __SetFunction() or SetKey() for that function."
+   }
+  ],
+  "name": "__SetFunction"
+ },
+ {
+  "label": "__SetHelpK()",
+  "documentation": "Set F1 as the default help key",
+  "arguments": [],
+  "name": "__SetHelpK"
+ },
+ {
+  "label": "__TextRestore()",
+  "documentation": "Restore console output settings as saved by __TextSave()",
+  "arguments": [],
+  "name": "__TextRestore"
+ },
+ {
+  "label": "__TextSave( <cFile> )",
+  "documentation": "Redirect console output to printer or file and save old settings",
+  "arguments": [
+   {
+    "label": "<cFile>",
+    "documentation": "<cFile> is either \"PRINTER\" (note the uppercase) in which console output is SET to PRINTER, or a name of a text file with a default \".txt\" extension, that is used to redirect console output."
+   }
+  ],
+  "name": "__TextSave"
+ },
+ {
+  "label": "__TypeFile( <cFile>, [<lPrint>] ) --> NIL",
+  "documentation": "Show the content of a file on the console and/or printer",
+  "arguments": [
+   {
+    "label": "<cFile>",
+    "documentation": "<cFile> is a name of the file to display. If the file have an extension, it must be specified (there is no default value)."
+   },
+   {
+    "label": "<lPrint>",
+    "documentation": "<lPrint> is an optional logical value that specifies whether the output should go only to the screen (.F.) or to both the screen and printer (.T.), the default is (.F.)."
+   }
+  ],
+  "name": "__TypeFile"
+ },
+ {
+  "label": "__Wait( <cMessage> ) --> <cKey>",
+  "documentation": "Stops the application until a key is pressed.",
+  "arguments": [
+   {
+    "label": "<cMessage>",
+    "documentation": "<cMessage> is a string."
+   }
+  ],
+  "name": "__Wait"
+ },
+ {
+  "label": "__XHelp() --> <xValue>",
+  "documentation": "Determines whether a HELP() user defined function exists.",
+  "arguments": [],
+  "name": "__XHelp"
+ },
+ {
+  "label": "__XRestScreen()",
+  "documentation": "Restore screen image and coordinate from an internal buffer",
+  "arguments": [],
+  "name": "__XRestScreen"
+ },
+ {
+  "label": "__XSaveScreen()",
+  "documentation": "Save whole screen image and coordinate to an internal buffer",
+  "arguments": [],
+  "name": "__XSaveScreen"
+ },
+ {
+  "label": "AAdd( <aArray>[, <xValue>] ) --> Value",
+  "documentation": "Dynamically add an element to an array",
+  "arguments": [
+   {
+    "label": "<aArray>",
+    "documentation": "<aArray> The name of an array"
+   },
+   {
+    "label": "<xValue>",
+    "documentation": "<xValue> Element to add to array <aArray>"
+   }
+  ],
+  "name": "AAdd",
+  "return": {
+   "name": "<Value>",
+   "help": "if specified <xValue>, <xValue> will return , otherwise this function returns a NIL value."
+  }
+ },
+ {
+  "label": "Abs( <nNumber> ) --> <nAbsNumber>",
+  "documentation": "Return the absolute value of a number.",
+  "arguments": [
+   {
+    "label": "<nNumber>",
+    "documentation": "<nNumber> Any number."
+   }
+  ],
+  "name": "Abs",
+  "return": {
+   "name": "<nAbsNumber>",
+   "help": "The absolute numeric value."
+  }
+ },
+ {
+  "label": "AChoice( <nTop>, <nLeft>, <nBottom>, <nRight>, <acMenuItems>, [<alSelableItems> | <lSelableItems>], [<cUserFunction> | <bUserBlock>], [<nInitialItem>], [<nWindowRow>] ) --> nPosition",
+  "documentation": "Allows selection of an element from an array",
+  "arguments": [
+   {
+    "label": "<nTop>",
+    "documentation": "<nTop>           - topmost row used to display array (default 0)"
+   },
+   {
+    "label": "<nLeft>",
+    "documentation": "<nLeft>          - leftmost row used to display array (default 0)"
+   },
+   {
+    "label": "<nBottom>",
+    "documentation": "<nBottom>        - bottommost row used to display array (default MaxRow())"
+   },
+   {
+    "label": "<nRight>",
+    "documentation": "<nRight>         - rightmost row used to display array (default MaxCol())"
+   },
+   {
+    "label": "<acMenuItems>",
+    "documentation": "<acMenuItems>    - the character array of items from which to select"
+   },
+   {
+    "label": "<alSelableItems>",
+    "documentation": "<alSelableItems> - an array of items, either logical or character, which is used to determine if a particular item may be selected.  If the type of a given item is character, it is macro evaluated, and the result is expected to be a logical.  A value of .T. means that the item may be selected, .F. that it may not. (See next argument: lSelectableItems)"
+   },
+   {
+    "label": "<lSelableItems>",
+    "documentation": "<lSelableItems>  - a logical value which is used to apply to all items in acMenuItems.  If .T., all items may be selected; if .F., none may be selected. (See previous argument: alSelectableItems) Default .T."
+   },
+   {
+    "label": "<cUserFunction>",
+    "documentation": "<cUserFunction>  - the name of a function to be called which may affect special processing of keystrokes.  It is specified without parentheses or parameters. When it is called, it will be supplied with the parameters: nMode, nCurElement, and nRowPos. Default NIL."
+   },
+   {
+    "label": "<bUserBlock>",
+    "documentation": "<bUserBlock>     - a codeblock to be called which may affect special processing of keystrokes. It should be specified in the form {| nMode, nCurElemenet, nRowPos | ; MyFunc( nMode, nCurElemenet, nRowPos ) }. Default NIL."
+   },
+   {
+    "label": "<nInitialItem>",
+    "documentation": "<nInitialItem>   - the number of the element to be highlighted as the current item when the array is initially displayed.  1 origin.  Default 1."
+   },
+   {
+    "label": "<nWindowRow>",
+    "documentation": "<nWindowRow>     - the number of the window row on which the initial item is to be displayed. 0 origin.  Default 0."
+   }
+  ],
+  "name": "AChoice",
+  "return": {
+   "name": "<nPosition>",
+   "help": "- the number of the item to be selected, or 0 if the selection was aborted."
+  }
+ },
+ {
+  "label": "AClone( <aSource> ) --> aDuplicate",
+  "documentation": "Duplicate a  multidimensional array",
+  "arguments": [
+   {
+    "label": "<aSource>",
+    "documentation": "<aSource> Name of the array to be cloned."
+   }
+  ],
+  "name": "AClone",
+  "return": {
+   "name": "<aDuplicate>",
+   "help": "A new array pointer reference complete with nested array values."
+  }
+ },
+ {
+  "label": "ACopy( <aSource>, <aTarget>, [<nStart>], [<nCount>], [<nTargetPos>] ) --> aTarget",
+  "documentation": "Copy elements from one array to another",
+  "arguments": [
+   {
+    "label": "<aSource>",
+    "documentation": "<aSource> is the array to copy elements from."
+   },
+   {
+    "label": "<aTarget>",
+    "documentation": "<aTarget> is the array to copy elements to."
+   },
+   {
+    "label": "<nStart>",
+    "documentation": "<nStart>  is the beginning subscript position to copy from <aSource>"
+   },
+   {
+    "label": "<nCount>",
+    "documentation": "<nCount>  the number of subscript elements to copy from <aSource>."
+   },
+   {
+    "label": "<nTargetPos>",
+    "documentation": "<nTargetPos> the starting subscript position in <aTarget> to copy elements to."
+   }
+  ],
+  "name": "ACopy",
+  "return": {
+   "name": "<aTarget>",
+   "help": "an array pointer reference"
+  }
+ },
+ {
+  "label": "ADel( <aArray>, <nPos> ) --> aTarget",
+  "documentation": "Delete an element form an array.",
+  "arguments": [
+   {
+    "label": "<aArray>",
+    "documentation": "<aArray> Name of array from which an element is to be removed."
+   },
+   {
+    "label": "<nPos>",
+    "documentation": "<nPos>   Subscript of the element to be removed."
+   }
+  ],
+  "name": "ADel",
+  "return": {
+   "name": "<aTarget>",
+   "help": "an array pointer reference."
+  }
+ },
+ {
+  "label": "ADir( [<cFileMask>], [<aName>], [<aSize>], [<aDate>], [<aTime>], [<aAttr>] ) --> nDirEnries",
+  "documentation": "Fill pre-defined arrays with file/directory information",
+  "arguments": [
+   {
+    "label": "<cFileMask>",
+    "documentation": "<cFileMask> File mask to include in the function return. It could contain path and standard wildcard characters as supported by your"
+   },
+   {
+    "label": "<cFileMask>",
+    "documentation": "OS (like * and ?). If you omit <cFileMask> or if <cFileMask> contains no path, then the path from SET DEFAULT is used."
+   },
+   {
+    "label": "<aName>",
+    "documentation": "<aName> Array to fill with file name of files that meet <cFileMask>. Each element is a Character string and include the file name and extension without the path. The name is the long file name as reported by the OS and not necessarily the 8.3 uppercase name."
+   },
+   {
+    "label": "<aSize>",
+    "documentation": "<aSize> Array to fill with file size of files that meet <cFileMask>. Each element is a Numeric integer for the file size in Bytes. Directories are always zero in size."
+   },
+   {
+    "label": "<aDate>",
+    "documentation": "<aDate> Array to fill with file last modification date of files that"
+   },
+   {
+    "label": "<cFileMask>",
+    "documentation": "meet <cFileMask>. Each element is of type Date."
+   },
+   {
+    "label": "<aTime>",
+    "documentation": "<aTime> Array to fill with file last modification time of files that"
+   },
+   {
+    "label": "<cFileMask>",
+    "documentation": "meet <cFileMask>. Each element is a Character string in the format HH:mm:ss."
+   },
+   {
+    "label": "<aAttr>",
+    "documentation": "<aAttr> Array to fill with attribute of files that meet <cFileMask>. Each element is a Character string, see Directory() for information"
+   },
+   {
+    "label": "<aAttr>",
+    "documentation": "about attribute values. If you pass array to <aAttr>, the function is going to return files with normal, hidden, system and directory"
+   },
+   {
+    "label": "<aAttr>",
+    "documentation": "attributes. If <aAttr> is not specified or with type other than Array, only files with normal attribute would return."
+   }
+  ],
+  "name": "ADir",
+  "return": {
+   "name": "<cFileMask>",
+   "help": "ADir() return the number of file entries that meet"
+  }
+ },
+ {
+  "label": "AEval( <aArray>, <bBlock>, [<nStart>], [<nCount>] ) --> aArray",
+  "documentation": "Evaluates the subscript element of an array",
+  "arguments": [
+   {
+    "label": "<aArray>",
+    "documentation": "<aArray> Is the array to be evaluated."
+   },
+   {
+    "label": "<bBlock>",
+    "documentation": "<bBlock> Is a code block to evaluate for each element processed."
+   },
+   {
+    "label": "<nStart>",
+    "documentation": "<nStart> The beginning array element index to evaluate."
+   },
+   {
+    "label": "<nCount>",
+    "documentation": "<nCount> The number of elements to process."
+   }
+  ],
+  "name": "AEval",
+  "return": {
+   "name": "<aArray>",
+   "help": "an array pointer reference."
+  }
+ },
+ {
+  "label": "AFields( <aNames>, [<aTypes>], [<aLen>], [<aDecs>] ) --> <nFields>",
+  "documentation": "Fills referenced arrays with database field information",
+  "arguments": [
+   {
+    "label": "<aNames>",
+    "documentation": "<aNames>  Array of field names"
+   },
+   {
+    "label": "<aTypes>",
+    "documentation": "<aTypes>  Array of field names"
+   },
+   {
+    "label": "<aLens>",
+    "documentation": "<aLens>  Array of field names"
+   },
+   {
+    "label": "<aDecs>",
+    "documentation": "<aDecs>  Array of field names"
+   }
+  ],
+  "name": "AFields",
+  "return": {
+   "name": "<nFields>",
+   "help": "Number od fields in a database or work area"
+  }
+ },
+ {
+  "label": "AFill( <aArray>, <xValue>, [<nStart>], [<nCount>] ) --> aTarget",
+  "documentation": "Fill an array with a specified value",
+  "arguments": [
+   {
+    "label": "<aArray>",
+    "documentation": "<aArray> Name of array to be filled."
+   },
+   {
+    "label": "<xValue>",
+    "documentation": "<xValue> Expression to be globally filled in <aArray>"
+   },
+   {
+    "label": "<nStart>",
+    "documentation": "<nStart> Subscript starting position"
+   },
+   {
+    "label": "<nCount>",
+    "documentation": "<nCount> Number of subscript to be filled"
+   }
+  ],
+  "name": "AFill",
+  "return": {
+   "name": "<aTarget>",
+   "help": "an array pointer."
+  }
+ },
+ {
+  "label": "AIns( <aArray>, <nPos> ) --> aTarget",
+  "documentation": "Insert a NIL value at an array subscript position.",
+  "arguments": [
+   {
+    "label": "<aArray>",
+    "documentation": "<aArray> Array name."
+   },
+   {
+    "label": "<nPos>",
+    "documentation": "<nPos> Subscript position in <aArray>"
+   }
+  ],
+  "name": "AIns",
+  "return": {
+   "name": "<aTarget>",
+   "help": "an array pointer reference."
+  }
+ },
+ {
+  "label": "Alert( <xMessage>, [<aOptions>], [<cColorNorm>], [<nDelay>] ) --> nChoice or NIL",
+  "documentation": "Display a dialog box with a message",
+  "arguments": [
+   {
+    "label": "<xMessage>",
+    "documentation": "<xMessage> Message to display in the dialog box. <xMessage> can be of any Harbour type."
+   },
+   {
+    "label": "<xMessage>",
+    "documentation": "If <xMessage> is an array of Character strings, each element would"
+   },
+   {
+    "label": "<xMessage>",
+    "documentation": "be displayed in a new line. If <xMessage> is a Character string, you could split the message to several lines by placing a semicolon (;) in the desired places."
+   },
+   {
+    "label": "<aOptions>",
+    "documentation": "<aOptions> Array with available response. Each element should be Character string. If omitted, default is { \"Ok\" }."
+   },
+   {
+    "label": "<cColorNorm>",
+    "documentation": "<cColorNorm> Color string to paint the dialog box with. If omitted, default color is \"W+/R\"."
+   },
+   {
+    "label": "<nDelay>",
+    "documentation": "<nDelay> Number of seconds to wait to user response before abort. Default value is 0, that wait forever."
+   }
+  ],
+  "name": "Alert",
+  "return": {
+   "name": "<nDelay>",
+   "help": "not Character and HB_CLP_STRICT option was used. If  seconds had passed without user response, the return value is 1."
+  }
+ },
+ {
+  "label": "Alias( [<nWorkArea>] ) --> <cWorkArea>",
+  "documentation": "Returns the alias name of a work area",
+  "arguments": [
+   {
+    "label": "<nWorkArea>",
+    "documentation": "<nWorkArea> Number of a work area"
+   }
+  ],
+  "name": "Alias",
+  "return": {
+   "name": "<cWorkArea>",
+   "help": "Name of alias"
+  }
+ },
+ {
+  "label": "AllTrim( <cString> ) --> cExpression",
+  "documentation": "Removes leading and trailing blank spaces from a string",
+  "arguments": [
+   {
+    "label": "<cString>",
+    "documentation": "<cString> Any character string"
+   }
+  ],
+  "name": "AllTrim",
+  "return": {
+   "name": "<cExpression>",
+   "help": "An string will all blank spaces removed from <cString>"
+  }
+ },
+ {
+  "label": "Array( <nElements> [, <nElements>...] ) --> aArray",
+  "documentation": "Create an uninitialized array of specified length",
+  "arguments": [
+   {
+    "label": "<nElements>",
+    "documentation": "<nElements> is the number of elements in the specified dimension."
+   }
+  ],
+  "name": "Array",
+  "return": {
+   "name": "<aArray>",
+   "help": "an array of specified dimensions."
+  }
+ },
+ {
+  "label": "Asc( <cCharacter> ) --> nAscNumber",
+  "documentation": "Returns the ASCII value of a character",
+  "arguments": [
+   {
+    "label": "<cCharacter>",
+    "documentation": "<cCharacter> Any character expression"
+   }
+  ],
+  "name": "Asc",
+  "return": {
+   "name": "<nAscNumber>",
+   "help": "ASCII value"
+  }
+ },
+ {
+  "label": "AScan( <aTarget>, <xSearch>, [<nStart>], [<nCount>] ) --> nStoppedAt",
+  "documentation": "Scan array elements for a specified condition",
+  "arguments": [
+   {
+    "label": "<aTarget>",
+    "documentation": "<aTarget>   Array to be scanned."
+   },
+   {
+    "label": "<xSearch>",
+    "documentation": "<xSearch>   Expression to search for in <aTarget>"
+   },
+   {
+    "label": "<nStart>",
+    "documentation": "<nStart>    Beginning subscript position at which to start the search."
+   },
+   {
+    "label": "<nCount>",
+    "documentation": "<nCount>    Number of elements to scan with <aTarget>."
+   }
+  ],
+  "name": "AScan",
+  "return": {
+   "name": "<xSearch>",
+   "help": "was found, or 0 if  is not found."
+  }
+ },
+ {
+  "label": "ASize( <aArray>, <nLen> ) --> aTarget",
+  "documentation": "Adjust the size of an array",
+  "arguments": [
+   {
+    "label": "<aArray>",
+    "documentation": "<aArray> Name of array to be dynamically altered"
+   },
+   {
+    "label": "<nLen>",
+    "documentation": "<nLen> Numeric value representing the new size of <aArray>"
+   }
+  ],
+  "name": "ASize",
+  "return": {
+   "name": "<aTarget>",
+   "help": "an array pointer reference to <aTarget>."
+  }
+ },
+ {
+  "label": "ASort( <aArray>, [<nStart>], [<nCount>], [<bSort>] ) --> aArray",
+  "documentation": "Sort an array",
+  "arguments": [
+   {
+    "label": "<aArray>",
+    "documentation": "<aArray> Array to be sorted."
+   },
+   {
+    "label": "<nStart>",
+    "documentation": "<nStart> The first element to start the sort from, default is 1."
+   },
+   {
+    "label": "<nCount>",
+    "documentation": "<nCount> Number of elements starting from <nStart> to sort, default is all elements."
+   },
+   {
+    "label": "<bSort>",
+    "documentation": "<bSort> Code block for sorting order, default is ascending order {| x, y | x < y }. The code block should accept two parameters and must return .T. if the sort is in order, .F. if not."
+   }
+  ],
+  "name": "ASort",
+  "return": {
+   "name": "<aArray>",
+   "help": "passed  is not an array."
+  }
+ },
+ {
+  "label": "At( <cSearch>, <cString> ) --> nPos",
+  "documentation": "Locates the position of a substring in a main string.",
+  "arguments": [
+   {
+    "label": "<cSearch>",
+    "documentation": "<cSearch> Substring to search for"
+   },
+   {
+    "label": "<cString>",
+    "documentation": "<cString> Main string"
+   }
+  ],
+  "name": "At"
+ },
+ {
+  "label": "ATail( <aArray> ) --> Element",
+  "documentation": "Returns the rightmost element of an array",
+  "arguments": [
+   {
+    "label": "<aArray>",
+    "documentation": "<aArray> is the array."
+   }
+  ],
+  "name": "ATail",
+  "return": {
+   "name": "<Element>",
+   "help": "the expression of the last element in the array."
+  }
+ },
+ {
+  "label": "Bin2I( <cBuffer> ) --> nNumber",
+  "documentation": "Convert signed short encoded bytes into Harbour numeric",
+  "arguments": [
+   {
+    "label": "<cBuffer>",
+    "documentation": "<cBuffer> is a character string that contains 16-bit encoded signed short integer (least significant byte first). The first two bytes are taken into account, the rest if any are ignored."
+   }
+  ],
+  "name": "Bin2I",
+  "return": {
+   "name": "<cBuffer>",
+   "help": "Bin2I() return numeric integer (or 0 if  is not a string)."
+  }
+ },
+ {
+  "label": "Bin2L( <cBuffer> ) --> nNumber",
+  "documentation": "Convert signed long encoded bytes into Harbour numeric",
+  "arguments": [
+   {
+    "label": "<cBuffer>",
+    "documentation": "<cBuffer> is a character string that contains 32-bit encoded signed long integer (least significant byte first). The first four bytes are taken into account, the rest if any are ignored."
+   }
+  ],
+  "name": "Bin2L",
+  "return": {
+   "name": "<cBuffer>",
+   "help": "Bin2L() return numeric integer (or 0 if  is not a string)."
+  }
+ },
+ {
+  "label": "Bof() --> <lBegin>",
+  "documentation": "Test for the beginning-of-file condition",
+  "arguments": [],
+  "name": "Bof"
+ },
+ {
+  "label": "Break( <xExp> )",
+  "documentation": "Exits from a BEGIN SEQUENCE block",
+  "arguments": [
+   {
+    "label": "<xExp>",
+    "documentation": "<xExp> is any valid expression. It is always required. If do not want to pass any argument, just use NIL."
+   }
+  ],
+  "name": "Break"
+ },
+ {
+  "label": "Browse( [<nTop>, <nLeft>, <nBottom>, <nRight>] ) --> lOk",
+  "documentation": "Browse a database file",
+  "arguments": [
+   {
+    "label": "<nTop>",
+    "documentation": "<nTop> coordinate for top row display."
+   },
+   {
+    "label": "<nLeft>",
+    "documentation": "<nLeft> coordinate for left column display."
+   },
+   {
+    "label": "<nBottom>",
+    "documentation": "<nBottom> coordinate for bottom row display."
+   },
+   {
+    "label": "<nRight>",
+    "documentation": "<nRight> coordinate for right column display."
+   }
+  ],
+  "name": "Browse"
+ },
+ {
+  "label": "CDoW( <dDate> ) --> cDay",
+  "documentation": "Converts a date to the day of week",
+  "arguments": [
+   {
+    "label": "<dDate>",
+    "documentation": "<dDate>  Any date expression."
+   }
+  ],
+  "name": "CDoW",
+  "return": {
+   "name": "<cDay>",
+   "help": "The current day of week."
+  }
+ },
+ {
+  "label": "Chr( <nAsciiNum> ) --> cReturn",
+  "documentation": "Converts an ASCII value to it character value",
+  "arguments": [
+   {
+    "label": "<nAsciiNum>",
+    "documentation": "<nAsciiNum> Any ASCII character code."
+   }
+  ],
+  "name": "Chr",
+  "return": {
+   "name": "<cReturn>",
+   "help": "Character expression of that ASCII value"
+  }
+ },
+ {
+  "label": "CLIPINIT() --> NIL",
+  "documentation": "Initialize various Harbour sub-systems",
+  "arguments": [],
+  "name": "CLIPINIT"
+ },
+ {
+  "label": "CMonth( <dDate> ) --> cMonth",
+  "documentation": "Return the name of the month.",
+  "arguments": [
+   {
+    "label": "<dDate>",
+    "documentation": "<dDate>  Any date expression."
+   }
+  ],
+  "name": "CMonth",
+  "return": {
+   "name": "<cMonth>",
+   "help": "The current month name"
+  }
+ },
+ {
+  "label": "Col() --> nPosition",
+  "documentation": "Returns the current screen column position",
+  "arguments": [],
+  "name": "Col",
+  "return": {
+   "name": "<nPosition>",
+   "help": "Current column position"
+  }
+ },
+ {
+  "label": "CToD( <cDateString> ) --> dDate",
+  "documentation": "Converts a character string to a date expression",
+  "arguments": [
+   {
+    "label": "<cDateString>",
+    "documentation": "<cDateString> A character date in format \"mm/dd/yy\""
+   }
+  ],
+  "name": "CToD",
+  "return": {
+   "name": "<dDate>",
+   "help": "A date expression"
+  }
+ },
+ {
+  "label": "CurDir( [<cDrive>] ) --> cPath",
+  "documentation": "Returns the current OS directory name.",
+  "arguments": [
+   {
+    "label": "<cDrive>",
+    "documentation": "<cDrive> OS drive letter"
+   }
+  ],
+  "name": "CurDir",
+  "return": {
+   "name": "<cPath>",
+   "help": "Name of directory"
+  }
+ },
+ {
+  "label": "Date() --> dCurDate",
+  "documentation": "Return the Current OS Date",
+  "arguments": [],
+  "name": "Date",
+  "return": {
+   "name": "<dCurDate>",
+   "help": "Current system date."
+  }
+ },
+ {
+  "label": "Day( <cDate> ) --> nMonth",
+  "documentation": "Return the numeric day of the month.",
+  "arguments": [
+   {
+    "label": "<cDate>",
+    "documentation": "<cDate> Any valid date expression."
+   }
+  ],
+  "name": "Day",
+  "return": {
+   "name": "<nMonth>",
+   "help": "Numeric value of the day of month."
+  }
+ },
+ {
+  "label": "Days( <nSecs> ) --> nDay",
+  "documentation": "Convert elapsed seconds into days",
+  "arguments": [
+   {
+    "label": "<nSecs>",
+    "documentation": "<nSecs> The number of seconds"
+   }
+  ],
+  "name": "Days",
+  "return": {
+   "name": "<nDay>",
+   "help": "The number of days"
+  }
+ },
+ {
+  "label": "dbAppend( [<lLock>] ) --> NIL",
+  "documentation": "Appends a new record to a database file.",
+  "arguments": [
+   {
+    "label": "<lLock>",
+    "documentation": "<lLock> Toggle to release record locks"
+   }
+  ],
+  "name": "dbAppend"
+ },
+ {
+  "label": "dbClearFilter() --> NIL",
+  "documentation": "Clears the current filter condiction in a work area",
+  "arguments": [],
+  "name": "dbClearFilter"
+ },
+ {
+  "label": "dbCloseAll() --> NIL",
+  "documentation": "Close all open files in all work areas.",
+  "arguments": [],
+  "name": "dbCloseAll"
+ },
+ {
+  "label": "dbCloseArea()",
+  "documentation": "Close a database file in a work area.",
+  "arguments": [],
+  "name": "dbCloseArea"
+ },
+ {
+  "label": "dbCommit()",
+  "documentation": "Updates all index and database buffers for a given workarea",
+  "arguments": [],
+  "name": "dbCommit"
+ },
+ {
+  "label": "dbCommit()",
+  "documentation": "Flushes the memory buffer and performs a hard-disk write",
+  "arguments": [],
+  "name": "dbCommit"
+ },
+ {
+  "label": "dbCreate( <cDatabase>, <aStruct>, [<cDriver>], [<lOpen>], [<cAlias>] )",
+  "documentation": "Creates an empty database from a array.",
+  "arguments": [
+   {
+    "label": "<cDatabase>",
+    "documentation": "<cDatabase> Name of database to be create"
+   },
+   {
+    "label": "<aStruct>",
+    "documentation": "<aStruct>   Name of a multidimensional array that contains the database structure"
+   },
+   {
+    "label": "<cDriver>",
+    "documentation": "<cDriver>   Name of the RDD"
+   },
+   {
+    "label": "<lOpenNew>",
+    "documentation": "<lOpenNew>  3-way toggle to Open the file in New or Current workarea:"
+   },
+   {
+    "label": "<table-noheader>",
+    "documentation": "<table-noheader> NIL     The file is not opened. True    It is opened in a New area. False   It is opened in the current area."
+   },
+   {
+    "label": "</table>",
+    "documentation": "</table>"
+   },
+   {
+    "label": "<cAlias>",
+    "documentation": "<cAlias>    Name of database Alias"
+   }
+  ],
+  "name": "dbCreate"
+ },
+ {
+  "label": "dbDelete()",
+  "documentation": "Mark a record for deletion in a database.",
+  "arguments": [],
+  "name": "dbDelete"
+ },
+ {
+  "label": "dbEdit( [<nTop>], [<nLeft>], [<nBottom>], [<nRight>], [<acColumns>], [<xUserFunc>], [<xColumnSayPictures>], [<xColumnHeaders>], [<xHeadingSeparators>], [<xColumnSeparators>], [<xFootingSeparators>], [<xColumnFootings>] ) --> lOk",
+  "documentation": "Browse records in a table",
+  "arguments": [
+   {
+    "label": "<nTop>",
+    "documentation": "<nTop> coordinate for top row display. <nTop> could range from 0 to MaxRow(), default is 0."
+   },
+   {
+    "label": "<nLeft>",
+    "documentation": "<nLeft> coordinate for left column display. <nLeft> could range from 0 to MaxCol(), default is 0."
+   },
+   {
+    "label": "<nBottom>",
+    "documentation": "<nBottom> coordinate for bottom row display. <nBottom> could range from 0 to MaxRow(), default is MaxRow()."
+   },
+   {
+    "label": "<nRight>",
+    "documentation": "<nRight> coordinate for right column display. <nRight> could range from 0 to MaxCol(), default is MaxCol()."
+   },
+   {
+    "label": "<acColumns>",
+    "documentation": "<acColumns> is an array of character expressions that contain database fields names or expressions to display in each column. If not specified, the default is to display all fields from the database in the current work area."
+   },
+   {
+    "label": "<xUserFunc>",
+    "documentation": "<xUserFunc> is a name of a user defined function or a code block that would be called every time unrecognized key is been pressed or when there are no keys waiting to be processed and dbEdit() goes"
+   },
+   {
+    "label": "<xUserFunc>",
+    "documentation": "into idle mode. If <xUserFunc> is a character string, it must contain root name of a valid user define function without parentheses. Both the user define function or the code block should accept two parameters: nMode, nCurrentColumn. Both should return a numeric value that correspond to one of the expected return codes (see table below for a list of nMode and return codes)."
+   },
+   {
+    "label": "<xColumnSayPictures>",
+    "documentation": "<xColumnSayPictures> is an optional picture. If <xColumnSayPictures> is a character string, all columns would used this value as a"
+   },
+   {
+    "label": "<xColumnSayPictures>",
+    "documentation": "picture string. If <xColumnSayPictures> is an array, each element should be a character string that correspond to a picture string for the column with the same index. Look at the help for @...SAY to get more information about picture values."
+   },
+   {
+    "label": "<xColumnHeaders>",
+    "documentation": "<xColumnHeaders> contain the header titles for each column, if this is a character string, all columns would have that same header, if this is an array, each element is a character string that contain the header title for one column. Header may be split to more than one line by placing semicolon (;) in places where you want to break line. If omitted, the default value for each column header is taken"
+   },
+   {
+    "label": "<acColumns>",
+    "documentation": "from <acColumns> or field name if <acColumns> was not specified."
+   },
+   {
+    "label": "<xHeadingSeparators>",
+    "documentation": "<xHeadingSeparators> is an array that contain characters that draw the lines separating the headers and the fields data. Instead of an array you can use a character string that would be used to display the same line for all fields. Default value is a double line."
+   },
+   {
+    "label": "<xColumnSeparators>",
+    "documentation": "<xColumnSeparators> is an array that contain characters that draw the lines separating displayed columns. Instead of an array you can use a character string that would be used to display the same line for all fields. Default value is a single line."
+   },
+   {
+    "label": "<xFootingSeparators>",
+    "documentation": "<xFootingSeparators> is an array that contain characters that draw the lines separating the fields data area and the footing area. Instead of an array you can use a character string that would be used to display the same line for all footers. Default is to have to no footing separators."
+   },
+   {
+    "label": "<xColumnFootings>",
+    "documentation": "<xColumnFootings> contain the footing to be displayed at the bottom of each column, if this is a character string, all columns would have that same footer, if this is an array, each element is a character string that contain the footer for one column. Footer may be split to more than one line by placing semicolon (;) in places where you want to break line. If omitted, no footer are displayed."
+   }
+  ],
+  "name": "dbEdit"
+ },
+ {
+  "label": "dbEval( <bBlock>, [<bFor>], [<bWhile>], [<nNext>], [<nRecord>], [<lRest>] ) --> NIL",
+  "documentation": "Performs a code block operation on the current Database",
+  "arguments": [
+   {
+    "label": "<bBlock>",
+    "documentation": "<bBlock> Operation that is to be performed"
+   },
+   {
+    "label": "<bFor>",
+    "documentation": "<bFor> Code block for the For condition"
+   },
+   {
+    "label": "<bWhile>",
+    "documentation": "<bWhile> Code block for the WHILE condition"
+   },
+   {
+    "label": "<nNext>",
+    "documentation": "<nNext> Number of NEXT records  to process"
+   },
+   {
+    "label": "<nRecord>",
+    "documentation": "<nRecord> Record number to work on exactly"
+   },
+   {
+    "label": "<lRest>",
+    "documentation": "<lRest> Toggle to rewind record pointer"
+   }
+  ],
+  "name": "dbEval"
+ },
+ {
+  "label": "Dbf() --> <cWorkArea>",
+  "documentation": "Alias name of a work area",
+  "arguments": [],
+  "name": "Dbf",
+  "return": {
+   "name": "<cWorkArea>",
+   "help": "Name of alias"
+  }
+ },
+ {
+  "label": "dbFilter() --> cFilter",
+  "documentation": "Return the filter expression in a work area",
+  "arguments": [],
+  "name": "dbFilter"
+ },
+ {
+  "label": "dbGoBottom()",
+  "documentation": "Moves the record pointer to the bottom of the database.",
+  "arguments": [],
+  "name": "dbGoBottom"
+ },
+ {
+  "label": "dbGoto( <xRecordNumber> )",
+  "documentation": "Position the record pointer to a specific location.",
+  "arguments": [
+   {
+    "label": "<xRecordNumber>",
+    "documentation": "<xRecordNumber> Record number or unique identity"
+   }
+  ],
+  "name": "dbGoto"
+ },
+ {
+  "label": "dbGoTop()",
+  "documentation": "Moves the record pointer to the top of the database.",
+  "arguments": [],
+  "name": "dbGoTop"
+ },
+ {
+  "label": "dbRecall()",
+  "documentation": "Recalls a record previousy marked for deletion.",
+  "arguments": [],
+  "name": "dbRecall"
+ },
+ {
+  "label": "dbRLock( [<xIdentity>] ) --> lSuccess",
+  "documentation": "This function locks the record based on identity",
+  "arguments": [
+   {
+    "label": "<xIdentity>",
+    "documentation": "<xIdentity> Record identifier"
+   }
+  ],
+  "name": "dbRLock"
+ },
+ {
+  "label": "dbRLockList() --> aRecordLocks",
+  "documentation": "This function return a list of locked records in the database work area",
+  "arguments": [],
+  "name": "dbRLockList",
+  "return": {
+   "name": "<aRecordList>",
+   "help": "is an array of lock records"
+  }
+ },
+ {
+  "label": "dbRUnlock( [<xIdentity>] )",
+  "documentation": "Unlocks a record based on its identifier",
+  "arguments": [
+   {
+    "label": "<xIdentity>",
+    "documentation": "<xIdentity> Record identifier, typically a record number"
+   }
+  ],
+  "name": "dbRUnlock"
+ },
+ {
+  "label": "dbSeek( <expKey>, [<lSoftSeek>], [<lFindLast>] ) --> lFound",
+  "documentation": "Searches for a value based on an active index.",
+  "arguments": [
+   {
+    "label": "<expKey>",
+    "documentation": "<expKey> Any expression"
+   },
+   {
+    "label": "<lSoftSeek>",
+    "documentation": "<lSoftSeek> Toggle SOFTSEEK condition"
+   },
+   {
+    "label": "<lFindLast>",
+    "documentation": "<lFindLast> is an optional logical value that set the current record position to the last record if successful"
+   }
+  ],
+  "name": "dbSeek"
+ },
+ {
+  "label": "dbSelectArea( <xArea> ) -",
+  "documentation": "Change to another work area",
+  "arguments": [
+   {
+    "label": "<xArea>",
+    "documentation": "<xArea> Alias or work area"
+   }
+  ],
+  "name": "dbSelectArea"
+ },
+ {
+  "label": "dbSetDriver( [<cDriver>] ) --> cCurrentDriver",
+  "documentation": "Establishes the RDD name for the selected work area",
+  "arguments": [
+   {
+    "label": "<cDriver>",
+    "documentation": "<cDriver> Optional database driver name"
+   }
+  ],
+  "name": "dbSetDriver"
+ },
+ {
+  "label": "dbSetFilter( <bCondition>, [<cCondition>] )",
+  "documentation": "Establishes a filter condition for a work area.",
+  "arguments": [
+   {
+    "label": "<bCondition>",
+    "documentation": "<bCondition> Code block expression for filtered evaluation."
+   },
+   {
+    "label": "<cCondition>",
+    "documentation": "<cCondition> Optional character expression of code block."
+   }
+  ],
+  "name": "dbSetFilter"
+ },
+ {
+  "label": "dbSkip( [<nRecords>] )",
+  "documentation": "Moves the record pointer in the selected work area.",
+  "arguments": [
+   {
+    "label": "<nRecords>",
+    "documentation": "<nRecords> Numbers of records to move record pointer."
+   }
+  ],
+  "name": "dbSkip"
+ },
+ {
+  "label": "dbStruct() --> aStruct",
+  "documentation": "Creates a multidimensional array of a database structure.",
+  "arguments": [],
+  "name": "dbStruct"
+ },
+ {
+  "label": "dbUnlock()",
+  "documentation": "Unlock a record or release a file lock",
+  "arguments": [],
+  "name": "dbUnlock"
+ },
+ {
+  "label": "dbUnlockAll()",
+  "documentation": "Unlocks all records and releases all file locks in all work areas.",
+  "arguments": [],
+  "name": "dbUnlockAll"
+ },
+ {
+  "label": "dbUseArea( [<lNewArea>], [<cDriver>], <cName>, [<xcAlias>], [<lShared>], [<lReadonly>] )",
+  "documentation": "Opens a work area and uses a database file.",
+  "arguments": [
+   {
+    "label": "<lNewArea>",
+    "documentation": "<lNewArea>  A optional logical expression for the new work area"
+   },
+   {
+    "label": "<cDriver>",
+    "documentation": "<cDriver>   Database driver name"
+   },
+   {
+    "label": "<cName>",
+    "documentation": "<cName>     File Name"
+   },
+   {
+    "label": "<xcAlias>",
+    "documentation": "<xcAlias>   Alias name"
+   },
+   {
+    "label": "<lShared>",
+    "documentation": "<lShared>   Shared/exclusive status flag"
+   },
+   {
+    "label": "<lReadonly>",
+    "documentation": "<lReadonly> Read-write status flag."
+   }
+  ],
+  "name": "dbUseArea"
+ },
+ {
+  "label": "Deleted() --> lDeleted",
+  "documentation": "Tests the record's deletion flag.",
+  "arguments": [],
+  "name": "Deleted"
+ },
+ {
+  "label": "Descend( <xExp> ) --> xExpInverted",
+  "documentation": "Inverts an expression of string, logical, date or numeric type.",
+  "arguments": [
+   {
+    "label": "<xExp>",
+    "documentation": "<xExp> is any valid expression."
+   }
+  ],
+  "name": "Descend"
+ },
+ {
+  "label": "DevOutPict( <xExp>, <cPicture>, [<cColorString>] )",
+  "documentation": "Displays a value to a device using a picture template",
+  "arguments": [
+   {
+    "label": "<xExp>",
+    "documentation": "<xExp> is any valid expression."
+   },
+   {
+    "label": "<cPicture>",
+    "documentation": "<cPicture> is any picture transformation that Transform() can use."
+   },
+   {
+    "label": "<cColorString>",
+    "documentation": "<cColorString> is an optional string that specifies a screen color to use in place of the default color when the output goes to the screen."
+   }
+  ],
+  "name": "DevOutPict"
+ },
+ {
+  "label": "DirChange( <cDirectory> ) --> nError",
+  "documentation": "Changes the directory",
+  "arguments": [
+   {
+    "label": "<cDirectory>",
+    "documentation": "<cDirectory>  The name of the directory you want do change into."
+   }
+  ],
+  "name": "DirChange",
+  "return": {
+   "name": "<nError>",
+   "help": "0 if directory was successfully changed, otherwise the number of the last error."
+  }
+ },
+ {
+  "label": "DirRemove( <cDirectory> ) --> nError",
+  "documentation": "Attempt to remove an directory",
+  "arguments": [
+   {
+    "label": "<cDirectory>",
+    "documentation": "<cDirectory>  The name of the directory you want to remove."
+   }
+  ],
+  "name": "DirRemove",
+  "return": {
+   "name": "<nError>",
+   "help": "0 if directory was successfully removed, otherwise the number of the last error."
+  }
+ },
+ {
+  "label": "DiskSpace( [<nDrive>] ) --> nDiskbytes",
+  "documentation": "Get the amount of space available on a disk",
+  "arguments": [
+   {
+    "label": "<nDrive>",
+    "documentation": "<nDrive> The number of the drive you are requesting info on where 1 = A, 2 = B, etc. For 0 or no parameter, DiskSpace will operate on the current drive.  The default is 0"
+   }
+  ],
+  "name": "DiskSpace",
+  "return": {
+   "name": "<nDiskBytes>",
+   "help": "The number of bytes on the requested disk that match the requested type."
+  }
+ },
+ {
+  "label": "Do( <xFuncProc> [, <xArguments...>] ) --> <xRetVal>",
+  "documentation": "Calls a procedure or a function",
+  "arguments": [
+   {
+    "label": "<xFuncProc>",
+    "documentation": "<xFuncProc> = Either a string with a function/procedure name to be called or a codeblock to evaluate."
+   },
+   {
+    "label": "<xArguments>",
+    "documentation": "<xArguments> = arguments passed to a called function/procedure or to a codeblock."
+   }
+  ],
+  "name": "Do",
+  "return": {
+   "name": "<xRetVal>",
+   "help": "A value that was returned from called function."
+  }
+ },
+ {
+  "label": "DoW( <dDate> ) --> nDay",
+  "documentation": "Value for the day of week.",
+  "arguments": [
+   {
+    "label": "<dDate>",
+    "documentation": "<dDate>  Any valid date expression"
+   }
+  ],
+  "name": "DoW",
+  "return": {
+   "name": "<nDay>",
+   "help": "The current day number"
+  }
+ },
+ {
+  "label": "DToC( <dDateString> ) --> cDate",
+  "documentation": "Date to character conversion",
+  "arguments": [
+   {
+    "label": "<dDateString>",
+    "documentation": "<dDateString> Any date"
+   }
+  ],
+  "name": "DToC",
+  "return": {
+   "name": "<dDate>",
+   "help": "Character represention of date"
+  }
+ },
+ {
+  "label": "DToS( <dDateString> ) --> cDate",
+  "documentation": "Date to string conversion",
+  "arguments": [
+   {
+    "label": "<dDateString>",
+    "documentation": "<dDateString> Any date"
+   }
+  ],
+  "name": "DToS",
+  "return": {
+   "name": "<dDate>",
+   "help": "String notation of the date"
+  }
+ },
+ {
+  "label": "ElapTime( <cStartTime>, <cEndTime> ) --> cDiference",
+  "documentation": "Calculates elapted time.",
+  "arguments": [
+   {
+    "label": "<cStartTime>",
+    "documentation": "<cStartTime> Start in time as a string format"
+   },
+   {
+    "label": "<cEndTime>",
+    "documentation": "<cEndTime>   End time as a string format"
+   }
+  ],
+  "name": "ElapTime",
+  "return": {
+   "name": "<cDiference>",
+   "help": "Difference between the times"
+  }
+ },
+ {
+  "label": "Empty( <xExp> ) --> lIsEmpty",
+  "documentation": "Checks if the passed argument is empty.",
+  "arguments": [
+   {
+    "label": "<xExp>",
+    "documentation": "<xExp> is any valid expression."
+   }
+  ],
+  "name": "Empty"
+ },
+ {
+  "label": "Eof() --> <lEnd>",
+  "documentation": "Test for end-of-file condition.",
+  "arguments": [],
+  "name": "Eof",
+  "return": {
+   "name": "<lEnd>",
+   "help": "A logical true (.T.) or false (.F.)"
+  }
+ },
+ {
+  "label": "ErrorSys() --> NIL",
+  "documentation": "Install default error handler",
+  "arguments": [],
+  "name": "ErrorSys"
+ },
+ {
+  "label": "Eval( <bBlock> [, <xVal> [,...] ] ) --> xExpression",
+  "documentation": "Evaluate a code block",
+  "arguments": [
+   {
+    "label": "<bBlock>",
+    "documentation": "<bBlock>   Code block expression to be evaluated"
+   },
+   {
+    "label": "<xVal>",
+    "documentation": "<xVal>     Argument to be passed to the code block expression"
+   },
+   {
+    "label": "<xVal...>",
+    "documentation": "<xVal...>  Argument list to be passed to the code block expression"
+   }
+  ],
+  "name": "Eval",
+  "return": {
+   "name": "<xExpression>",
+   "help": "The result of the evaluated code block"
+  }
+ },
+ {
+  "label": "Exp( <nNumber> ) --> <nValue>",
+  "documentation": "Calculates the value of e raised to the passed power.",
+  "arguments": [
+   {
+    "label": "<nNumber>",
+    "documentation": "<nNumber> Any  real number."
+   }
+  ],
+  "name": "Exp",
+  "return": {
+   "name": "<nValue>",
+   "help": "The anti-logarithm of <nNumber>"
+  }
+ },
+ {
+  "label": "FClose( <nHandle> ) --> <lSuccess>",
+  "documentation": "Closes an open file",
+  "arguments": [
+   {
+    "label": "<nHandle>",
+    "documentation": "<nHandle> File handle"
+   }
+  ],
+  "name": "FClose",
+  "return": {
+   "name": "<lSuccess>",
+   "help": "Logical TRUE (.T.) or FALSE (.F.)"
+  }
+ },
+ {
+  "label": "FCount() --> nFields",
+  "documentation": "Counts the number of fields in an active database.",
+  "arguments": [],
+  "name": "FCount",
+  "return": {
+   "name": "<nFields>",
+   "help": "Return the number of fields"
+  }
+ },
+ {
+  "label": "FCreate( <cFile>, [<nAttribute>] ) --> nHandle",
+  "documentation": "Creates a file.",
+  "arguments": [
+   {
+    "label": "<cFile>",
+    "documentation": "<cFile> is the name of the file to create."
+   },
+   {
+    "label": "<nAttribute>",
+    "documentation": "<nAttribute> Numeric code for the file attributes."
+   }
+  ],
+  "name": "FCreate",
+  "return": {
+   "name": "<nHandle>",
+   "help": "Numeric file handle to be used in other operations."
+  }
+ },
+ {
+  "label": "FErase( <cFile> ) --> nSuccess",
+  "documentation": "Erase a file from disk",
+  "arguments": [
+   {
+    "label": "<cFile>",
+    "documentation": "<cFile> Name of file to erase."
+   }
+  ],
+  "name": "FErase",
+  "return": {
+   "name": "<nSuccess>",
+   "help": "0 if successful, -1 if not"
+  }
+ },
+ {
+  "label": "FError() --> <nErrorCode>",
+  "documentation": "Reports the error status of low-level file functions",
+  "arguments": [],
+  "name": "FError",
+  "return": {
+   "name": "</table>",
+   "help": ""
+  }
+ },
+ {
+  "label": "FieldBlock( <cFieldName> ) --> bFieldBlock",
+  "documentation": "Return a code block that sets/gets a value for a given field",
+  "arguments": [
+   {
+    "label": "<cFieldName>",
+    "documentation": "<cFieldName> is a string that contain the field name."
+   }
+  ],
+  "name": "FieldBlock",
+  "return": {
+   "name": "<cFieldName>",
+   "help": "a field value or assigning a new value to the field. If is not specified or from type other than character, FieldBlock() return NIL."
+  }
+ },
+ {
+  "label": "FieldGet( <nField> ) --> ValueField",
+  "documentation": "Obtains the value  of a specified field",
+  "arguments": [
+   {
+    "label": "<nField>",
+    "documentation": "<nField> Is the numeric field position"
+   }
+  ],
+  "name": "FieldGet",
+  "return": {
+   "name": "<ValueField>",
+   "help": "Any expression"
+  }
+ },
+ {
+  "label": "FieldName()/Field( <nPosition> ) --> cFieldName",
+  "documentation": "Return the name of a field at a numeric field location.",
+  "arguments": [
+   {
+    "label": "<nPosition>",
+    "documentation": "<nPosition> Field order in the database."
+   }
+  ],
+  "name": "FieldName",
+  "return": {
+   "name": "<cFieldName>",
+   "help": "returns the field name."
+  }
+ },
+ {
+  "label": "FieldPos( <cFieldName> ) --> nFieldPos",
+  "documentation": "Return the ordinal position of a field.",
+  "arguments": [
+   {
+    "label": "<cFieldName>",
+    "documentation": "<cFieldName> Name of a field."
+   }
+  ],
+  "name": "FieldPos",
+  "return": {
+   "name": "<nFieldPos>",
+   "help": "is ordinal position of the field."
+  }
+ },
+ {
+  "label": "FieldPut( <nField>, <expAssign> ) --> ValueAssigned",
+  "documentation": "Set the value of a field variable",
+  "arguments": [
+   {
+    "label": "<nField>",
+    "documentation": "<nField> The field numeric position"
+   },
+   {
+    "label": "<expAssign>",
+    "documentation": "<expAssign> Expression to be assigned to the specified field"
+   }
+  ],
+  "name": "FieldPut",
+  "return": {
+   "name": "<ValueAssigned>",
+   "help": "Any expression"
+  }
+ },
+ {
+  "label": "FieldWBlock( <cFieldName>, <nWorkArea> ) --> bFieldBlock",
+  "documentation": "Return a sets/gets code block for field in a given work area",
+  "arguments": [
+   {
+    "label": "<cFieldName>",
+    "documentation": "<cFieldName> is a string that contain the field name."
+   },
+   {
+    "label": "<nWorkArea>",
+    "documentation": "<nWorkArea> is the work area number in which <cFieldName> exist."
+   }
+  ],
+  "name": "FieldWBlock",
+  "return": {
+   "name": "<nWorkArea>",
+   "help": "character, or if  is not specified or is not numeric FieldWBlock() return NIL."
+  }
+ },
+ {
+  "label": "File( <cFileSpec> ) --> lExists",
+  "documentation": "Tests for the existence of File(s)",
+  "arguments": [
+   {
+    "label": "<cFileSpec>",
+    "documentation": "<cFileSpec> Filename skeleton or file name to find."
+   }
+  ],
+  "name": "File",
+  "return": {
+   "name": "<lExists>",
+   "help": "a logical true (.T.) if the file exists or logical false (.F.)."
+  }
+ },
+ {
+  "label": "FLock() --> lSuccess",
+  "documentation": "Locks a file",
+  "arguments": [],
+  "name": "FLock",
+  "return": {
+   "name": "<lSuccess>",
+   "help": "A true (.T.) value, if the lock was successful; otherwise false (.F.)"
+  }
+ },
+ {
+  "label": "FOpen( <cFile>, [<nMode>] ) --> nHandle",
+  "documentation": "Open a file.",
+  "arguments": [
+   {
+    "label": "<cFile>",
+    "documentation": "<cFile> Name of file to open."
+   },
+   {
+    "label": "<nMode>",
+    "documentation": "<nMode> File open mode."
+   }
+  ],
+  "name": "FOpen",
+  "return": {
+   "name": "<nHandle>",
+   "help": "A file handle."
+  }
+ },
+ {
+  "label": "Found() --> lSuccess",
+  "documentation": "Determine the success of a previous search operation.",
+  "arguments": [],
+  "name": "Found",
+  "return": {
+   "name": "<lSuccess>",
+   "help": "A logical true (.T.) is successful; otherwise, false (.F.)"
+  }
+ },
+ {
+  "label": "FRead( <nHandle>, @<cBuffer>, <nBytes> ) --> nBytes",
+  "documentation": "Reads a specified number of bytes from a file.",
+  "arguments": [
+   {
+    "label": "<nHandle>",
+    "documentation": "<nHandle>     File handle"
+   },
+   {
+    "label": "<cBuffer>",
+    "documentation": "<cBuffer>  Character expression passed by reference."
+   },
+   {
+    "label": "<nBytes>",
+    "documentation": "<nBytes>      Number of bytes to read."
+   }
+  ],
+  "name": "FRead",
+  "return": {
+   "name": "<nHandle>",
+   "help": ""
+  }
+ },
+ {
+  "label": "FReadStr( <nHandle>, <nBytes> ) --> cString",
+  "documentation": "Reads a string from a file.",
+  "arguments": [
+   {
+    "label": "<nHandle>",
+    "documentation": "<nHandle> File handle number."
+   },
+   {
+    "label": "<nBytes>",
+    "documentation": "<nBytes>  Number of bytes to read."
+   }
+  ],
+  "name": "FReadStr",
+  "return": {
+   "name": "<cString>",
+   "help": "an character expression"
+  }
+ },
+ {
+  "label": "FRename( <cOldFile>, <cNewFile> ) --> nSuccess",
+  "documentation": "Renames a file",
+  "arguments": [
+   {
+    "label": "<cOldFile>",
+    "documentation": "<cOldFile> Old filename to be changed"
+   },
+   {
+    "label": "<cNewFile>",
+    "documentation": "<cNewFile> New filename"
+   }
+  ],
+  "name": "FRename",
+  "return": {
+   "name": "<nSuccess>",
+   "help": "If successful, a 0 will be returned otherwise, a -1 will be returned."
+  }
+ },
+ {
+  "label": "FSeek( <nHandle>, <nOffset>, [<nOrigin>] ) --> nPosition",
+  "documentation": "Positions the file pointer in a file.",
+  "arguments": [
+   {
+    "label": "<nHandle>",
+    "documentation": "<nHandle> File handle."
+   },
+   {
+    "label": "<nOffset>",
+    "documentation": "<nOffset> The number of bytes to move."
+   },
+   {
+    "label": "<nOrigin>",
+    "documentation": "<nOrigin> The relative position in the file."
+   }
+  ],
+  "name": "FSeek",
+  "return": {
+   "name": "<nPosition>",
+   "help": "the current position relative to begin-of-file"
+  }
+ },
+ {
+  "label": "FWrite( <nHandle>, <cBuffer>, [<nBytes>] ) --> nBytesWritten",
+  "documentation": "Writes characters to a file.",
+  "arguments": [
+   {
+    "label": "<nHandle>",
+    "documentation": "<nHandle>  File handle number."
+   },
+   {
+    "label": "<cBuffer>",
+    "documentation": "<cBuffer>  Character expression to be written."
+   },
+   {
+    "label": "<nBytes>",
+    "documentation": "<nBytes>   The number of bytes to write."
+   }
+  ],
+  "name": "FWrite",
+  "return": {
+   "name": "<nBytesWritten>",
+   "help": "the number of bytes successfully written."
+  }
+ },
+ {
+  "label": "GetE( <cEnviroment> ) --> <cReturn>",
+  "documentation": "Obtains a system environmental setting.",
+  "arguments": [
+   {
+    "label": "<cEnviroment>",
+    "documentation": "<cEnviroment> Enviromental variable to obtain."
+   }
+  ],
+  "name": "GetE",
+  "return": {
+   "name": "<cReturn>",
+   "help": "Value of the Environment Variable."
+  }
+ },
+ {
+  "label": "GetEnv( <cEnviroment> ) --> <cReturn>",
+  "documentation": "Obtains a system environmental setting.",
+  "arguments": [
+   {
+    "label": "<cEnviroment>",
+    "documentation": "<cEnviroment> Enviromental variable to obtain."
+   }
+  ],
+  "name": "GetEnv",
+  "return": {
+   "name": "<cReturn>",
+   "help": "Value of the Environment Variable."
+  }
+ },
+ {
+  "label": "HardCR( <cString> ) --> <cConvertedString>",
+  "documentation": "Replace all soft carriage returns with hard carriages returns.",
+  "arguments": [
+   {
+    "label": "<cString>",
+    "documentation": "<cString> is a string of chars to convert."
+   }
+  ],
+  "name": "HardCR",
+  "return": {
+   "name": "<cConvertedString>",
+   "help": "Transformed string."
+  }
+ },
+ {
+  "label": "hb_At( <cSearch>, <cString>, [<nStart>], [<nEnd>] ) --> nPos",
+  "documentation": "Locates the position of a substring in a main string.",
+  "arguments": [
+   {
+    "label": "<cSearch>",
+    "documentation": "<cSearch> Substring to search for"
+   },
+   {
+    "label": "<cString>",
+    "documentation": "<cString> Main string"
+   },
+   {
+    "label": "<nStart>",
+    "documentation": "<nStart> First position to search in cString, by default 1"
+   },
+   {
+    "label": "<nEnd>",
+    "documentation": "<nEnd> End position to search, by default cString length"
+   }
+  ],
+  "name": "hb_At"
+ },
+ {
+  "label": "hb_cdpSelect( [<cNewLang>] ) --> cOldLang",
+  "documentation": "Select the active code page by language ID",
+  "arguments": [
+   {
+    "label": "<cNewLang>",
+    "documentation": "<cNewLang>  The optional ID of the language module."
+   },
+   {
+    "label": "<cNewLang>",
+    "documentation": "Possible values for <cNewLang> are below as defined in the Codepage library, sorted by language."
+   },
+   {
+    "label": "<table>",
+    "documentation": "<table>"
+   },
+   {
+    "label": "<cNewLang>",
+    "documentation": "Language              Codepage       <cNewLang> Bulgarian             866            BG866 Bulgarian             ISO-8859-5     BGISO Bulgarian             MIK            BGMIK Bulgarian             Windows-1251   BGWIN Croatian              437            HR437 Croatian              852            HR852 Croatian              Windows-1250   HR1250 Czech                 852            CS852 Czech                 ISO-8859-2     CSISO Czech                 KAM            CSKAM Czech                 Windoes-1250   CSWIN English               437            EN French                850            FR German                850            DE German                ISO-8859-1     DEWIN Greek                 737            EL Greek                 Windows-1253   ELWIN Hungarian (ntxhu852)  852            HU852C Hungarian (sixhu852)  852            HU852 Hungarian (sixhu852)  CWI-2          HUCWI Hungarian             ISO-8859-2     HUISO Hungarian             Windows-1250   HUWIN Italian               437            IT437 Italian               850            IT850 Italian               ISO-8859-1b    ITISB Italian               ISO-8859-1     ITISO Lithuanian            Windows-1257   LT Polish                852            PL852 Polish                ISO-8859-2     PLISO Polish                Mazowia        PLMAZ Polish                Windows-1250   PLWIN Portuguese            850            PT850 Portuguese            ISO-8859-1     PTISO Russian               866            RU866 Russian               KOI-8          RUKOI8 Russian               Windows-1251   RU1251 Serbian               Windows-1251   SRWIN Slovak                852            SK852 Slovak                ISO-8859-2     SKISO Slovak                Kamenicky      SKKAM Slovak                Windows-1250   SKWIN Slovenian             437            SL437 Slovenian             852            SL852 Slovenian             ISO-8859-2     SLISO Slovenian             Windows-1250   SLWIN Spanish               850            ES Spanish               ISO-8859-1     ESWIN Spanish Modern        ISO-8859-1     ESMWIN Swedish               850            SV850 Swedish (Clipper)     437            SVCLIP Swedish               ISO-8859-1     SVWIN Turkish               857            TR857 Turkish               Windows-1254   TRWIN Ukrainian             866            UA866 Ukrainian             KOI-8U         UAKOI8 Ukrainian             Windows-1251   UA1251"
+   },
+   {
+    "label": "</table>",
+    "documentation": "</table>"
+   }
+  ],
+  "name": "hb_cdpSelect",
+  "return": {
+   "name": "<cOldLang>",
+   "help": "The old language indentifier"
+  }
+ },
+ {
+  "label": "hb_ColorIndex( <cColorSpec>, <nIndex> ) --> <cColor>",
+  "documentation": "Extract one color from a full colorspec string.",
+  "arguments": [
+   {
+    "label": "<cColorSpec>",
+    "documentation": "<cColorSpec> is a color list"
+   },
+   {
+    "label": "<nIndex>",
+    "documentation": "<nIndex> is the position of the color item to be extracted, the first position is the zero."
+   }
+  ],
+  "name": "hb_ColorIndex"
+ },
+ {
+  "label": "hb_DiskSpace( [<cDrive>] [, <nType>] ) --> nDiskbytes",
+  "documentation": "Get the amount of space available on a disk",
+  "arguments": [
+   {
+    "label": "<cDrive>",
+    "documentation": "<cDrive> The drive letter you are requesting info on. The default is A:"
+   },
+   {
+    "label": "<nType>",
+    "documentation": "<nType> The type of space being requested. The default is HB_DISK_AVAIL."
+   }
+  ],
+  "name": "hb_DiskSpace",
+  "return": {
+   "name": "<nDiskBytes>",
+   "help": "The number of bytes on the requested disk that match the requested type."
+  }
+ },
+ {
+  "label": "hb_eol() --> cString",
+  "documentation": "Returns the newline character(s) to use with the current OS",
+  "arguments": [],
+  "name": "hb_eol",
+  "return": {
+   "name": "<cString>",
+   "help": "A character string containing the character or characters required to move the screen cursor or print head to the start of a new line."
+  }
+ },
+ {
+  "label": "hb_FEof( <nHandle> ) --> lIsEof",
+  "documentation": "Check for end-of-file.",
+  "arguments": [
+   {
+    "label": "<nHandle>",
+    "documentation": "<nHandle> The handle of an open file."
+   }
+  ],
+  "name": "hb_FEof",
+  "return": {
+   "name": "<lIsEof>",
+   "help": ".T. if the file handle is at end-of-file, otherwise .F."
+  }
+ },
+ {
+  "label": "hb_FLock( <nHandle>, <nOffset>, <nBytes> [, <nType> ] ) --> <lSuccess>",
+  "documentation": "Locks part or all of any file",
+  "arguments": [
+   {
+    "label": "<nHandle>",
+    "documentation": "<nHandle>  Dos file handle"
+   },
+   {
+    "label": "<nOffset>",
+    "documentation": "<nOffset>  Offset of the first byte of the region to be locked."
+   },
+   {
+    "label": "<nBytes>",
+    "documentation": "<nBytes>   Number of bytes to be locked."
+   },
+   {
+    "label": "<nType>",
+    "documentation": "<nType>    The type (read or write) of lock requested."
+   }
+  ],
+  "name": "hb_FLock",
+  "return": {
+   "name": "<lSuccess>",
+   "help": ".T. if the lock was obtained, else .F."
+  }
+ },
+ {
+  "label": "hb_FUnlock( <nHandle>, <nOffset>, <nBytes> ) --> <lSuccess>",
+  "documentation": "Unlocks part or all of any file",
+  "arguments": [
+   {
+    "label": "<nHandle>",
+    "documentation": "<nHandle>  Dos file handle set>  Offset of the first byte of the region to be locked."
+   },
+   {
+    "label": "<nBytes>",
+    "documentation": "<nBytes>   Number of bytes to be locked."
+   }
+  ],
+  "name": "hb_FUnlock",
+  "return": {
+   "name": "<lSuccess>",
+   "help": ".T. if the lock was removed, else .F."
+  }
+ },
+ {
+  "label": "hb_gcAll()",
+  "documentation": "Scans the memory and releases all garbage memory blocks.",
+  "arguments": [],
+  "name": "hb_gcAll"
+ },
+ {
+  "label": "hb_GetEnv( <cEnviroment>, [<cDefaultValue>] ) --> <cReturn>",
+  "documentation": "Obtains a system environmental setting.",
+  "arguments": [
+   {
+    "label": "<cEnviroment>",
+    "documentation": "<cEnviroment> Enviromental variable to obtain."
+   },
+   {
+    "label": "<cDefaultValue>",
+    "documentation": "<cDefaultValue> Optional value to return if <cEnvironment> is not found."
+   }
+  ],
+  "name": "hb_GetEnv",
+  "return": {
+   "name": "<cReturn>",
+   "help": "Value of the environment variable or <cDefaultValue> or an empty string."
+  }
+ },
+ {
+  "label": "hb_HAllocate( <hsTable>, <nItems> )",
+  "documentation": "Preallocates a hash table",
+  "arguments": [
+   {
+    "label": "<hsTable>",
+    "documentation": "<hsTable> a hash table"
+   },
+   {
+    "label": "<nItems>",
+    "documentation": "<nItems> number of items to preallocate in the hash table"
+   }
+  ],
+  "name": "hb_HAllocate"
+ },
+ {
+  "label": "hb_Hash( [ <Key1>, <Value1> ], [ <KeyN>, <ValueN> ], ... ) -> hsTable",
+  "documentation": "Returns a hash table",
+  "arguments": [
+   {
+    "label": "<Key1>",
+    "documentation": "<Key1> entry key; can be of type: number, date, datetime, string, pointer"
+   },
+   {
+    "label": "<Value1>",
+    "documentation": "<Value1> entry value; can be of type: block, string, numeric, date/datetime, logical, nil, pointer, array, hash table Equivalent to: hsTable := { => }"
+   },
+   {
+    "label": "<Key1>",
+    "documentation": "hsTable := { <Key1> => <Value1>, <Key2> => <Value2>, <KeyN> => <ValueN> }"
+   }
+  ],
+  "name": "hb_Hash"
+ },
+ {
+  "label": "hb_HAutoAdd( <hsTable>, [<lFlag>] ) -> <lPreviousFlag>",
+  "documentation": "Sets the 'auto add' flag for the hash table",
+  "arguments": [
+   {
+    "label": "<hsTable>",
+    "documentation": "<hsTable> a hash table"
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "<lFlag> a logical value indicating to turn on or off the 'auto add' flag of the hash table"
+   }
+  ],
+  "name": "hb_HAutoAdd"
+ },
+ {
+  "label": "hb_HBinary( <hsTable>, [<lFlag>] ) -> <lPreviousFlag>",
+  "documentation": "Sets the 'binary' flag for the hash table",
+  "arguments": [
+   {
+    "label": "<hsTable>",
+    "documentation": "<hsTable> a hash table"
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "<lFlag> a logical value indicating to turn on or off the 'binary' flag of the hash table"
+   }
+  ],
+  "name": "hb_HBinary"
+ },
+ {
+  "label": "hb_HCaseMatch( <hsTable>, [<lFlag>] ) -> <lPreviousFlag>",
+  "documentation": "Sets the 'case match' flag for the hash table",
+  "arguments": [
+   {
+    "label": "<hsTable>",
+    "documentation": "<hsTable> a hash table"
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "<lFlag> a logical value indicating to turn on or off the 'case match' flag of the hash table"
+   }
+  ],
+  "name": "hb_HCaseMatch"
+ },
+ {
+  "label": "hb_HClone( <hsTable> ) -> <hsDestination>",
+  "documentation": "Creates a copy of a hash table",
+  "arguments": [
+   {
+    "label": "<hsTable>",
+    "documentation": "<hsTable> a hash table"
+   }
+  ],
+  "name": "hb_HClone"
+ },
+ {
+  "label": "hb_HCopy( <hsDestination>, <hsSource>, [<nStart>], [<nCount>] ) -> <hsDestination>",
+  "documentation": "Adds entries from the source hash table to the destination hash table",
+  "arguments": [
+   {
+    "label": "<hsDestination>",
+    "documentation": "<hsDestination> a destination hash table"
+   },
+   {
+    "label": "<hsSource>",
+    "documentation": "<hsSource> a source hash table"
+   },
+   {
+    "label": "<nStart>",
+    "documentation": "<nStart> starting index, defaults to 1 if omitted"
+   },
+   {
+    "label": "<nCount>",
+    "documentation": "<nCount> counter, defaults to (length) - <nStart> is omitted"
+   }
+  ],
+  "name": "hb_HCopy"
+ },
+ {
+  "label": "hb_HDefault( <hsTable>, <DefaultValue> ) -> <OldDefaultValye>",
+  "documentation": "Returns/sets a default value for a hash table.",
+  "arguments": [
+   {
+    "label": "<hsTable>",
+    "documentation": "<hsTable> a hash table"
+   },
+   {
+    "label": "<DefaultValue>",
+    "documentation": "<DefaultValue>"
+   }
+  ],
+  "name": "hb_HDefault"
+ },
+ {
+  "label": "hb_HDel( <hsTable>, <Key> ) -> <hsTable>",
+  "documentation": "Removes a key/value pair from a hash table",
+  "arguments": [
+   {
+    "label": "<hsTable>",
+    "documentation": "<hsTable> a hash table"
+   },
+   {
+    "label": "<Key>",
+    "documentation": "<Key> key to be removed from the hash table; can be of type: number, date, datetime, string, pointer"
+   }
+  ],
+  "name": "hb_HDel"
+ },
+ {
+  "label": "hb_HDelAt( <hsTable>, <nPosition> ) -> <hsTable>",
+  "documentation": "Removes an entry from a hash table based on its index position",
+  "arguments": [
+   {
+    "label": "<hsTable>",
+    "documentation": "<hsTable> a hash table"
+   },
+   {
+    "label": "<nPosition>",
+    "documentation": "<nPosition> the position of an entry within the hash table that will be deleted"
+   }
+  ],
+  "name": "hb_HDelAt"
+ },
+ {
+  "label": "hb_HEval( <hsTable>, <bBlock>, [<nStart>], [<nCount>] ) -> <hsTable>",
+  "documentation": "Evaluate a code block across the contents of a hash table",
+  "arguments": [
+   {
+    "label": "<hsTable>",
+    "documentation": "<hsTable> a hash table"
+   },
+   {
+    "label": "<bBlock>",
+    "documentation": "<bBlock> code block to be evaluated"
+   },
+   {
+    "label": "<nStart>",
+    "documentation": "<nStart> starting index, defaults to 1 if omitted"
+   },
+   {
+    "label": "<nCount>",
+    "documentation": "<nCount> counter, defaults to (length) - <nStart> is omitted"
+   }
+  ],
+  "name": "hb_HEval"
+ },
+ {
+  "label": "hb_HFill( <hsTable>, <Value> ) -> <hsTable>",
+  "documentation": "Fills a hash table with a value",
+  "arguments": [
+   {
+    "label": "<hsTable>",
+    "documentation": "<hsTable> a hash table"
+   },
+   {
+    "label": "<Value>",
+    "documentation": "<Value> fill value; can be of type: block, string, numeric, date/datetime, logical, nil, pointer, array, hash table"
+   }
+  ],
+  "name": "hb_HFill"
+ },
+ {
+  "label": "hb_HGet( <hsTable>, <Key> ) -> <Value>",
+  "documentation": "Returns a hash value",
+  "arguments": [
+   {
+    "label": "<hsTable>",
+    "documentation": "<hsTable> a hash table"
+   },
+   {
+    "label": "<Key>",
+    "documentation": "<Key> key to be retrieve from the hash table; can be of type: number, date, datetime, string, pointer"
+   }
+  ],
+  "name": "hb_HGet"
+ },
+ {
+  "label": "hb_HGetDef( <hsTable>, <Key>, [<DefaultValue>] ) -> <Value>",
+  "documentation": "Returns a hash value, or a default value if the key is not present",
+  "arguments": [
+   {
+    "label": "<hsTable>",
+    "documentation": "<hsTable> a hash table"
+   },
+   {
+    "label": "<Key>",
+    "documentation": "<Key> key to be retrieve from the hash table; can be of type: number, date, datetime, string, pointer"
+   },
+   {
+    "label": "<DefaultValue>",
+    "documentation": "<DefaultValue> a default value to be returned if the hash table does not contain the key"
+   }
+  ],
+  "name": "hb_HGetDef"
+ },
+ {
+  "label": "hb_HHasKey( <hsTable>, <Key> ) -> lExists",
+  "documentation": "Determines whether a hash table has an entry with a give key",
+  "arguments": [
+   {
+    "label": "<hsTable>",
+    "documentation": "<hsTable> a hash table"
+   },
+   {
+    "label": "<Key>",
+    "documentation": "<Key> a key value to be queried for; can be of type: number, date, datetime, string, pointer"
+   }
+  ],
+  "name": "hb_HHasKey"
+ },
+ {
+  "label": "hb_HKeyAt( <hsTable>, <nPosition> ) -> <Key>",
+  "documentation": "Gets a hash table key at a given position",
+  "arguments": [
+   {
+    "label": "<hsTable>",
+    "documentation": "<hsTable> a hash table"
+   },
+   {
+    "label": "<nPosition>",
+    "documentation": "<nPosition> the position of an entry within the hash table that will be returned"
+   }
+  ],
+  "name": "hb_HKeyAt"
+ },
+ {
+  "label": "hb_HKeys( <hsTable> ) -> <aKeys>",
+  "documentation": "Returns an array of the keys of a hash table",
+  "arguments": [
+   {
+    "label": "<hsTable>",
+    "documentation": "<hsTable> a hash table"
+   }
+  ],
+  "name": "hb_HKeys"
+ },
+ {
+  "label": "hb_HMerge( <hsDestination>, <hsSource>, <bBlock>|<nPosition> ) -> <hsDestination>",
+  "documentation": "Merges a source hash table into a destination hash table",
+  "arguments": [
+   {
+    "label": "<hsDestination>",
+    "documentation": "<hsDestination> a destination hash table"
+   },
+   {
+    "label": "<hsSource>",
+    "documentation": "<hsSource> a source hash table"
+   },
+   {
+    "label": "<bBlock>",
+    "documentation": "<bBlock> a code block that will be evaluated for each entry within the source hash table; the code block will be passed the entry key, value and position; if the code block returns a true value, the entry will be added to the destination hash table"
+   },
+   {
+    "label": "<nPosition>",
+    "documentation": "<nPosition> the position of an entry within the source hash table that will be appended to the destination hash table TODO: the source code passes either a number or HB_HASH_UNION; research this"
+   }
+  ],
+  "name": "hb_HMerge"
+ },
+ {
+  "label": "hb_HPairAt( <hsTable>, <nPosition> ) -> <aKeyValue>",
+  "documentation": "Returns a two-dimensional array of a hash table entry key/value pair",
+  "arguments": [
+   {
+    "label": "<hsTable>",
+    "documentation": "<hsTable> a hash table"
+   },
+   {
+    "label": "<nPosition>",
+    "documentation": "<nPosition> the position of an entry within the hash table that will be returned"
+   }
+  ],
+  "name": "hb_HPairAt"
+ },
+ {
+  "label": "hb_HPos( <hsTable>, <Key> ) -> nPosition",
+  "documentation": "Locates the index of a key within a hash table",
+  "arguments": [
+   {
+    "label": "<hsTable>",
+    "documentation": "<hsTable> a hash table"
+   },
+   {
+    "label": "<Key>",
+    "documentation": "<Key> key for which its position is to be determined; can be of type: number, date, datetime, string, pointer"
+   }
+  ],
+  "name": "hb_HPos"
+ },
+ {
+  "label": "hb_HScan( <hsTable>, <Value>, [<nStart>], [<nCount>, [<lExact>] ) -> nPosition",
+  "documentation": "Scans a hash table",
+  "arguments": [
+   {
+    "label": "<hsTable>",
+    "documentation": "<hsTable> a hash table"
+   },
+   {
+    "label": "<Value>",
+    "documentation": "<Value> to be located within the hash table"
+   },
+   {
+    "label": "<nStart>",
+    "documentation": "<nStart> starting index, defaults to 1 if omitted"
+   },
+   {
+    "label": "<nCount>",
+    "documentation": "<nCount> counter, defaults to (length) - <nStart> is omitted"
+   },
+   {
+    "label": "<lExact>",
+    "documentation": "<lExact> logical valuye indicating whether the comparision is to be be exact or not"
+   }
+  ],
+  "name": "hb_HScan"
+ },
+ {
+  "label": "hb_HSet( <hsTable>, <Key>, <Value> ) -> <hsTable>",
+  "documentation": "Sets a hash value",
+  "arguments": [
+   {
+    "label": "<hsTable>",
+    "documentation": "<hsTable> a hash table"
+   },
+   {
+    "label": "<Key>",
+    "documentation": "<Key> the key of the entry to be set; can be of type: number, date, datetime, string, pointer"
+   },
+   {
+    "label": "<Value>",
+    "documentation": "<Value> the entry value"
+   }
+  ],
+  "name": "hb_HSet"
+ },
+ {
+  "label": "hb_HSort( <hsTable> ) -> <hsSortedTable>",
+  "documentation": "Reorganizes the internal list of the hash table to be sorted",
+  "arguments": [
+   {
+    "label": "<hsTable>",
+    "documentation": "<hsTable> a hash table"
+   }
+  ],
+  "name": "hb_HSort"
+ },
+ {
+  "label": "hb_HValueAt( <hsTable>, <nPosition>, [<NewValue>] ) -> <Value>",
+  "documentation": "Gets/sets a hash value at a given position",
+  "arguments": [
+   {
+    "label": "<hsTable>",
+    "documentation": "<hsTable> a hash table"
+   },
+   {
+    "label": "<nPosition>",
+    "documentation": "<nPosition> the position of an entry within the hash table that will be returned"
+   },
+   {
+    "label": "<NewValue>",
+    "documentation": "<NewValue> a new value to be assigned to the hash table at the given position"
+   }
+  ],
+  "name": "hb_HValueAt"
+ },
+ {
+  "label": "hb_HValues( <hsTable> ) -> <aValues>",
+  "documentation": "Returns an array of the values of a hash table",
+  "arguments": [
+   {
+    "label": "<hsTable>",
+    "documentation": "<hsTable> a hash table"
+   }
+  ],
+  "name": "hb_HValues"
+ },
+ {
+  "label": "hb_idleAdd( <bAction> ) --> nHandle",
+  "documentation": "Adds the background task.",
+  "arguments": [
+   {
+    "label": "<bAction>",
+    "documentation": "<bAction> is a codeblock that will be executed during idle states. There are no arguments passed to this codeblock during evaluation."
+   }
+  ],
+  "name": "hb_idleAdd",
+  "return": {
+   "name": "<nHandle>",
+   "help": "The handle (an integer value) that identifies the task. This handle can be used for deleting the task."
+  }
+ },
+ {
+  "label": "hb_idleDel( <nHandle> ) --> <bAction>",
+  "documentation": "Removes the background task from the list of tasks.",
+  "arguments": [
+   {
+    "label": "<nHandle>",
+    "documentation": "<nHandle> is the identifier of the task returned by the hb_idleAdd() function."
+   }
+  ],
+  "name": "hb_idleDel",
+  "return": {
+   "name": "<bAction>",
+   "help": "NIL if invalid handle is passed or a codeblock that was passed to hb_idleAdd() function"
+  }
+ },
+ {
+  "label": "hb_idleState()",
+  "documentation": "Evaluates a single background task and calls the garbage collector.",
+  "arguments": [],
+  "name": "hb_idleState"
+ },
+ {
+  "label": "hb_inetAccept( <socket> ) -> SOCKET",
+  "documentation": "Wait until a socket is ready",
+  "arguments": [],
+  "name": "hb_inetAccept",
+  "return": {
+   "name": "<socket>",
+   "help": "a socket previously created / opened"
+  }
+ },
+ {
+  "label": "hb_inetAddress( <socket> ) -> cResult",
+  "documentation": "Get a remote server address",
+  "arguments": [
+   {
+    "label": "<socket>",
+    "documentation": "<socket> a socket previously created / opened"
+   }
+  ],
+  "name": "hb_inetAddress"
+ },
+ {
+  "label": "hb_inetCleanup()",
+  "documentation": "Terminate Harbour INET support",
+  "arguments": [],
+  "name": "hb_inetCleanup"
+ },
+ {
+  "label": "hb_inetClearError( <socket> )",
+  "documentation": "Clear the socket error value",
+  "arguments": [
+   {
+    "label": "<socket>",
+    "documentation": "<socket> a socket previously created / opened"
+   }
+  ],
+  "name": "hb_inetClearError"
+ },
+ {
+  "label": "hb_inetClearPeriodCallback( <socket> )",
+  "documentation": "Clear the periodic callback value of a socket",
+  "arguments": [
+   {
+    "label": "<socket>",
+    "documentation": "<socket> a socket previously created / opened"
+   }
+  ],
+  "name": "hb_inetClearPeriodCallback"
+ },
+ {
+  "label": "hb_inetClearTimeLimit( <socket> )",
+  "documentation": "Clear the time limit value of a socket",
+  "arguments": [
+   {
+    "label": "<socket>",
+    "documentation": "<socket> a socket previously created / opened"
+   }
+  ],
+  "name": "hb_inetClearTimeLimit"
+ },
+ {
+  "label": "hb_inetClearTimeout( <socket> )",
+  "documentation": "Clear the timeout value of a socket",
+  "arguments": [
+   {
+    "label": "<socket>",
+    "documentation": "<socket> a socket previously created / opened"
+   }
+  ],
+  "name": "hb_inetClearTimeout"
+ },
+ {
+  "label": "hb_inetClose( <socket> ) -> nResult",
+  "documentation": "Close an INET socket",
+  "arguments": [
+   {
+    "label": "<socket>",
+    "documentation": "<socket> a socket previously created / opened"
+   }
+  ],
+  "name": "hb_inetClose"
+ },
+ {
+  "label": "hb_inetConnect( <cAddress>, <nPort> ) -> SOCKET  hb_inetConnect( <cAddress>, <nPort>, <socket> ) -> NIL",
+  "documentation": "Connect a socket to a remote server by IP address or name",
+  "arguments": [
+   {
+    "label": "<cAddress>",
+    "documentation": "<cAddress>"
+   },
+   {
+    "label": "<nPort>",
+    "documentation": "<nPort>"
+   },
+   {
+    "label": "<socket>",
+    "documentation": "<socket>"
+   }
+  ],
+  "name": "hb_inetConnect"
+ },
+ {
+  "label": "hb_inetConnectIP( <cAddress>, <nPort> ) -> SOCKET  hb_inetConnectIP( <cAddress>, <nPort>, <socket> ) -> NIL",
+  "documentation": "Connect to a remote server by IP address",
+  "arguments": [
+   {
+    "label": "<cAddress>",
+    "documentation": "<cAddress>"
+   },
+   {
+    "label": "<nPort>",
+    "documentation": "<nPort>"
+   },
+   {
+    "label": "<socket>",
+    "documentation": "<socket>"
+   }
+  ],
+  "name": "hb_inetConnectIP"
+ },
+ {
+  "label": "hb_inetCount( <socket> ) -> nResult",
+  "documentation": "Get the number of bytes last read or sent",
+  "arguments": [
+   {
+    "label": "<socket>",
+    "documentation": "<socket> a socket previously created / opened"
+   }
+  ],
+  "name": "hb_inetCount"
+ },
+ {
+  "label": "hb_inetCreate( [ <nTimeout> ] ) -> SOCKET",
+  "documentation": "Create an INET socket",
+  "arguments": [
+   {
+    "label": "<nTimeout>",
+    "documentation": "<nTimeout> Socket timeout (optional) TODO: what is the scale (seconds, milliseconds?)"
+   }
+  ],
+  "name": "hb_inetCreate"
+ },
+ {
+  "label": "hb_inetCRLF() -> cResult",
+  "documentation": "Get a CRLF sequence for internet protocols",
+  "arguments": [],
+  "name": "hb_inetCRLF"
+ },
+ {
+  "label": "hb_inetDataReady( <socket>, [ <nMillisec> ] ) -> nResult",
+  "documentation": "Get whether there is data ready in a socket",
+  "arguments": [
+   {
+    "label": "<socket>",
+    "documentation": "<socket> a socket previously created / opened"
+   },
+   {
+    "label": "<nMillisec>",
+    "documentation": "<nMillisec>"
+   }
+  ],
+  "name": "hb_inetDataReady"
+ },
+ {
+  "label": "hb_inetDGram( [<lBroadcast>] ) -> SOCKET",
+  "documentation": "Create a datagram socket",
+  "arguments": [],
+  "name": "hb_inetDGram"
+ },
+ {
+  "label": "hb_inetDGramBind( <nPort>, [<cAddress> [, <lBroadcast>] ] ) -> SOCKET",
+  "documentation": "Create a bound datagram socket",
+  "arguments": [
+   {
+    "label": "<nPort>",
+    "documentation": "<nPort>"
+   },
+   {
+    "label": "<cAddress>",
+    "documentation": "<cAddress>"
+   },
+   {
+    "label": "<bBroadcast>",
+    "documentation": "<bBroadcast>"
+   }
+  ],
+  "name": "hb_inetDGramBind"
+ },
+ {
+  "label": "hb_inetDGramRecv( <socket>, @<cBuffer> [, <nSize> ] ) -> nBytesRead",
+  "documentation": "Get data from a datagram socket",
+  "arguments": [
+   {
+    "label": "<socket>",
+    "documentation": "<socket> a socket previously created / opened"
+   },
+   {
+    "label": "<cBuffer>",
+    "documentation": "<cBuffer> is the target buffer and must be passed by reference"
+   },
+   {
+    "label": "<nSize>",
+    "documentation": "<nSize>"
+   }
+  ],
+  "name": "hb_inetDGramRecv"
+ },
+ {
+  "label": "hb_inetDGramSend( <socket>, <cAddress>, <nPort>, <cBuffer> [, <nSize> ] ) -> nBytesSent",
+  "documentation": "Send data to a datagram socket",
+  "arguments": [
+   {
+    "label": "<socket>",
+    "documentation": "<socket> a socket previously created / opened"
+   },
+   {
+    "label": "<cAddress>",
+    "documentation": "<cAddress>"
+   },
+   {
+    "label": "<nPort>",
+    "documentation": "<nPort>"
+   },
+   {
+    "label": "<cBuffer>",
+    "documentation": "<cBuffer>"
+   },
+   {
+    "label": "<nSize>",
+    "documentation": "<nSize>"
+   }
+  ],
+  "name": "hb_inetDGramSend"
+ },
+ {
+  "label": "hb_inetErrorCode( <socket> ) -> nResult",
+  "documentation": "Get the last INET error code",
+  "arguments": [
+   {
+    "label": "<socket>",
+    "documentation": "<socket> a socket previously created / opened"
+   }
+  ],
+  "name": "hb_inetErrorCode"
+ },
+ {
+  "label": "hb_inetErrorDesc( <socket> ) -> cResult",
+  "documentation": "Get the last INET error code description",
+  "arguments": [
+   {
+    "label": "<socket>",
+    "documentation": "<socket> a socket previously created / opened"
+   }
+  ],
+  "name": "hb_inetErrorDesc"
+ },
+ {
+  "label": "hb_inetFD( <socket> [, <lNoSocket> ] ) -> nResult",
+  "documentation": "?",
+  "arguments": [
+   {
+    "label": "<socket>",
+    "documentation": "<socket> a socket previously created / opened"
+   },
+   {
+    "label": "<lNoSocket>",
+    "documentation": "<lNoSocket>"
+   }
+  ],
+  "name": "hb_inetFD"
+ },
+ {
+  "label": "hb_inetGetAlias( <cName> ) -> aHosts",
+  "documentation": "Get an array of aliases of a server",
+  "arguments": [
+   {
+    "label": "<cName>",
+    "documentation": "<cName>"
+   }
+  ],
+  "name": "hb_inetGetAlias"
+ },
+ {
+  "label": "hb_inetGetHosts( <cName> ) -> aHosts",
+  "documentation": "Get an array of IP addresses of a host",
+  "arguments": [
+   {
+    "label": "<cName>",
+    "documentation": "<cName>"
+   }
+  ],
+  "name": "hb_inetGetHosts"
+ },
+ {
+  "label": "hb_inetGetRcvBufSize( <socket> ) -> nResult",
+  "documentation": "Get the socket receive buffer size",
+  "arguments": [
+   {
+    "label": "<socket>",
+    "documentation": "<socket> a socket previously created / opened"
+   }
+  ],
+  "name": "hb_inetGetRcvBufSize"
+ },
+ {
+  "label": "hb_inetGetSndBufSize( <socket> ) -> nResult",
+  "documentation": "Get the socket send buffer size",
+  "arguments": [
+   {
+    "label": "<socket>",
+    "documentation": "<socket> a socket previously created / opened"
+   }
+  ],
+  "name": "hb_inetGetSndBufSize"
+ },
+ {
+  "label": "hb_inetInit() -> lResult",
+  "documentation": "Activate Harbour INET support",
+  "arguments": [],
+  "name": "hb_inetInit"
+ },
+ {
+  "label": "hb_inetIsSocket( <socket> ) -> lResult",
+  "documentation": "Get whether a variable is a socket",
+  "arguments": [
+   {
+    "label": "<socket>",
+    "documentation": "<socket> a socket previously created / opened"
+   }
+  ],
+  "name": "hb_inetIsSocket"
+ },
+ {
+  "label": "hb_inetPeriodCallback( <socket> [, <xCallback> ] ) -> xPreviousCallback",
+  "documentation": "Get or change the periodic callback value of a socket",
+  "arguments": [
+   {
+    "label": "<socket>",
+    "documentation": "<socket> a socket previously created / opened xCallback a new periodic callback"
+   }
+  ],
+  "name": "hb_inetPeriodCallback"
+ },
+ {
+  "label": "hb_inetPort( <socket> ) -> cResult",
+  "documentation": "Get the port a socket is bound to.",
+  "arguments": [
+   {
+    "label": "<socket>",
+    "documentation": "<socket> a socket previously created / opened"
+   }
+  ],
+  "name": "hb_inetPort"
+ },
+ {
+  "label": "hb_inetRecv( <socket>, @<cResult>, [ <nAmount> ] ) -> nResult",
+  "documentation": "Read from a socket",
+  "arguments": [
+   {
+    "label": "<socket>",
+    "documentation": "<socket> a socket previously created / opened"
+   },
+   {
+    "label": "<cResult>",
+    "documentation": "<cResult> is the target buffer and must be passed by reference"
+   },
+   {
+    "label": "<nAmount>",
+    "documentation": "<nAmount> is the upper limit of characters to be read from the socket. If not passed this defaults to the length of cResult"
+   }
+  ],
+  "name": "hb_inetRecv"
+ },
+ {
+  "label": "hb_inetRecvAll( <socket>, @<cResult>, [ <nAmount> ] ) -> nResult",
+  "documentation": "Read from a socket without blocking",
+  "arguments": [
+   {
+    "label": "<socket>",
+    "documentation": "<socket> a socket previously created / opened"
+   },
+   {
+    "label": "<cResult>",
+    "documentation": "<cResult> is the target buffer and must be passed by reference"
+   },
+   {
+    "label": "<nAmount>",
+    "documentation": "<nAmount> is the upper limit of characters to be read from the socket. If not passed this defaults to the length of cResult"
+   }
+  ],
+  "name": "hb_inetRecvAll"
+ },
+ {
+  "label": "hb_inetRecvEndblock( <socket> [, <cBlock >[, @<nBytesRead> [, <nMaxLength> [, <nBufSize> ]]]] ) -> cResult",
+  "documentation": "Read a block from a socket",
+  "arguments": [
+   {
+    "label": "<socket>",
+    "documentation": "<socket> a socket previously created / opened"
+   },
+   {
+    "label": "<cBlock>",
+    "documentation": "<cBlock>"
+   },
+   {
+    "label": "<nBytesRead>",
+    "documentation": "<nBytesRead>"
+   },
+   {
+    "label": "<nMaxLength>",
+    "documentation": "<nMaxLength>"
+   },
+   {
+    "label": "<nBufSize>",
+    "documentation": "<nBufSize>"
+   }
+  ],
+  "name": "hb_inetRecvEndblock"
+ },
+ {
+  "label": "hb_inetRecvLine( <socket> [, @<nBytesRead>, [, <nMaxLength> [, <nBufSize> ]]] ) -> cResult",
+  "documentation": "Read a line from a socket",
+  "arguments": [
+   {
+    "label": "<socket>",
+    "documentation": "<socket> a socket previously created / opened"
+   },
+   {
+    "label": "<nBytesRead>",
+    "documentation": "<nBytesRead> must be passed by reference"
+   },
+   {
+    "label": "<nMaxLength>",
+    "documentation": "<nMaxLength>"
+   },
+   {
+    "label": "<nBufSize>",
+    "documentation": "<nBufSize>"
+   }
+  ],
+  "name": "hb_inetRecvLine"
+ },
+ {
+  "label": "hb_inetSend( <socket>, <cBuffer> [, <nLength> ] ) -> nResult",
+  "documentation": "Sent data through a socket",
+  "arguments": [
+   {
+    "label": "<socket>",
+    "documentation": "<socket> a socket previously created / opened"
+   },
+   {
+    "label": "<cBuffer>",
+    "documentation": "<cBuffer>"
+   },
+   {
+    "label": "<nLength>",
+    "documentation": "<nLength>"
+   }
+  ],
+  "name": "hb_inetSend"
+ },
+ {
+  "label": "hb_inetSendAll( <socket>, <cBuffer> [, <nLength> ] ) -> nResult",
+  "documentation": "Send data through a socket with blocking",
+  "arguments": [
+   {
+    "label": "<socket>",
+    "documentation": "<socket> a socket previously created / opened"
+   },
+   {
+    "label": "<cBuffer>",
+    "documentation": "<cBuffer>"
+   },
+   {
+    "label": "<nLength>",
+    "documentation": "<nLength>"
+   }
+  ],
+  "name": "hb_inetSendAll"
+ },
+ {
+  "label": "hb_inetServer( <port> [, <cBindAddr> [, <nListenLimit> ]]  ) -> SOCKET",
+  "documentation": "Create a socket bound to a port",
+  "arguments": [
+   {
+    "label": "<port>",
+    "documentation": "<port>"
+   },
+   {
+    "label": "<cBindAddr>",
+    "documentation": "<cBindAddr>"
+   },
+   {
+    "label": "<nListenLimit>",
+    "documentation": "<nListenLimit> is an internal parameter and rarely needs to be passed, defaults to 10"
+   }
+  ],
+  "name": "hb_inetServer"
+ },
+ {
+  "label": "hb_inetSetRcvBufSize( <socket>, nSize ) -> nSize",
+  "documentation": "Set the receive buffer size of a socket",
+  "arguments": [
+   {
+    "label": "<socket>",
+    "documentation": "<socket> a socket previously created / opened nSize"
+   }
+  ],
+  "name": "hb_inetSetRcvBufSize"
+ },
+ {
+  "label": "hb_inetSetSndBufSize( <socket>, <nSize> ) -> nSize",
+  "documentation": "Set the send buffer size of a socket",
+  "arguments": [
+   {
+    "label": "<socket>",
+    "documentation": "<socket> a socket previously created / opened nSize"
+   }
+  ],
+  "name": "hb_inetSetSndBufSize"
+ },
+ {
+  "label": "hb_inetstatus( <socket> ) -> nResult",
+  "documentation": "Get the status of a socket",
+  "arguments": [
+   {
+    "label": "<socket>",
+    "documentation": "<socket> a socket previously created / opened"
+   }
+  ],
+  "name": "hb_inetstatus"
+ },
+ {
+  "label": "hb_inetTimeLimit( <socket> [, <nTimeLimit> ) -> NIL",
+  "documentation": "Get or change the time limit value of a socket",
+  "arguments": [
+   {
+    "label": "<socket>",
+    "documentation": "<socket> a socket previously created / opened"
+   },
+   {
+    "label": "<nTimeLimit>",
+    "documentation": "<nTimeLimit>"
+   }
+  ],
+  "name": "hb_inetTimeLimit"
+ },
+ {
+  "label": "hb_inetTimeout( <socket> [, <nTimeout> ] ) -> nPreviousTimeout",
+  "documentation": "Get or change the timeout value of a socket",
+  "arguments": [
+   {
+    "label": "<socket>",
+    "documentation": "<socket> a socket previously created / opened"
+   },
+   {
+    "label": "<nTimeout>",
+    "documentation": "<nTimeout> is the new socket timeout value"
+   }
+  ],
+  "name": "hb_inetTimeout"
+ },
+ {
+  "label": "hb_keyPut( <nInkeyCode> )",
+  "documentation": "Put an inkey code to the keyboard buffer.",
+  "arguments": [
+   {
+    "label": "<nInkeyCode>",
+    "documentation": "<nInkeyCode> is the inkey code, which should be inserted into the keyboard buffer."
+   }
+  ],
+  "name": "hb_keyPut"
+ },
+ {
+  "label": "hb_langErrMsg( <nErrorCode> ) --> cErrorMessage",
+  "documentation": "Description of an error code using current language",
+  "arguments": [
+   {
+    "label": "<nErrorCode>",
+    "documentation": "<nErrorCode> is one of the generic error codes (EG_...) defined in error.ch"
+   }
+  ],
+  "name": "hb_langErrMsg",
+  "return": {
+   "name": "<nErrorCode>",
+   "help": "the code ."
+  }
+ },
+ {
+  "label": "hb_langMessage( <nMsg>[, <cLangID>] ) --> cMessage",
+  "documentation": "Returns international strings messages and errors",
+  "arguments": [
+   {
+    "label": "<nMsg>",
+    "documentation": "<nMsg>    is the message number to get."
+   },
+   {
+    "label": "<cLangID>",
+    "documentation": "<cLangID> is an optional language module ID. Uses the currently selected language module, if not specified."
+   }
+  ],
+  "name": "hb_langMessage",
+  "return": {
+   "name": "<nMsg>",
+   "help": "hb_langMessage() return the text associated with the code ."
+  }
+ },
+ {
+  "label": "hb_langName( [<cLangID>] ) --> cLangName",
+  "documentation": "Return the name of the language module",
+  "arguments": [
+   {
+    "label": "<cLangID>",
+    "documentation": "<cLangID> is an optional language module ID. Uses the currently selected language module, if not specified."
+   }
+  ],
+  "name": "hb_langName",
+  "return": {
+   "name": "<cLangName>",
+   "help": "Name of the language module"
+  }
+ },
+ {
+  "label": "hb_langSelect( [<cNewLang>][, <cCodepage>] ) --> cOldLang",
+  "documentation": "Select a specific nation message module",
+  "arguments": [
+   {
+    "label": "<cNewLang>",
+    "documentation": "<cNewLang>  The optional ID of the language module."
+   },
+   {
+    "label": "<cNewLang>",
+    "documentation": "Possible values for <cNewLang> are below as defined in the Lang library, sorted by language."
+   },
+   {
+    "label": "<cCodepage>",
+    "documentation": "<cCodepage>  Optional codepage ID into which the language module strings are automatically converted by Harbour."
+   },
+   {
+    "label": "<table>",
+    "documentation": "<table>"
+   },
+   {
+    "label": "<cNewLang>",
+    "documentation": "Language              <cNewLang> Basque                eu Belorussian           be Bulgarian             bg Catalan               ca Chinese Traditional   zh Chinese Simplified    zh_sim Croatian              hr Czech                 cs Dutch                 nl Esperanto             eo French                fr Galician              gl German                de Greek                 el Hebrew                he Hungarian             hu Icelandic             is Indonesian            id Italian               it Korean                ko Lithuanian            lt Polish                pl Portuguese            pt Romanian              ro Russian               ru Serbian (cyrillic)    sr_cyr Serbian (latin)       sr_lat Slovak                sk Slovenian             sl Spanish               es Swedish               sv Turkish               tr Ukrainian             uk"
+   },
+   {
+    "label": "</table>",
+    "documentation": "</table>"
+   }
+  ],
+  "name": "hb_langSelect",
+  "return": {
+   "name": "<cOldLang>",
+   "help": "The old language indentifier"
+  }
+ },
+ {
+  "label": "hb_matherBlock( [<bNewBlock>] ) --> <bOldBlock>",
+  "documentation": "Set/Get math error handling codeblock",
+  "arguments": [
+   {
+    "label": "<bNewBlock>",
+    "documentation": "<bNewBlock>"
+   }
+  ],
+  "name": "hb_matherBlock",
+  "return": {
+   "name": "<bOldBlock>",
+   "help": "is the current error handler codeblock"
+  }
+ },
+ {
+  "label": "hb_matherMode( [<nNewMode>] ) --> <nOldMode>",
+  "documentation": "Set/Get math error handling mode",
+  "arguments": [
+   {
+    "label": "<nNumber>",
+    "documentation": "[<nNumber>]   new math error handling mode, one of the following constants, defined in hbmath.ch: HB_MATH_ERRMODE_DEFAULT HB_MATH_ERRMODE_CDEFAULT HB_MATH_ERRMODE_USER HB_MATH_ERRMODE_USERDEFAULT HB_MATH_ERRMODE_USERCDEFAULT"
+   }
+  ],
+  "name": "hb_matherMode",
+  "return": {
+   "name": "<nOldMode>",
+   "help": "old math error handling mode"
+  }
+ },
+ {
+  "label": "hb_MemoRead( <cFileName> ) --> cString",
+  "documentation": "Return the text file's contents as a character string",
+  "arguments": [
+   {
+    "label": "<cFileName>",
+    "documentation": "<cFileName> is the filename to read from disk. It must include the file extension. If file to be read lives in another directory, you must include the path."
+   }
+  ],
+  "name": "hb_MemoRead",
+  "return": {
+   "name": "<cFileName>",
+   "help": "If  cannot be found or read HB_MEMOREAD returns an empty string (\"\")."
+  }
+ },
+ {
+  "label": "hb_MemoWrit( <cFileName>, <cString> ) --> lSuccess",
+  "documentation": "Write a memo field or character string to a text file on disk",
+  "arguments": [
+   {
+    "label": "<cFileName>",
+    "documentation": "<cFileName> is the filename to be written to disk. It must include the file extension. If file to be read lives in another directory, you must include the path."
+   },
+   {
+    "label": "<cString>",
+    "documentation": "<cString>   Is the memo field or character string, to be write to"
+   },
+   {
+    "label": "<cFile>",
+    "documentation": "<cFile>."
+   }
+  ],
+  "name": "hb_MemoWrit"
+ },
+ {
+  "label": "hb_PIsByRef( nParam ) --> <lParamIsByRef>",
+  "documentation": "Determine if a parameter is passed by reference.",
+  "arguments": [
+   {
+    "label": "<nParam>",
+    "documentation": "<nParam> is the parameter number to test."
+   }
+  ],
+  "name": "hb_PIsByRef",
+  "return": {
+   "name": "<lVarIsByRef>",
+   "help": "a logical value indicating if the parameter is passed by reference to actual function or procedure."
+  }
+ },
+ {
+  "label": "hb_PValue( <nArg> ) --> <xExp>",
+  "documentation": "Retrieves the value of an argument.",
+  "arguments": [],
+  "name": "hb_PValue",
+  "return": {
+   "name": "<xExp>",
+   "help": "Returns the value stored by an argument."
+  }
+ },
+ {
+  "label": "hb_RAt( <cSearch>, <cString>, [<nStart>], [<nEnd>]  ) --> nPos",
+  "documentation": "Searches for last occurrence a substring of a string.",
+  "arguments": [
+   {
+    "label": "<cSearch>",
+    "documentation": "<cSearch> Substring to search for"
+   },
+   {
+    "label": "<cString>",
+    "documentation": "<cString> Main string"
+   },
+   {
+    "label": "<nStart>",
+    "documentation": "<nStart> First position to search in cString, by default 1."
+   },
+   {
+    "label": "<nEnd>",
+    "documentation": "<nEnd> End position to search, by default cString length"
+   }
+  ],
+  "name": "hb_RAt"
+ },
+ {
+  "label": "hb_SetKeyCheck( <nKey> [, <p1> ][, <p2> ][, <p3> ] )",
+  "documentation": "Implements common hot-key activation code",
+  "arguments": [
+   {
+    "label": "<nKey>",
+    "documentation": "<nKey> is a numeric key value to be tested code-block, if executed"
+   },
+   {
+    "label": "<p1>",
+    "documentation": "<p1>..<p3> are optional parameters that will be passed to the code-block"
+   }
+  ],
+  "name": "hb_SetKeyCheck",
+  "return": {
+   "name": "<nKey>",
+   "help": "additional parameter being"
+  }
+ },
+ {
+  "label": "hb_SetKeyGet( <nKey> [, <bConditionByRef> ] )",
+  "documentation": "Determine a set-key code block and condition-block",
+  "arguments": [
+   {
+    "label": "<anKey>",
+    "documentation": "<anKey> is an numeric key value"
+   },
+   {
+    "label": "<bConditionByRef>",
+    "documentation": "<bConditionByRef> is an optional return-parameter"
+   }
+  ],
+  "name": "hb_SetKeyGet"
+ },
+ {
+  "label": "hb_SetKeySave( [ <OldKeys> ] )",
+  "documentation": "Returns a copy of internal set-key list, optionally overwriting",
+  "arguments": [
+   {
+    "label": "<OldKeys>",
+    "documentation": "<OldKeys> is an optional set-key list from a previous call to hb_SetKeySave(), or NIL to clear current set-key list"
+   }
+  ],
+  "name": "hb_SetKeySave"
+ },
+ {
+  "label": "hb_SetMacro( <nOption>, [<lOnOff>] ) --> <lOldSetting>",
+  "documentation": "Enable/disable the macro compiler runtime features.",
+  "arguments": [
+   {
+    "label": "<nOption>",
+    "documentation": "<nOption> One of the HB_SM_* constants defined in set.ch."
+   },
+   {
+    "label": "<lOnOff>",
+    "documentation": "<lOnOff> .T. to enable or .F. to disable a feature"
+   }
+  ],
+  "name": "hb_SetMacro"
+ },
+ {
+  "label": "hb_Translate( <cSrcText>, [<cPageFrom>], [<cPageTo>] ) --> cDstText",
+  "documentation": "Translate a string from one code page to the other",
+  "arguments": [
+   {
+    "label": "<cSrcText>",
+    "documentation": "<cSrcText> Is the source string to translate."
+   },
+   {
+    "label": "<cPageFrom>",
+    "documentation": "<cPageFrom> Is the optional character code page ID of the source string. If not specified, the default code page is used."
+   },
+   {
+    "label": "<cPageTo>",
+    "documentation": "<cPageTo> Is the optional character code page ID of the destination string. If not specified, the default code page is used."
+   }
+  ],
+  "name": "hb_Translate"
+ },
+ {
+  "label": "hb_ValToStr( <xValue> ) --> cString",
+  "documentation": "Converts any scalar type to a string.",
+  "arguments": [
+   {
+    "label": "<xValue>",
+    "documentation": "<xValue> is any scalar argument."
+   }
+  ],
+  "name": "hb_ValToStr",
+  "return": {
+   "name": "<cString>",
+   "help": "A string representation of <xValue> using default conversions."
+  }
+ },
+ {
+  "label": "Header() --> nBytes",
+  "documentation": "Return the length of a database file header",
+  "arguments": [],
+  "name": "Header",
+  "return": {
+   "name": "<nBytes>",
+   "help": "The numeric size of a database file header in bytes"
+  }
+ },
+ {
+  "label": "I2Bin( <nNumber> ) --> cBuffer",
+  "documentation": "Convert Harbour numeric into signed short encoded bytes",
+  "arguments": [
+   {
+    "label": "<nNumber>",
+    "documentation": "<nNumber> is a numeric value to convert (decimal digits are ignored)."
+   }
+  ],
+  "name": "I2Bin"
+ },
+ {
+  "label": "IndexExt() --> <cExtension>",
+  "documentation": "Returns the file extension of the index module used in an application",
+  "arguments": [],
+  "name": "IndexExt",
+  "return": {
+   "name": "<cExtension>",
+   "help": "Current driver file extension"
+  }
+ },
+ {
+  "label": "IndexKey( <nOrder> ) --> <cIndexKey>",
+  "documentation": "Yields the key expression of a specified index file.",
+  "arguments": [
+   {
+    "label": "<nOrder>",
+    "documentation": "<nOrder>  Index order number"
+   }
+  ],
+  "name": "IndexKey",
+  "return": {
+   "name": "<cIndexKey>",
+   "help": "The index key"
+  }
+ },
+ {
+  "label": "IndexOrd() --> <nPosition>",
+  "documentation": "Returns the numeric position of the controlling index.",
+  "arguments": [],
+  "name": "IndexOrd",
+  "return": {
+   "name": "<nPosition>",
+   "help": "Ordinal position of a controling index"
+  }
+ },
+ {
+  "label": "Inkey( [<nTimeout>] [, <nEvents>] ) --> nKey",
+  "documentation": "Extracts the next key code from the Harbour keyboard buffer.",
+  "arguments": [
+   {
+    "label": "<nTimeout>",
+    "documentation": "<nTimeout> is an optional timeout value in seconds, with a granularity of 1/10th of a second. If omitted, Inkey() returns immediately. If set to 0, Inkey() waits until an input event occurs. If set to any other value, Inkey() will return either when an input event occurs or when the timeout period has elapsed. If only this parameter is specified and it is not numeric, it will be treated as if it were 0. But if both parameters are specified and this parameter is not numeric, it will be treated as if it were not present."
+   },
+   {
+    "label": "<nEvents>",
+    "documentation": "<nEvents> is an optional mask of input events that are to be enabled. If omitted, defaults to hb_set.HB_SET_EVENTMASK. Valid input masks are in inkey.ch and are explained below. It is recommended that the mask names be used rather than their numeric values, in case the numeric values change in future releases of Harbour. To allow more than one type of input event, simply add the various mask names together."
+   },
+   {
+    "label": "<table>",
+    "documentation": "<table> inkey.ch            Meaning INKEY_MOVE          Mouse motion events are allowed INKEY_LDOWN         The mouse left click down event is allowed INKEY_LUP           The mouse left click up event is allowed INKEY_RDOWN         The mouse right click down event is allowed INKEY_RUP           The mouse right click up event is allowed INKEY_KEYBOARD      All keyboard events are allowed INKEY_ALL           All mouse and keyboard events are allowed HB_INKEY_EXTENDED   Extended keyboard codes are used."
+   },
+   {
+    "label": "</table>",
+    "documentation": "</table> If the parameter is not numeric, it will be treated as if it were set to hb_set.HB_SET_EVENTMASK."
+   }
+  ],
+  "name": "Inkey",
+  "return": {
+   "name": "<event>",
+   "help": "represented by the K_ values listed in inkey.ch. Keyboard event return codes in the range 32 through 127 are equivalent to the printable ASCII character set. Keyboard event return codes in the range 128 through 255 are assumed to be printable, but results may vary based on hardware and nationality. If HB_INKEY_EXTENDED mode is used, then the return value for keyboard events ranges from 1 through 767 and 1077 through 1491, although not all codes are used.  Extended key codes consist of the PC keyboard scan code and one or more offset values. If no keyboard modifier was used, then HB_INKEY_NONE is added. The Alt key adds HB_INKEY_ALT, the Ctrl key adds HB_INKEY_CTRL, the Shift key adds HB_INKEY_SHIFT, and enhanced keys (KeyPad+/ and CursorPad keys) add HB_INKEY_ENHANCED. For example, F1 is scan code 59, so if you just press F1, you get key code 315, but Alt+F1 gives 443, Ctrl+F1 gives 571, and Shift+ F1 gives 699. And NumPad+/ gives 1077, 1205, 1333, and 1461. At this time, the only value that can combine with other values is HB_INKEY_ENHANCED (i.e., there are no Alt+Ctl combinations, etc.)  Note: The extended key code set is larger than the normal key code set. As a result, if you switch between the normal and extended modes, you need to be aware that some codes get translated into a zero in normal mode (because there is no corresponding code in normal mode) and that these codes get removed from the keyboard input buffer in normal mode and you won't be able to go back and fetch them later in extended mode."
+  }
+ },
+ {
+  "label": "Int( <nNumber> ) --> <nIntNumber>",
+  "documentation": "Return the integer port of a numeric value.",
+  "arguments": [
+   {
+    "label": "<nNumber>",
+    "documentation": "<nNumber> Any  numeric value."
+   }
+  ],
+  "name": "Int",
+  "return": {
+   "name": "<nIntNumber>",
+   "help": "The integer portion of the numeric value."
+  }
+ },
+ {
+  "label": "IsAffirm( <cChar> ) --> <lTrueOrFalse>",
+  "documentation": "Checks if passed char is an affirmation char",
+  "arguments": [
+   {
+    "label": "<cChar>",
+    "documentation": "<cChar> is a char or string of chars   </par>"
+   }
+  ],
+  "name": "IsAffirm",
+  "return": {
+   "name": "</par>",
+   "help": "false"
+  }
+ },
+ {
+  "label": "IsAlpha( <cString> ) --> lAlpha",
+  "documentation": "Checks if leftmost character in a string is an alphabetic character",
+  "arguments": [
+   {
+    "label": "<cString>",
+    "documentation": "<cString> Any character string"
+   }
+  ],
+  "name": "IsAlpha"
+ },
+ {
+  "label": "IsDigit( <cString> ) --> lDigit",
+  "documentation": "Checks if leftmost character is a digit character",
+  "arguments": [
+   {
+    "label": "<cString>",
+    "documentation": "<cString> Any character string"
+   }
+  ],
+  "name": "IsDigit"
+ },
+ {
+  "label": "IsDisk( <cDrive> ) --> lSuccess",
+  "documentation": "Verify if a drive is ready",
+  "arguments": [
+   {
+    "label": "<cDrive>",
+    "documentation": "<cDrive>  An valid Drive letter"
+   }
+  ],
+  "name": "IsDisk",
+  "return": {
+   "name": "<lSuccess>",
+   "help": ".T. is the drive is ready, otherwise .F."
+  }
+ },
+ {
+  "label": "IsLower( <cString> ) --> lLower",
+  "documentation": "Checks if leftmost character is an lowercased letter.",
+  "arguments": [
+   {
+    "label": "<cString>",
+    "documentation": "<cString> Any character string"
+   }
+  ],
+  "name": "IsLower"
+ },
+ {
+  "label": "IsNegative( <cChar> ) --> <lTrueOrFalse>",
+  "documentation": "Checks if passed char is a negation char.",
+  "arguments": [
+   {
+    "label": "<cChar>",
+    "documentation": "<cChar> is a char or string of chars   </par>"
+   }
+  ],
+  "name": "IsNegative",
+  "return": {
+   "name": "</par>",
+   "help": "false."
+  }
+ },
+ {
+  "label": "IsUpper( <cString> ) --> lUpper",
+  "documentation": "Checks if leftmost character is an uppercased letter.",
+  "arguments": [
+   {
+    "label": "<cString>",
+    "documentation": "<cString> Any character string"
+   }
+  ],
+  "name": "IsUpper"
+ },
+ {
+  "label": "L2Bin( <nNumber> ) --> cBuffer",
+  "documentation": "Convert Harbour numeric into signed long encoded bytes",
+  "arguments": [
+   {
+    "label": "<nNumber>",
+    "documentation": "<nNumber> is a numeric value to convert (decimal digits are ignored)."
+   }
+  ],
+  "name": "L2Bin"
+ },
+ {
+  "label": "LastKey( [<nInputMask>] ) --> nKey",
+  "documentation": "Get the last key extracted from the keyboard buffer.",
+  "arguments": [],
+  "name": "LastKey",
+  "return": {
+   "name": "<nKey>",
+   "help": "The last key extracted from the keyboard buffer."
+  }
+ },
+ {
+  "label": "LastRec() | RecCount()* --> nRecords",
+  "documentation": "Returns the number of records in an active work area or database.",
+  "arguments": [],
+  "name": "LastRec",
+  "return": {
+   "name": "<nRecords >",
+   "help": "The number of records"
+  }
+ },
+ {
+  "label": "Left( <cString>, <nLen> ) --> cReturn",
+  "documentation": "Extract the leftmost substring of a character expression",
+  "arguments": [
+   {
+    "label": "<cString>",
+    "documentation": "<cString> Main character to be parsed"
+   },
+   {
+    "label": "<nLen>",
+    "documentation": "<nLen> Number of bytes to return beginning at the leftmost position"
+   }
+  ],
+  "name": "Left",
+  "return": {
+   "name": "<cReturn>",
+   "help": "Substring of evaluation"
+  }
+ },
+ {
+  "label": "Len( <cString> | <aArray> ) --> <nLength>",
+  "documentation": "Returns size of a string or size of an array.",
+  "arguments": [
+   {
+    "label": "<acString>",
+    "documentation": "<acString> is a character string or the array to check."
+   }
+  ],
+  "name": "Len"
+ },
+ {
+  "label": "Log( <nNumber> ) --> <nLog>",
+  "documentation": "Returns the natural logarithm of a number.",
+  "arguments": [
+   {
+    "label": "<nNumber>",
+    "documentation": "<nNumber> Any numeric expression."
+   }
+  ],
+  "name": "Log",
+  "return": {
+   "name": "<nExponent>",
+   "help": "The natural logarithm of <nNumber>."
+  }
+ },
+ {
+  "label": "Lower( <cString> ) --> cLowerString",
+  "documentation": "Universally lowercases a character string expression.",
+  "arguments": [
+   {
+    "label": "<cString>",
+    "documentation": "<cString> Any character expression."
+   }
+  ],
+  "name": "Lower",
+  "return": {
+   "name": "<cLowerString>",
+   "help": "Lowercased value of <cString>"
+  }
+ },
+ {
+  "label": "LTrim( <cString> ) --> cReturn",
+  "documentation": "Removes leading spaces from a string",
+  "arguments": [
+   {
+    "label": "<cString>",
+    "documentation": "<cString>  Character expression with leading spaces"
+   }
+  ],
+  "name": "LTrim"
+ },
+ {
+  "label": "LUpdate() --> dModification",
+  "documentation": "Yields the date the database was last updated.",
+  "arguments": [],
+  "name": "LUpdate",
+  "return": {
+   "name": "<dModification>",
+   "help": "The date of the last modification."
+  }
+ },
+ {
+  "label": "MakeDir( <cDirectory> ) --> nError",
+  "documentation": "Create a new directory",
+  "arguments": [
+   {
+    "label": "<cDirectory>",
+    "documentation": "<cDirectory>  The name of the directory you want to create."
+   }
+  ],
+  "name": "MakeDir",
+  "return": {
+   "name": "<nError>",
+   "help": "0 if directory was successfully created, otherwise the number of the last error."
+  }
+ },
+ {
+  "label": "Max( <xValue>, <xValue1> ) --> <xMax>",
+  "documentation": "Returns the maximum of two numbers or dates.",
+  "arguments": [
+   {
+    "label": "<xValue>",
+    "documentation": "<xValue>  Any date or numeric value."
+   },
+   {
+    "label": "<xValue1>",
+    "documentation": "<xValue1> Any date or numeric value (same type as <xValue>)."
+   }
+  ],
+  "name": "Max",
+  "return": {
+   "name": "<xMax>",
+   "help": "The larger numeric (or later date) value."
+  }
+ },
+ {
+  "label": "MaxCol() --> nPosition",
+  "documentation": "Returns the maximun number of columns in the current video mode",
+  "arguments": [],
+  "name": "MaxCol",
+  "return": {
+   "name": "<nPosition>",
+   "help": "The maximun number of columns possible in current video mode"
+  }
+ },
+ {
+  "label": "MaxRow() --> nPosition",
+  "documentation": "Returns the current screen row position",
+  "arguments": [],
+  "name": "MaxRow",
+  "return": {
+   "name": "<nPosition>",
+   "help": "The maximun number of rows possible in current video mode"
+  }
+ },
+ {
+  "label": "MCol() --> nMouseColumn",
+  "documentation": "Returns the mouse cursor column position.",
+  "arguments": [],
+  "name": "MCol",
+  "return": {
+   "name": "<nMouseColumn>",
+   "help": "The mouse cursor column position."
+  }
+ },
+ {
+  "label": "MemoRead( <cFileName> ) --> cString",
+  "documentation": "Return the text file's contents as a character string",
+  "arguments": [
+   {
+    "label": "<cFileName>",
+    "documentation": "<cFileName> is the filename to read from disk. It must include the file extension. If file to be read lives in another directory, you must include the path."
+   }
+  ],
+  "name": "MemoRead",
+  "return": {
+   "name": "<cFileName>",
+   "help": "If  cannot be found or read MEMOREAD returns an empty string (\"\")."
+  }
+ },
+ {
+  "label": "MemoTran( <cString>, <cHard>, <cSoft> ) --> <cConvertedString>",
+  "documentation": "Converts hard and soft carriage returns within strings.",
+  "arguments": [
+   {
+    "label": "<cString>",
+    "documentation": "<cString> is a string of chars to convert."
+   },
+   {
+    "label": "<cHard>",
+    "documentation": "<cHard> is the character to replace hard returns with. If not specified defaults to semicolon."
+   },
+   {
+    "label": "<cSoft>",
+    "documentation": "<cSoft> is the character to replace soft returns with. If not specified defaults to single space."
+   }
+  ],
+  "name": "MemoTran",
+  "return": {
+   "name": "<cConvertedString>",
+   "help": "Transformed string."
+  }
+ },
+ {
+  "label": "MemoWrit( <cFileName>, <cString> ) --> lSuccess",
+  "documentation": "Write a memo field or character string to a text file on disk",
+  "arguments": [
+   {
+    "label": "<cFileName>",
+    "documentation": "<cFileName> is the filename to be written to disk. It must include the file extension. If file to be read lives in another directory, you must include the path."
+   },
+   {
+    "label": "<cString>",
+    "documentation": "<cString>   Is the memo field or character string, to be write to"
+   },
+   {
+    "label": "<cFile>",
+    "documentation": "<cFile>."
+   }
+  ],
+  "name": "MemoWrit"
+ },
+ {
+  "label": "MemVarBlock( <cMemvarName> ) --> <bBlock>",
+  "documentation": "Returns a codeblock that sets/gets a value of memvar variable",
+  "arguments": [
+   {
+    "label": "<cMemvarName>",
+    "documentation": "<cMemvarName> - a string that contains the name of variable"
+   }
+  ],
+  "name": "MemVarBlock",
+  "return": {
+   "name": "<bBlock>",
+   "help": "a codeblock that sets/get the value of variable"
+  }
+ },
+ {
+  "label": "Min( <xValue>, <xValue1> ) --> <xMin>",
+  "documentation": "Determines the minumum of two numbers or dates.",
+  "arguments": [
+   {
+    "label": "<xValue>",
+    "documentation": "<xValue>  Any date or numeric value."
+   },
+   {
+    "label": "<xValue1>",
+    "documentation": "<xValue1> Any date or numeric value."
+   }
+  ],
+  "name": "Min",
+  "return": {
+   "name": "<xMin>",
+   "help": "The smaller numeric (or earlier date) value."
+  }
+ },
+ {
+  "label": "Mod( <nNumber>, <nNumber1> ) -->  <nRemainder>",
+  "documentation": "Return the modulus of two numbers.",
+  "arguments": [
+   {
+    "label": "<nNumber>",
+    "documentation": "<nNumber>  Numerator in a divisional expression."
+   },
+   {
+    "label": "<nNumber1>",
+    "documentation": "<nNumber1> Denominator in a divisional expression."
+   }
+  ],
+  "name": "Mod",
+  "return": {
+   "name": "<nRemainder>",
+   "help": "The remainder after the division operation."
+  }
+ },
+ {
+  "label": "Month( <dDate> ) --> nMonth",
+  "documentation": "Converts a date expression to a month value",
+  "arguments": [
+   {
+    "label": "<dDate>",
+    "documentation": "<dDate> Any valid date expression"
+   }
+  ],
+  "name": "Month",
+  "return": {
+   "name": "<nMonth>",
+   "help": "Corresponding number of the month in the year, ranging from 0 to 12"
+  }
+ },
+ {
+  "label": "MRow() --> nMouseRow",
+  "documentation": "Returns the mouse cursor row position.",
+  "arguments": [],
+  "name": "MRow",
+  "return": {
+   "name": "<nMouseRow>",
+   "help": "The mouse cursor row position."
+  }
+ },
+ {
+  "label": "NationMsg( <nMsg> ) --> <cMessage>",
+  "documentation": "Returns international strings messages.",
+  "arguments": [
+   {
+    "label": "<nMsg>",
+    "documentation": "<nMsg> is the message number you want to get.   </par>"
+   }
+  ],
+  "name": "NationMsg",
+  "return": {
+   "name": "</par>",
+   "help": "other type it returns an empty string."
+  }
+ },
+ {
+  "label": "NetErr( [<lNewError>] ) --> lError",
+  "documentation": "Tests the success of a network function",
+  "arguments": [
+   {
+    "label": "<lNewError>",
+    "documentation": "<lNewError> Is a logical Expression."
+   }
+  ],
+  "name": "NetErr",
+  "return": {
+   "name": "<lError>",
+   "help": "A value based on the success of a network operation or function."
+  }
+ },
+ {
+  "label": "NextKey( [<nInputMask>] ) --> nKey",
+  "documentation": "Get the next key code in the buffer without extracting it.",
+  "arguments": [],
+  "name": "NextKey",
+  "return": {
+   "name": "<nKey>",
+   "help": "The value of the next key in the Harbour keyboard buffer."
+  }
+ },
+ {
+  "label": "ordBagExt() --> cBagExt",
+  "documentation": "Returns the Order Bag extension",
+  "arguments": [],
+  "name": "ordBagExt",
+  "return": {
+   "name": "<cBagExt>",
+   "help": "The RDD extension name."
+  }
+ },
+ {
+  "label": "ordBagName( <nOrder> | <cOrderName> ) --> cOrderBagName",
+  "documentation": "Returns the Order Bag Name.",
+  "arguments": [
+   {
+    "label": "<nOrder>",
+    "documentation": "<nOrder> A numeric value representing the Order bag number."
+   },
+   {
+    "label": "<cOrderName>",
+    "documentation": "<cOrderName> The character name of the Order Bag."
+   }
+  ],
+  "name": "ordBagName"
+ },
+ {
+  "label": "ordCondSet( [<cForCondition>], [<bForCondition>], [<lAll>], [<bWhileCondition>], [<bEval>], [<nInterval>], [<nStart>], [<nNext>], [<nRecord>], [<lRest>], [<lDescend>], [<lAdditive>], [<lCurrent>], [<lCustom>], [<lNoOptimize>] )",
+  "documentation": "Set the Condition and scope for an order",
+  "arguments": [
+   {
+    "label": "<cForCondition>",
+    "documentation": "<cForCondition> is a string that specifies the FOR condition for the order."
+   },
+   {
+    "label": "<bForCondition>",
+    "documentation": "<bForCondition> is a code block that defines a FOR condition that each record within the scope must meet in order to be processed. If a record does not meet the specified condition, it is ignored and the next  record is processed.Duplicate keys values are not added to the index file when a FOR condition is Used."
+   }
+  ],
+  "name": "ordCondSet"
+ },
+ {
+  "label": "ordCreate( <cOrderBagName>,[<cOrderName>], <cExpKey>, [<bExpKey>], [<lUnique>] )",
+  "documentation": "Create an Order in an Order Bag",
+  "arguments": [
+   {
+    "label": "<cOrderBagName>",
+    "documentation": "<cOrderBagName>  Name of the file that contains one or more Orders."
+   },
+   {
+    "label": "<cOrderName>",
+    "documentation": "<cOrderName> Name of the order to be created."
+   },
+   {
+    "label": "<cExpKey>",
+    "documentation": "<cExpKey> Key value for order for each record in the current work area"
+   },
+   {
+    "label": "<bExpKey>",
+    "documentation": "<bExpKey> Code block that evaluates to a key for the order for each record in the work area."
+   },
+   {
+    "label": "<lUnique>",
+    "documentation": "<lUnique> Toggle the unique status of the index."
+   }
+  ],
+  "name": "ordCreate"
+ },
+ {
+  "label": "ordDestroy( <cOrderName> [, <cOrderBagName> ] )",
+  "documentation": "Remove an Order from an Order Bag",
+  "arguments": [
+   {
+    "label": "<cOrderName>",
+    "documentation": "<cOrderName> Name of the order to remove"
+   },
+   {
+    "label": "<cOrderBagName>",
+    "documentation": "<cOrderBagName> Name of the order bag from which order id to be removed"
+   }
+  ],
+  "name": "ordDestroy"
+ },
+ {
+  "label": "ordFor( <xOrder>[, <cOrderBagName>] ) --> cForExp",
+  "documentation": "Return the FOR expression of an Order",
+  "arguments": [
+   {
+    "label": "<xOrder>",
+    "documentation": "<xOrder>  It the name of the target order, or the numeric position of the order."
+   },
+   {
+    "label": "<cOrderBagName>",
+    "documentation": "<cOrderBagName> Name of the order bag."
+   }
+  ],
+  "name": "ordFor"
+ },
+ {
+  "label": "ordKey( <cOrderName> | <nOrder> [, <cOrderBagName>] ) --> cExpKey",
+  "documentation": "Return the key expression of an Order",
+  "arguments": [
+   {
+    "label": "<xOrder>",
+    "documentation": "<xOrder>  It the name of the target order, or the numeric position of the order."
+   },
+   {
+    "label": "<cOrderBagName>",
+    "documentation": "<cOrderBagName> Name of the order bag."
+   }
+  ],
+  "name": "ordKey",
+  "return": {
+   "name": "<cExpKey>",
+   "help": "Returns a character string, cExpKey."
+  }
+ },
+ {
+  "label": "OS() --> <cOperatingSystem>",
+  "documentation": "Return the current operating system.",
+  "arguments": [],
+  "name": "OS",
+  "return": {
+   "name": "<cOperatinSystem>",
+   "help": "The current operating system."
+  }
+ },
+ {
+  "label": "OutErr( <xExp,...> )",
+  "documentation": "Write a list of values to the standard error device",
+  "arguments": [
+   {
+    "label": "<xExp,...>",
+    "documentation": "<xExp,...> is a list of expressions to display. Expressions are any mixture of Harbour data types."
+   }
+  ],
+  "name": "OutErr"
+ },
+ {
+  "label": "OutStd( <xExp,...> )",
+  "documentation": "Write a list of values to the standard output device",
+  "arguments": [
+   {
+    "label": "<xExp,...>",
+    "documentation": "<xExp,...> is a list of expressions to display. Expressions are any mixture of Harbour data types."
+   }
+  ],
+  "name": "OutStd"
+ },
+ {
+  "label": "PadC( <xVal>, <nWidth>, <cFill> ) --> cString",
+  "documentation": "Centers an expression for a given width",
+  "arguments": [
+   {
+    "label": "<xVal>",
+    "documentation": "<xVal> A Number, Character or Date value to pad"
+   },
+   {
+    "label": "<nWidth>",
+    "documentation": "<nWidth> Width of output string"
+   },
+   {
+    "label": "<cFill>",
+    "documentation": "<cFill> Character to fill in the string"
+   }
+  ],
+  "name": "PadC",
+  "return": {
+   "name": "<cString>",
+   "help": "The Center string of <xVal>"
+  }
+ },
+ {
+  "label": "PadL( <xVal>, <nWidth>, <cFill> ) --> cString",
+  "documentation": "Left-justifies an expression for a given width",
+  "arguments": [
+   {
+    "label": "<xVal>",
+    "documentation": "<xVal> An number, Character or date to pad"
+   },
+   {
+    "label": "<nWidth>",
+    "documentation": "<nWidth> Width of output string"
+   },
+   {
+    "label": "<cFill>",
+    "documentation": "<cFill> Character to fill in the string"
+   }
+  ],
+  "name": "PadL",
+  "return": {
+   "name": "<cString>",
+   "help": "The left-justifies string of <xVal>"
+  }
+ },
+ {
+  "label": "PadR( <xVal>, <nWidth>, <cFill> ) --> cString",
+  "documentation": "Right-justifies an expression for a given width",
+  "arguments": [
+   {
+    "label": "<xVal>",
+    "documentation": "<xVal> A Number, Character or Date value to pad"
+   },
+   {
+    "label": "<nWidth>",
+    "documentation": "<nWidth> Width of output string"
+   },
+   {
+    "label": "<cFill>",
+    "documentation": "<cFill> Character to fill in the string"
+   }
+  ],
+  "name": "PadR",
+  "return": {
+   "name": "<cString>",
+   "help": "The right-justifies string of <xVal>"
+  }
+ },
+ {
+  "label": "PCount() --> <nArgs>",
+  "documentation": "Retrieves the number of arguments passed to a function.",
+  "arguments": [],
+  "name": "PCount",
+  "return": {
+   "name": "<nArgs>",
+   "help": "A number that indicates the number of arguments passed to a function or procedure."
+  }
+ },
+ {
+  "label": "ProcFile( <xExp> ) --> <cEmptyString>",
+  "documentation": "This function allways returns an empty string.",
+  "arguments": [
+   {
+    "label": "<xExp>",
+    "documentation": "<xExp> is any valid type."
+   }
+  ],
+  "name": "ProcFile",
+  "return": {
+   "name": "<cEmptyString>",
+   "help": "Return an empty string"
+  }
+ },
+ {
+  "label": "ProcLine( <nLevel> ) --> <nLine>",
+  "documentation": "Gets the line number of the current function on the stack.",
+  "arguments": [
+   {
+    "label": "<nLevel>",
+    "documentation": "<nLevel> is the function level required."
+   }
+  ],
+  "name": "ProcLine",
+  "return": {
+   "name": "<nLine>",
+   "help": "The line number of the function that it is being executed."
+  }
+ },
+ {
+  "label": "ProcName( <nLevel> ) --> <cProcName>",
+  "documentation": "Gets the name of the current function on the stack",
+  "arguments": [
+   {
+    "label": "<nLevel>",
+    "documentation": "<nLevel> is the function level required."
+   }
+  ],
+  "name": "ProcName",
+  "return": {
+   "name": "<cProcName>",
+   "help": "The name of the function that it is being executed."
+  }
+ },
+ {
+  "label": "RAt( <cSearch>, <cString> ) --> nPos",
+  "documentation": "Searches for last occurrence a substring of a string.",
+  "arguments": [
+   {
+    "label": "<cSearch>",
+    "documentation": "<cSearch> Substring to search for"
+   },
+   {
+    "label": "<cString>",
+    "documentation": "<cString> Main string"
+   }
+  ],
+  "name": "RAt"
+ },
+ {
+  "label": "ReadKey() --> nKeyCode",
+  "documentation": "Determine which key terminated a READ.",
+  "arguments": [],
+  "name": "ReadKey"
+ },
+ {
+  "label": "ReadVar( [<cVarName>] ) --> cOldVarName",
+  "documentation": "Return variable name of current GET or MENU",
+  "arguments": [
+   {
+    "label": "<cVarName>",
+    "documentation": "<cVarName> is a new variable name to set."
+   }
+  ],
+  "name": "ReadVar"
+ },
+ {
+  "label": "RecCount()* | LastRec() --> nRecords",
+  "documentation": "Counts the number of records in a database.",
+  "arguments": [],
+  "name": "RecCount",
+  "return": {
+   "name": "<nRecords>",
+   "help": "The number of records CRIPTION$* This function returns the number of records present in the database in the selected or designated work area. If no records are present the value of this function will be 0. Additionally, if no database is in use in the selected or designated work area, this function will return a 0 value as well."
+  }
+ },
+ {
+  "label": "RecNo() --> Identity",
+  "documentation": "Returns the current record number or identity.",
+  "arguments": [],
+  "name": "RecNo"
+ },
+ {
+  "label": "RecSize() --> nBytes",
+  "documentation": "Returns the size of a single record in an active database.",
+  "arguments": [],
+  "name": "RecSize",
+  "return": {
+   "name": "<nBytes>",
+   "help": "The record size."
+  }
+ },
+ {
+  "label": "Replicate( <cString>, <nSize> ) --> cReplicateString",
+  "documentation": "Repeats a single character expression",
+  "arguments": [
+   {
+    "label": "<cString>",
+    "documentation": "<cString> Character string to be replicated"
+   },
+   {
+    "label": "<nSize>",
+    "documentation": "<nSize> Number of times to replicate <cString>"
+   }
+  ],
+  "name": "Replicate",
+  "return": {
+   "name": "<cReplicateString>",
+   "help": "A character expression contain the <cString> fill character."
+  }
+ },
+ {
+  "label": "Right( <cString>, <nLen> ) --> cReturn",
+  "documentation": "Extract the rightmost substring of a character expression",
+  "arguments": [
+   {
+    "label": "<cString>",
+    "documentation": "<cString> Character expression to be parsed"
+   },
+   {
+    "label": "<nLen>",
+    "documentation": "<nLen> Number of bytes to return beginning at the rightmost position"
+   }
+  ],
+  "name": "Right",
+  "return": {
+   "name": "<cReturn>",
+   "help": "Substring of evaluation"
+  }
+ },
+ {
+  "label": "RLock() --> lSuccess",
+  "documentation": "Lock a record in a work area",
+  "arguments": [],
+  "name": "RLock"
+ },
+ {
+  "label": "Round( <nNumber>, <nPlace> ) --> <nResult>",
+  "documentation": "Rounds off a numeric expression.",
+  "arguments": [
+   {
+    "label": "<nNumber>",
+    "documentation": "<nNumber> Any numeric value."
+   },
+   {
+    "label": "<nPlace>",
+    "documentation": "<nPlace>  The number of places to round to."
+   }
+  ],
+  "name": "Round",
+  "return": {
+   "name": "<nResult>",
+   "help": "The rounded number."
+  }
+ },
+ {
+  "label": "Row() --> nPosition",
+  "documentation": "Returns the current screen row position",
+  "arguments": [],
+  "name": "Row",
+  "return": {
+   "name": "<nPosition>",
+   "help": "Current screen row position"
+  }
+ },
+ {
+  "label": "RTrim( <cExpression> ) --> cString",
+  "documentation": "Remove trailing spaces from a string.",
+  "arguments": [
+   {
+    "label": "<cExpression>",
+    "documentation": "<cExpression> Any character expression"
+   }
+  ],
+  "name": "RTrim",
+  "return": {
+   "name": "<cString>",
+   "help": "A formatted string with out any blank spaced."
+  }
+ },
+ {
+  "label": "Seconds() --> nSeconds",
+  "documentation": "Returns the number of elapsed seconds past midnight.",
+  "arguments": [],
+  "name": "Seconds",
+  "return": {
+   "name": "<nSeconds>",
+   "help": "Number of seconds since midnight"
+  }
+ },
+ {
+  "label": "Secs( <cTime> ) --> nSeconds",
+  "documentation": "Return the number of seconds from the system date.",
+  "arguments": [
+   {
+    "label": "<cTime>",
+    "documentation": "<cTime> Character expression in a time string format"
+   }
+  ],
+  "name": "Secs",
+  "return": {
+   "name": "<nSeconds>",
+   "help": "Number of seconds"
+  }
+ },
+ {
+  "label": "Select( [<cAlias>] ) --> nWorkArea",
+  "documentation": "Returns the work area number for a specified alias.",
+  "arguments": [
+   {
+    "label": "<cAlias>",
+    "documentation": "<cAlias> is the target work area alias name."
+   }
+  ],
+  "name": "Select"
+ },
+ {
+  "label": "Set( <nSet> [, <xNewSetting> [, <xOption> ] ] ) --> xPreviousSetting",
+  "documentation": "Changes or evaluated environmental settings",
+  "arguments": [
+   {
+    "label": "<nSet>",
+    "documentation": "<nSet> Set Number"
+   },
+   {
+    "label": "<xNewSetting>",
+    "documentation": "<xNewSetting> Any expression to assign a value to the setting"
+   },
+   {
+    "label": "<xOption>",
+    "documentation": "<xOption> Logical expression"
+   },
+   {
+    "label": "<nSet>",
+    "documentation": "<nSet>            <xNewSetting>          <xOption>"
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "_SET_ALTERNATE   <lFlag> | <cOnOff> If enabled, QOut() and QQOut() write to the screen and to a file, provided that a file has been opened or created with _SET_ALTFILE. If disabled, which is the default, QOut() and QQOut() only write to the screen (and/or to the PRINTFILE). Defaults to disabled."
+   },
+   {
+    "label": "<cFileName>",
+    "documentation": "_SET_ALTFILE     <cFileName>             <lAdditive> When set, creates or opens file to write QOut() and"
+   },
+   {
+    "label": "<lAdditive>",
+    "documentation": "QQOut() output to. If <lAdditive> is TRUE and the file already exists, the file is opened and positioned at end of file. Otherwise, the file is created. If a file is already opened, it is closed before the new file is opened or created (even if it is the same file). The default file extension is \".txt\". There is no default file name. Call with an empty string to close the file."
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "_SET_AUTOPEN     <lFlag> | <cOnOff> TODO: Document"
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "_SET_AUTORDER    <lFlag> | <cOnOff> TODO: Document"
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "_SET_AUTOSHARE   <lFlag> | <cOnOff> TODO: Document"
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "_SET_BELL        <lFlag> | <cOnOff> When enabled, the bell sounds when the last position of a GET is reached and/or when a GET validation fails. Disabled by default."
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "_SET_CANCEL      <lFlag> | <cOnOff> When enabled, which is the default, pressing Alt+C or Ctrl+Break terminates the program. When disabled, both keystrokes can be read by Inkey(). Note: SET KEY has precedence over SET CANCEL."
+   },
+   {
+    "label": "<cColorSet>",
+    "documentation": "_SET_COLOR       <cColorSet> Sets the current color scheme, using color pairs in the"
+   },
+   {
+    "label": "<standard>",
+    "documentation": "sequence \"<standard>, <enhanced>, <border>, <background>,"
+   },
+   {
+    "label": "<unselected>",
+    "documentation": "<unselected>\". Each color pair uses the format"
+   },
+   {
+    "label": "<foreground>",
+    "documentation": "\"<foreground>/<background>\". The color codes are space or \"N\" for black, \"B\" for blue, \"G\" for green, \"BG\" for Cyan, \"R\" for red, \"RB\" for magenta, \"GR\" for brown, \"W\" for white, \"N+\" for gray, \"B+\" for bright blue, \"G+\" for bright green, \"BG+\" for bright cyan, \"R+\" for bright red, \"RB+\" for bright magenta, \"GR+\" for yellow, and \"W+\" for bright white. Special codes are \"I\" for inverse video, \"U\" for underline on a monochrome monitor (blue on a color monitor), and \"X\" for blank. The default color is \"W/N,N/W,N,N,N/W\"."
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "_SET_CONFIRM     <lFlag> | <cOnOff> If enabled, an exit key must be pressed to leave a GET. If disabled, which is the default, typing past the end will leave a GET."
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "_SET_CONSOLE     <lFlag> | <cOnOff> If enabled, which is the default, all screen output goes to the screen. When disabled, screen output is suppressed (Note: This setting does not affect OutStd() or OutErr())."
+   },
+   {
+    "label": "<nCursorType>",
+    "documentation": "_SET_CURSOR      <nCursorType> If enabled, which is the default, the cursor is displayed on screen. If disabled, the screen cursor is hidden."
+   },
+   {
+    "label": "<cDateFormat>",
+    "documentation": "_SET_DATEFORMAT  <cDateFormat> Sets the default date format for display, date input, and date conversion. Defaults to American (\"mm/dd/yy\"). Other formats include ANSI (\"yy.mm.dd\"), British (\"dd/mm/yy\"), French (\"dd/mm/yy\"), German (\"dd.mm.yy\"), Italian (\"dd-mm-yy\"), Japan (\"yy/mm/dd\"), and USA (\"mm-dd-yy\"). SET CENTURY modifies the date format. SET CENTURY ON replaces the \"y\"s with \"YYYY\". SET CENTURY OFF replaces the \"y\"s with \"YY\"."
+   },
+   {
+    "label": "<lStatus>",
+    "documentation": "_SET_DEBUG       <lStatus> When set to .T., pressing Alt+D activates the debugger. When set to .F., which is the default, Alt+D can be read by Inkey(). (Also affected by AltD(1) and AltD(0))"
+   },
+   {
+    "label": "<nNumberOfDecimals>",
+    "documentation": "_SET_DECIMALS    <nNumberOfDecimals> Sets the number of decimal digits to use when displaying printing numeric values when SET FIXED is ON. Defaults to 2. If SET FIXED is OFF, then SET DECIMALS is only used to determine the number of decimal digits to use after using Exp(), Log(), Sqrt(), or division. Other math operations may adjust the number of decimal digits that the result will display. Note: This never affects the precision of a number. Only the display format is affected."
+   },
+   {
+    "label": "<cDefaultDirectory>",
+    "documentation": "_SET_DEFAULT     <cDefaultDirectory> Sets the default directory in which to open, create and check for files. Defaults to current directory (blank)."
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "_SET_DELETED     <lFlag> | <cOnOff> If enabled, deleted records will be processed. If disabled, which is the default, deleted records will be ignored."
+   },
+   {
+    "label": "<cDelimiters>",
+    "documentation": "_SET_DELIMCHARS  <cDelimiters> Sets the GET delimiter characters. Defaults to \"::\"."
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "_SET_DELIMITERS  <lFlag> | <cOnOff> If enabled, GETs are delimited on screen. If disabled, which is the default, no GET delimiters are used."
+   },
+   {
+    "label": "<cDeviceName>",
+    "documentation": "_SET_DEVICE      <cDeviceName> Selects the output device for DevOut(). When set to \"PRINTER\", all output is sent to the printer device or file set by _SET_PRINTFILE. When set to anything else, all output is sent to the screen. Defaults to \"SCREEN\"."
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "_SET_EOF         <lFlag> | <cOnOff> Defaults to FALSE on UN*X, but defaults to TRUE on everything else. If set to FALSE, then Chr( 26 ) does not get written when using COPY TO DELIMITED, COPY TO SDF, or when closing any of the various text files that are created using various SET values. [This is a Harbour extension]"
+   },
+   {
+    "label": "<nYear>",
+    "documentation": "_SET_EPOCH       <nYear> Determines how to handle the conversion of 2-digit years to 4 digit years. When a 2-digit year is greater than or equal to the year part of the epoch, the century part of the epoch is added to the year. When a 2-digit year is less than the year part of the epoch, the century part of the epoch is incremented and added to the year. The default epoch is 1900, which converts all 2-digit years to 19xx. Example: If the epoch is set to 1950, 2-digit years in the range from 50 to 99 get converted to 19xx and 2-digit years in the range 00 to 49 get converted to 20xx."
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "_SET_ESCAPE      <lFlag> | <cOnOff> When enabled, which is the default, pressing Esc will exit a READ. When disabled, pressing Esc during a READ is ignored, unless the Esc key has been assigned to a function using SET KEY."
+   },
+   {
+    "label": "<nEventCodes>",
+    "documentation": "_SET_EVENTMASK   <nEventCodes> Determines which events Inkey() will respond to. INKEY_MOVE allows mouse movement events. INKEY_LDOWN allows the left mouse button down click. INKEY_LUP allows the left mouse button up click. INKEY_RDOWN allows the right mouse button down click. INKEY_RUP allows the right mouse button up clock. INKEY_KEYBOARD allows keyboard keystrokes. INKEY_ALL allows all of the preceding events. Events may be combined (e.g., using INKEY_LDOWN + INKEY_RUP will allow left mouse button down clicks and right mouse button up clicks). The default is INKEY_KEYBOARD."
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "_SET_EXACT       <lFlag> | <cOnOff> When enabled, all string comparisons other than \"==\" exclude trailing spaces when checking for equality. When disabled, which is the default, all string comparisons other than \"==\" treat two strings as equal if the right hand string is \"\" or if the right hand string is shorter than or the same length as the left hand string and all of the characters in the right hand string match the corresponding characters in the left hand string."
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "_SET_EXCLUSIVE   <lFlag> | <cOnOff> When enabled, which is the default, all database files are opened in exclusive mode. When disabled, all database files are opened in shared mode. Note: The EXCLUSIVE and SHARED clauses of the USE command can be used to override this setting."
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "_SET_EXIT        <lFlag> | <cOnOff> Toggles the use of Uparrow and Dnarrow as READ exit keys. Specifying true (.T.) enables them as exit keys, and false (.F.) disables them. Used internally by the ReadExit() function."
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "_SET_EXTRA       <lFlag> | <cOnOff> QUESTION: What is this for? It does not affect _SET_EXTRAFILE in CA-Cl*pper!"
+   },
+   {
+    "label": "<cFileName>",
+    "documentation": "_SET_EXTRAFILE   <cFileName>             <lAdditive> When set, creates or opens file to write QOut() and"
+   },
+   {
+    "label": "<lAdditive>",
+    "documentation": "QQOut() output to. If <lAdditive> is TRUE and the file already exists, the file is opened and positioned at end of file. Otherwise, the file is created. If a file is already opened, it is closed before the new file is opened or created (even if it is the same file). The default file extension is \".prn\". There is no default file name. Call with an empty string to close the file."
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "_SET_FIXED       <lFlag> | <cOnOff> When enabled, all numeric values will be displayed and printed with the number of decimal digits set by SET DECIMALS, unless a PICTURE clause is used. When disabled, which is the default, the number of decimal digits that are displayed depends upon a variety of factors. See _SET_DECIMALS for more."
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "_SET_INSERT      <lFlag> | <cOnOff> When enabled, characters typed in a GET or MEMOEDIT are inserted. When disabled, which is the default, characters typed in a GET or MEMOEDIT overwrite. Note: This setting can also be toggled between on and off by pressing the Insert key during a GET or MEMOEDIT."
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "_SET_INTENSITY   <lFlag> | <cOnOff> When enabled, which is the default, GETs and PROMPTs are displayed using the enhanced color setting. When disabled, GETs and PROMPTs are displayed using the standard color setting."
+   },
+   {
+    "label": "<cLanguageID>",
+    "documentation": "_SET_LANGUAGE    <cLanguageID> Specifies the language to be used for Harbour messages. [This is a Harbour extension]"
+   },
+   {
+    "label": "<nColumns>",
+    "documentation": "_SET_MARGIN      <nColumns> Sets the left margin for all printed output. The default value is 0. Note: PCol() reflects the printer's column position including the margin (e.g., SET MARGIN TO 5 followed by DevPos(5, 10) makes PCol() return 15)."
+   },
+   {
+    "label": "<nMemoBlockSize>",
+    "documentation": "_SET_MBLOCKSIZE <nMemoBlockSize> TODO: Document"
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "_SET_MCENTER     <lFlag> | <cOnOff> If enabled, display PROMPTs centered on the MESSAGE row. If disabled, which is the default, display PROMPTS at column position 0 on the MESSAGE row."
+   },
+   {
+    "label": "<nRow>",
+    "documentation": "_SET_MESSAGE     <nRow> If set to 0, which is the default, PROMPTs are always suppressed. Otherwise, PROMPTs are displayed on the set row. Note: It is not possible to display prompts on the top-most screen row, because row 0 is reserved for the SCOREBOARD, if enabled."
+   },
+   {
+    "label": "<cMemoFileExt>",
+    "documentation": "_SET_MFILEEXT    <cMemoFileExt> TODO: Document"
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "_SET_OPTIMIZE    <lFlag> | <cOnOff> TODO: Document"
+   },
+   {
+    "label": "<cDirectories>",
+    "documentation": "_SET_PATH        <cDirectories> Specifies a path of directories to search through to locate a file that can't be located in the DEFAULT directory. Defaults to no path (\"\"). Directories must be separated by a semicolon (e.g., \"C:\\hb\\bin;C:\\hb\\tests\")."
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "_SET_PRINTER     <lFlag> | <cOnOff> If enabled, QOut() and QQOut() write to the screen and to a file, provided that a file has been opened or created with _SET_ALTFILE. If disabled, which is the default, QOut() and QQOut() only write to the screen (and/or to the ALTFILE)."
+   },
+   {
+    "label": "<cFileName>",
+    "documentation": "_SET_PRINTFILE   <cFileName>             <lAdditive> When set, creates or opens file to write QOut(), QQOut()"
+   },
+   {
+    "label": "<lAdditive>",
+    "documentation": "and DevOut() output to. If <lAdditive> is TRUE and the file already exists, the file is opened and positioned at end of file. Otherwise, the file is created. If a file is already opened, it is closed before the new file is opened or created (even if it is the same file). The default file extension is \".prn\". The default file name is \"PRN\", which maps to the default printer device. Call with an empty string to close the file."
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "_SET_SCOREBOARD  <lFlag> | <cOnOff> When enabled, which is the default, READ and MEMOEDIT display status messages on screen row 0. When disabled, READ and MEMOEDIT status messages are suppressed."
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "_SET_SCROLLBREAK <lFlag> | <cOnOff> QUESTION: What is this flag for?"
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "_SET_SOFTSEEK    <lFlag> | <cOnOff> When enabled, a SEEK that fails will position the record pointer to the first key that is higher than the sought after key or to LastRec() + 1 if there is no higher key. When disabled, which is the default, a SEEK that fails will position the record pointer to LastRec()+1."
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "_SET_STRICTREAD  <lFlag> | <cOnOff> TODO: Document"
+   },
+   {
+    "label": "<nKeyStrokes>",
+    "documentation": "_SET_TYPEAHEAD   <nKeyStrokes> Sets the size of the keyboard typeahead buffer. Defaults to 50. The minimum is 16 and the maximum is 4096."
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "_SET_UNIQUE      <lFlag> | <cOnOff> When enabled, indexes are not allowed to have duplicate keys. When disabled, indexes are allowed duplicate keys."
+   },
+   {
+    "label": "<nValue>",
+    "documentation": "_SET_VIDEOMODE   <nValue> TODO: Document"
+   },
+   {
+    "label": "<lFlag>",
+    "documentation": "_SET_WRAP        <lFlag> | <cOnOff> When enabled, lightbar menus can be navigated from the last position to the first and from the first position to the last. When disabled, which is the default, there is a hard stop at the first and last positions."
+   }
+  ],
+  "name": "Set"
+ },
+ {
+  "label": "SetKey( <anKey> [, <bAction> [, <bCondition> ] ] )",
+  "documentation": "Assign an action block to a key",
+  "arguments": [
+   {
+    "label": "<anKey>",
+    "documentation": "<anKey> is either a numeric key value, or an array of such values"
+   },
+   {
+    "label": "<bAction>",
+    "documentation": "<bAction> is an optional code-block to be assigned"
+   },
+   {
+    "label": "<bCondition>",
+    "documentation": "<bCondition> is an optional condition code-block"
+   }
+  ],
+  "name": "SetKey"
+ },
+ {
+  "label": "SetMode( <nRows>, <nCols> ) --> lSuccess",
+  "documentation": "Change the video mode to a specified number of rows and columns",
+  "arguments": [
+   {
+    "label": "<nRows>",
+    "documentation": "<nRows> is the number of rows for the video mode to set."
+   },
+   {
+    "label": "<nCols>",
+    "documentation": "<nCols> is the number of columns for the video mode to set."
+   }
+  ],
+  "name": "SetMode"
+ },
+ {
+  "label": "SetTypeahead( <nSize> ) --> <nPreviousSize>",
+  "documentation": "Sets the typeahead buffer to given size.",
+  "arguments": [
+   {
+    "label": "<nSize>",
+    "documentation": "<nSize> is a valid typeahead size."
+   }
+  ],
+  "name": "SetTypeahead",
+  "return": {
+   "name": "<nPreviousSize>",
+   "help": "The previous state of _SET_TYPEAHEAD"
+  }
+ },
+ {
+  "label": "Space( <nSize> ) --> cString",
+  "documentation": "Returns a string of blank spaces",
+  "arguments": [
+   {
+    "label": "<nSize>",
+    "documentation": "<nSize> The length of the string"
+   }
+  ],
+  "name": "Space",
+  "return": {
+   "name": "<cString>",
+   "help": "A string containing blank spaces"
+  }
+ },
+ {
+  "label": "Sqrt( <nNumber> ) --> <nSqrt>",
+  "documentation": "Calculates the square root of a number.",
+  "arguments": [
+   {
+    "label": "<nNumber>",
+    "documentation": "<nNumber> Any  numeric value."
+   }
+  ],
+  "name": "Sqrt",
+  "return": {
+   "name": "<nSqrt>",
+   "help": "The square root of <number>."
+  }
+ },
+ {
+  "label": "Str( <nNumber>, [<nLength>], [<nDecimals>] ) --> cNumber",
+  "documentation": "Convert a numeric expression to a character string.",
+  "arguments": [
+   {
+    "label": "<nNumber>",
+    "documentation": "<nNumber> is the numeric expression to be converted to a character string."
+   },
+   {
+    "label": "<nLength>",
+    "documentation": "<nLength> is the length of the character string to return, including decimal digits, decimal point, and sign."
+   },
+   {
+    "label": "<nDecimals>",
+    "documentation": "<nDecimals> is the number of decimal places to return."
+   }
+  ],
+  "name": "Str",
+  "return": {
+   "name": "</table>",
+   "help": ""
+  }
+ },
+ {
+  "label": "StrTran( <cString>, <cLocString>, [<cRepString>], [<nPos>], [<nOccurrences>] ) --> cReturn",
+  "documentation": "Translate substring value with a main string",
+  "arguments": [
+   {
+    "label": "<cString>",
+    "documentation": "<cString>     The main string to search"
+   },
+   {
+    "label": "<cLocString>",
+    "documentation": "<cLocString>  The string to locate in the main string"
+   },
+   {
+    "label": "<cRepString>",
+    "documentation": "<cRepString>  The string to replace the <cLocString>"
+   },
+   {
+    "label": "<nPos>",
+    "documentation": "<nPos>        The first occurrence to be replaced"
+   },
+   {
+    "label": "<nOccurrences>",
+    "documentation": "<nOccurrences> Number of occurrence to replace"
+   }
+  ],
+  "name": "StrTran",
+  "return": {
+   "name": "<cReturn>",
+   "help": "Formated string"
+  }
+ },
+ {
+  "label": "StrZero( <nNumber>, [<nLength>], [<nDecimals>] ) --> cNumber",
+  "documentation": "Convert a numeric expression to a character string, zero padded.",
+  "arguments": [
+   {
+    "label": "<nNumber>",
+    "documentation": "<nNumber> is the numeric expression to be converted to a character string."
+   },
+   {
+    "label": "<nLength>",
+    "documentation": "<nLength> is the length of the character string to return, including decimal digits, decimal point, and sign."
+   },
+   {
+    "label": "<nDecimals>",
+    "documentation": "<nDecimals> is the number of decimal places to return."
+   }
+  ],
+  "name": "StrZero",
+  "return": {
+   "name": "</table>",
+   "help": ""
+  }
+ },
+ {
+  "label": "SubStr( <cString>, <nStart>, [<nLen>] ) --> cReturn",
+  "documentation": "Returns a substring from a main string",
+  "arguments": [
+   {
+    "label": "<cString>",
+    "documentation": "<cString> Character expression to be parsed"
+   },
+   {
+    "label": "<nStart>",
+    "documentation": "<nStart> Start position"
+   },
+   {
+    "label": "<nLen>",
+    "documentation": "<nLen> Number of characters to return"
+   }
+  ],
+  "name": "SubStr",
+  "return": {
+   "name": "<cReturn>",
+   "help": "Substring of evaluation"
+  }
+ },
+ {
+  "label": "TBrowseDB( [<nTop>], [<nLeft>], [<nBottom>], [<nRight>] ) --> oBrowse",
+  "documentation": "Create a new TBrowse object to be used with database file",
+  "arguments": [
+   {
+    "label": "<nTop>",
+    "documentation": "<nTop> coordinate for top row display."
+   },
+   {
+    "label": "<nLeft>",
+    "documentation": "<nLeft> coordinate for left column display."
+   },
+   {
+    "label": "<nBottom>",
+    "documentation": "<nBottom> coordinate for bottom row display."
+   },
+   {
+    "label": "<nRight>",
+    "documentation": "<nRight> coordinate for right column display."
+   }
+  ],
+  "name": "TBrowseDB"
+ },
+ {
+  "label": "Time() --> cTime",
+  "documentation": "Returns the system time as a string",
+  "arguments": [],
+  "name": "Time",
+  "return": {
+   "name": "<cTime>",
+   "help": "Character string representing time"
+  }
+ },
+ {
+  "label": "Tone( <nFrequency>, <nDuration> ) --> NIL",
+  "documentation": "Sound a tone with a specified frequency and duration.",
+  "arguments": [
+   {
+    "label": "<nFrequency>",
+    "documentation": "<nFrequency>  A non-negative numeric value that specifies the frequency of the tone in hertz."
+   },
+   {
+    "label": "<nDuration>",
+    "documentation": "<nDuration>   A positive numeric value which specifies the duration of the tone in 1/18 of a second units."
+   }
+  ],
+  "name": "Tone"
+ },
+ {
+  "label": "Transform( <xExpression>, <cTemplate> ) --> cFormatted",
+  "documentation": "Formats a value based on a specific picture template.",
+  "arguments": [
+   {
+    "label": "<xExpression>",
+    "documentation": "<xExpression> Any expression to be formated."
+   },
+   {
+    "label": "<cTemplate>",
+    "documentation": "<cTemplate> Character string with picture template"
+   }
+  ],
+  "name": "Transform",
+  "return": {
+   "name": "<cFormatted>",
+   "help": "Formatted expression in character format"
+  }
+ },
+ {
+  "label": "Trim( <cExpression> ) --> cString",
+  "documentation": "Remove trailing spaces from a string.",
+  "arguments": [
+   {
+    "label": "<cExpression>",
+    "documentation": "<cExpression> Any character expression"
+   }
+  ],
+  "name": "Trim",
+  "return": {
+   "name": "<cString>",
+   "help": "A formatted string with out any blank spaced."
+  }
+ },
+ {
+  "label": "Type( <cExp> ) --> <cRetType>",
+  "documentation": "Retrieves the type of an expression",
+  "arguments": [
+   {
+    "label": "<cExp>",
+    "documentation": "<cExp> must be a character expression."
+   }
+  ],
+  "name": "Type",
+  "return": {
+   "name": "</table>",
+   "help": ""
+  }
+ },
+ {
+  "label": "Upper( <cString> ) --> cUpperString",
+  "documentation": "Converts a character expression to uppercase format",
+  "arguments": [
+   {
+    "label": "<cString>",
+    "documentation": "<cString> Any character expression."
+   }
+  ],
+  "name": "Upper",
+  "return": {
+   "name": "<cUpperString>",
+   "help": "Uppercased value of <cString>"
+  }
+ },
+ {
+  "label": "Used() --> lDbfOpen",
+  "documentation": "Checks whether a database is in use in a work area",
+  "arguments": [],
+  "name": "Used",
+  "return": {
+   "name": "<lDbfOpen>",
+   "help": "True is a database is Used;otherwise False"
+  }
+ },
+ {
+  "label": "Val( <cNumber> ) --> nNumber",
+  "documentation": "Convert a number from a character type to numeric",
+  "arguments": [
+   {
+    "label": "<cNumber>",
+    "documentation": "<cNumber> Any valid character string of numbers."
+   }
+  ],
+  "name": "Val",
+  "return": {
+   "name": "<nNumber>",
+   "help": "The numeric value of <cNumber>"
+  }
+ },
+ {
+  "label": "ValType( <xExp> ) --> <cRetType>",
+  "documentation": "Retrieves the data type of an expression",
+  "arguments": [
+   {
+    "label": "<xExp>",
+    "documentation": "<xExp> is any valid expression."
+   }
+  ],
+  "name": "ValType",
+  "return": {
+   "name": "</table>",
+   "help": ""
+  }
+ },
+ {
+  "label": "Version() --> <cReturn>",
+  "documentation": "Returns the version of Harbour compiler",
+  "arguments": [],
+  "name": "Version",
+  "return": {
+   "name": "<cReturn>",
+   "help": "String containing the Harbour version"
+  }
+ },
+ {
+  "label": "Word( <nDouble> ) --> <nInteger>",
+  "documentation": "Converts double to integer values.",
+  "arguments": [
+   {
+    "label": "<nDouble>",
+    "documentation": "<nDouble> is a numeric double value."
+   }
+  ],
+  "name": "Word"
+ },
+ {
+  "label": "Year( <cDate> ) --> nYear",
+  "documentation": "Converts the year portion of a date into a numeric value",
+  "arguments": [
+   {
+    "label": "<dDate>",
+    "documentation": "<dDate> Any valid date expression"
+   }
+  ],
+  "name": "Year",
+  "return": {
+   "name": "<nYear>",
+   "help": "The year portion of the date."
+  }
+ }
+]

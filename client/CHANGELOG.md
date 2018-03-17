@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
+## -.-.--
+ - Added signature for 342 standard procedure
+ - Manage of special case of New
+
 ## 0.5.9
 - Fixed signature help on method and on multiline declaration
 - Added looking on sub folder for workspace symbol
