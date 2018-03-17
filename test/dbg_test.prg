@@ -47,7 +47,7 @@ proc main( )
 	AltraFunzione()
 	? i:=2
 	? i
-	TestLib()
+	eval(&("{|| TestLib() }"))
 return
 
 func AltraFunzione( )

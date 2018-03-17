@@ -2,7 +2,7 @@
     "name": "harbour",
     "displayName": "harbour",
     "description": "Harbour language support for visual studio code",
-    "version": "0.5.9",
+    "version": "0.5.11",
     "publisher": "aperricone",
     "icon": "harbourIcon.png",
     "main": "./src/extension",
@@ -26,6 +26,20 @@
         "vscode-languageclient": "^3.5.1"
     },
     "contributes": {
+        "problemMatchers": [
+            {
+                "name": "harbour",
+                "owner": "harbour",
+                "fileLocation": "relative",
+                "pattern": {
+                    "regexp": "^(?:([^\\(]*)\\((\\d+)\\)\\s+)(Warning|Error)\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "severity": 3,
+                    "message": 4
+                }
+            }
+        ],
         "configuration": {
             "type": "object",
             "title": "Harbour compiler",

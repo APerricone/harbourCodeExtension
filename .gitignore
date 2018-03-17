@@ -30,3 +30,4 @@ test/out.txt
 client/syntaxes/harbour.tmLanguage
 client/npm-debug.log
 client/npm-debug.log
+test/vc140.pdb
