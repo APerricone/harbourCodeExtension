@@ -1,9 +1,11 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
-## -.-.--
+## 0.6.0
  - Added signature for 342 standard procedure
  - Manage of special case of New
+ - Fixed debugger.js on new node/code versions
+ - Better validator support for executables
 
 ## 0.5.11
 - Fixed debugger expression managing

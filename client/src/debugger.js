@@ -138,7 +138,7 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
 		tc.queue = "";
 	}).listen(port);
 	// starts the program
-	console.debug("start the program");
+	console.log("start the program");
 	if(args.arguments)
 		this.process = cp.spawn(args.program, args.arguments, { cwd:args.workingDir });
 	else
