@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
+## 0.6.2
+ - Fixed server
+
 ## 0.6.1
  - Better signature argument counting
  - Added message when unable to start the executable on debugging
