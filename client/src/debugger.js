@@ -1,4 +1,3 @@
-var vscode = require('vscode');
 var debugadapter = require("vscode-debugadapter");
 var debugprotocol = require("vscode-debugprotocol");
 var net = require("net");
@@ -108,8 +107,7 @@ harbourDebugSession.prototype.initializeRequest = function (response, args)
 };
 
 harbourDebugSession.prototype.configurationDoneRequest = function(response, args)
-{
-	if(this.startGO) this.command("GO\r\n");
+{	
 	this.sendResponse(response);
 }
 
@@ -139,6 +137,7 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
 		socket.write(tc.queue);
 		this.justStart = false;
 		tc.queue = "";
+		if(tc.startGo) tc.command("GO\r\n");
 	}).listen(port);
 	// starts the program
 	//console.log("start the program");
@@ -148,7 +147,9 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
 		this.process = cp.spawn(args.program, { cwd:args.workingDir });
 	this.process.on("error", e =>
 	{
-		vscode.window.showWarningMessage(`unable to start ${args.program} in ${args.workingDir}, check that all path exists.`);
+		tc.sendEvent(new debugadapter.OutputEvent(`unable to start ${args.program} in ${args.workingDir}, check that all path exists.`,"stderr"))
+		tc.sendEvent(new debugadapter.TerminatedEvent());
+		return
 	})
 	this.process.on("exit",function(code)
 	{

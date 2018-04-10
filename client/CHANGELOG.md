@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
+## 0.6.3
+ - Fixed debugger
+
 ## 0.6.2
  - Fixed server
 
