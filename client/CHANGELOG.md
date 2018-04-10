@@ -6,6 +6,8 @@ All notable changes to the "harbour" extension will be documented in this file.
  - Manage of special case of New
  - Fixed debugger.js on new node/code versions
  - Better validator support for executables
+ - Better signature argument counting
+ - Added message when unable to start the executable on debugging
 
 ## 0.5.11
 - Fixed debugger expression managing

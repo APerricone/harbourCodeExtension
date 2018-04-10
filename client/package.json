@@ -21,8 +21,8 @@
         "Linters"
     ],
     "dependencies": {
-        "vscode-debugadapter": "^1.27.0",
-        "vscode-debugprotocol": "^1.27.0",
+        "vscode-debugadapter": "^1.28.0",
+        "vscode-debugprotocol": "^1.28.0",
         "vscode-languageclient": "^3.5.1"
     },
     "contributes": {
