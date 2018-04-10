@@ -227,37 +227,11 @@ connection.onSignatureHelp((params)=>
     /** @type {string} */
     var text = doc.getText();
     // backwards find (
-    var nP = 0;
-    while(nP!=0 || text[pos]!='(')
-    {
-        switch (text[pos]) {
-            case '(': nP--; break;
-            case ')': nP++; break;
-            case '\n': 
-                if ((text[pos-1]=='\r' && text[pos-2]==';') || text[pos-1]==';')
-                    break;
-                return undefined;
-                break;
-        }
-        pos--;
-    }    
+    pos=findBracket(text,pos,-1,"(")
+    if(pos===undefined) return pos;
     // Get parameter position
-    var endPos=pos+1
-    var nC = 0;
-    var nP = 0;
-    while(nP!=0 || text[endPos]!=')')
-    {
-        switch (text[endPos]) {
-            case '(': nP--; break;
-            case ')': nP++; break;
-            case '\n': 
-                if ((text[endPos-1]=='\r' && text[endPos-2]==';') || text[endPos-1]==';')
-                    break;
-                return undefined;
-                break;
-        }
-        endPos++;
-    } 
+    var endPos=findBracket(text,pos+1,1,")")
+    if(endPos===undefined) return endPos;
     nC = CountParameter(text.substr(pos+1,endPos-pos-1), doc.offsetAt(params.position)-pos-1)
     // Get the word
     pos--;
@@ -292,6 +266,42 @@ connection.onSignatureHelp((params)=>
 
 /**
  * 
+ * @param {String} text
+ * @param {Number} pos 
+ * @param {Number} dir 
+ * @param {String} bracket 
+ */
+function findBracket(text,pos,dir,bracket)
+{
+    var nP = 0, str
+    while(nP!=0 || text[pos]!=bracket || str!=undefined )
+    {
+        if(str)
+        {
+            if(text[pos]==str)
+                str=undefined;
+        } else
+        {
+            switch (text[pos]) {
+                case '(': nP--; break;
+                case ')': nP++; break;
+                case '[': str=']'; break
+                case '"': str='"'; break
+                case "'": str="'"; break
+                case '\n': 
+                    if ((text[pos-1]=='\r' && text[pos-2]==';') || text[pos-1]==';')
+                        break;
+                    return undefined;
+                    break;
+            }
+        }
+        pos+=dir;
+    }        
+    return pos
+}
+
+/**
+ * 
  * @param {String} txt The text where count the parameter
  * @param {Number} position Position of cursor
  */
@@ -304,12 +314,12 @@ function CountParameter(txt, position)
 		var filter=undefined;
 		switch(i)
 		{
-			case 1: filter = /{[^{}]*}/g; break;
-			case 2: filter = /\[[^\[\]]*\]/g; break;
-			case 3: filter = /\([^\(\)]*\)/g; break;
-			case 4: filter = /'[^']*'/g; break;
-			case 5: filter = /"[^"]*"/g; break;
-			case 6: filter = /;\r?\n/g; break;
+			case 1: filter = /;\r?\n/g; break;
+			case 2: filter = /'[^']*'/g; break;
+			case 3: filter = /"[^"]*"/g; break;
+			case 4: filter = /\[[^\[\]]*\]/g; break;
+			case 5: filter = /{[^{}]*}/g; break;
+			case 6: filter = /\([^\(\)]*\)/g; break;
 		}
 		if (filter == undefined)
 			break;

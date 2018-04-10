@@ -195,12 +195,12 @@ Provider.prototype.parseDeclareList = function(list,kind,parent)
 		switch(i)
 		{
 			case 0: filter = /:=[^,]/g; break;
-			case 1: filter = /{[^{}]*}/g; break;
-			case 2: filter = /\[[^\[\]]*\]/g; break;
-			case 3: filter = /\([^\(\)]*\)/g; break;
-			case 4: filter = /'[^']*'/g; break;
-			case 5: filter = /"[^"]*"/g; break;
-			case 6: filter = /;\r?\n/g; break;
+			case 1: filter = /;\r?\n/g; break;
+			case 2: filter = /'[^']*'/g; break;
+			case 3: filter = /"[^"]*"/g; break;
+			case 4: filter = /\[[^\[\]]*\]/g; break;
+			case 5: filter = /{[^{}]*}/g; break;
+			case 6: filter = /\([^\(\)]*\)/g; break;
 		}
 		if (filter == undefined)
 			break;

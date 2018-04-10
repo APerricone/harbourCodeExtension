@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
+## 0.6.4
+ - Fixed: bad arguments counting when alone bracket inside string
+
 ## 0.6.3
  - Fixed debugger
 
@@ -8,7 +11,7 @@ All notable changes to the "harbour" extension will be documented in this file.
  - Fixed server
 
 ## 0.6.1
- - Better signature argument counting
+ - Fixed: arguments counting when comma inside curly or squared bracket, or inside string
  - Added message when unable to start the executable on debugging
 
 ## 0.6.0
