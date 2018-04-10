@@ -1,3 +1,4 @@
+var vscode = require('vscode');
 var debugadapter = require("vscode-debugadapter");
 var debugprotocol = require("vscode-debugprotocol");
 var net = require("net");
@@ -124,6 +125,8 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
 	{
 		this.workspaceRoot = path.dirname(args.program) + path.sep;
 	}
+	this.Debugging = !args.noDebug;
+	this.startGo = args.stopOnEntry===false || args.noDebug===true;	
 	// starts the server
 	var server = net.createServer(socket => {
 		//connected!
@@ -138,12 +141,15 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
 		tc.queue = "";
 	}).listen(port);
 	// starts the program
-	console.log("start the program");
+	//console.log("start the program");
 	if(args.arguments)
 		this.process = cp.spawn(args.program, args.arguments, { cwd:args.workingDir });
 	else
 		this.process = cp.spawn(args.program, { cwd:args.workingDir });
-
+	this.process.on("error", e =>
+	{
+		vscode.window.showWarningMessage(`unable to start ${args.program} in ${args.workingDir}, check that all path exists.`);
+	})
 	this.process.on("exit",function(code)
 	{
 		//tc.sendEvent(new debugadapter.Event("exited",{"exitCode":code}));
@@ -155,9 +161,6 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
 	this.process.stdout.on('data', data => 
 		tc.sendEvent(new debugadapter.OutputEvent(data.toString(),"stdout"))
 	);
-	// is debugging?
-	this.Debugging = !args.noDebug;
-	this.startGo = args.stopOnEntry===false || args.noDebug===true;
 	this.sendResponse(response);
 }
 

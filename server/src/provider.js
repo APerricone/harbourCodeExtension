@@ -219,7 +219,6 @@ Provider.prototype.parseDeclareList = function(list,kind,parent)
 		if(m.length>0)
 			this.addInfo(m[0],kind,parent,true);
 	}
-
 }
 
 Provider.prototype.parseHarbour = function(words)

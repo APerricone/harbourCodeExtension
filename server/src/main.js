@@ -228,13 +228,11 @@ connection.onSignatureHelp((params)=>
     var text = doc.getText();
     // backwards find (
     var nP = 0;
-    var nC = 0;
     while(nP!=0 || text[pos]!='(')
     {
         switch (text[pos]) {
             case '(': nP--; break;
             case ')': nP++; break;
-            case ',': if(nP==0) nC++; break;
             case '\n': 
                 if ((text[pos-1]=='\r' && text[pos-2]==';') || text[pos-1]==';')
                     break;
@@ -242,7 +240,26 @@ connection.onSignatureHelp((params)=>
                 break;
         }
         pos--;
-    }
+    }    
+    // Get parameter position
+    var endPos=pos+1
+    var nC = 0;
+    var nP = 0;
+    while(nP!=0 || text[endPos]!=')')
+    {
+        switch (text[endPos]) {
+            case '(': nP--; break;
+            case ')': nP++; break;
+            case '\n': 
+                if ((text[endPos-1]=='\r' && text[endPos-2]==';') || text[endPos-1]==';')
+                    break;
+                return undefined;
+                break;
+        }
+        endPos++;
+    } 
+    nC = CountParameter(text.substr(pos+1,endPos-pos-1), doc.offsetAt(params.position)-pos-1)
+    // Get the word
     pos--;
     var rge = /[0-9a-z_]/i;
     var word = "", className = undefined;
@@ -252,6 +269,7 @@ connection.onSignatureHelp((params)=>
         pos--;
     }
     word=word.toLowerCase();
+    // special case for new, search the class name
     if(word=="new")
     {
         var prec = text.substring(pos-2,pos+1);
@@ -271,6 +289,42 @@ connection.onSignatureHelp((params)=>
     signatures = signatures.concat(getWorkspaceSignatures(word, className, nC));
     return {signatures:signatures, activeParameter:nC}
 })
+
+/**
+ * 
+ * @param {String} txt The text where count the parameter
+ * @param {Number} position Position of cursor
+ */
+function CountParameter(txt, position)
+{
+    var  i=0;
+	while(true)
+	{
+		i++;
+		var filter=undefined;
+		switch(i)
+		{
+			case 1: filter = /{[^{}]*}/g; break;
+			case 2: filter = /\[[^\[\]]*\]/g; break;
+			case 3: filter = /\([^\(\)]*\)/g; break;
+			case 4: filter = /'[^']*'/g; break;
+			case 5: filter = /"[^"]*"/g; break;
+			case 6: filter = /;\r?\n/g; break;
+		}
+		if (filter == undefined)
+			break;
+		do
+		{
+            var someChange = false
+            txt=txt.replace(filter,function(matchString)
+            {
+                someChange = true;
+                return Array(matchString.length+1).join("X");
+            })
+		} while(someChange)
+    }
+    return (txt.substr(0,position).match(/,/g) || []).length
+}
 
 function getWorkspaceSignatures(word, className, nC)
 {
