@@ -2,9 +2,26 @@
 All notable changes to the "harbour" extension will be documented in this file.
 
 ## -.-.--
+ - Server: parse c file searching harbour function
+
+## 0.6.4
+ - Fixed: bad arguments counting when alone bracket inside string
+
+## 0.6.3
+ - Fixed debugger
+
+## 0.6.2
+ - Fixed server
+
+## 0.6.1
+ - Fixed: arguments counting when comma inside curly or squared bracket, or inside string
+ - Added message when unable to start the executable on debugging
+
+## 0.6.0
  - Added signature for 342 standard procedure
  - Manage of special case of New
- - Server: parse c file searching harbour function
+ - Fixed debugger.js on new node/code versions
+ - Better validator support for executables
 
 ## 0.5.11
 - Fixed debugger expression managing

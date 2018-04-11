@@ -48,6 +48,9 @@ proc main( )
 	? i:=2
 	? i
 	eval(&("{|| TestLib() }"))
+	testLotParameter(1,[2,3],{4,5},"6,7",'A,2',;
+		"PROVA,TEST","Pippo",{6,5,3,2,1},234 ;
+			)
 return
 
 func AltraFunzione( )
@@ -83,6 +86,9 @@ proc TestLibInside()
 proc TestLibInside2(v)
 	LOCAL a := "a"
 	? a,v
+
+proc testLotParameter(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r)
+return 
 
 #pragma -B-
 proc FakeLib(bBlock,par)

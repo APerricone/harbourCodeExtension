@@ -107,8 +107,7 @@ harbourDebugSession.prototype.initializeRequest = function (response, args)
 };
 
 harbourDebugSession.prototype.configurationDoneRequest = function(response, args)
-{
-	if(this.startGO) this.command("GO\r\n");
+{	
 	this.sendResponse(response);
 }
 
@@ -124,6 +123,8 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
 	{
 		this.workspaceRoot = path.dirname(args.program) + path.sep;
 	}
+	this.Debugging = !args.noDebug;
+	this.startGo = args.stopOnEntry===false || args.noDebug===true;	
 	// starts the server
 	var server = net.createServer(socket => {
 		//connected!
@@ -136,14 +137,20 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
 		socket.write(tc.queue);
 		this.justStart = false;
 		tc.queue = "";
+		if(tc.startGo) tc.command("GO\r\n");
 	}).listen(port);
 	// starts the program
-	console.debug("start the program");
+	//console.log("start the program");
 	if(args.arguments)
 		this.process = cp.spawn(args.program, args.arguments, { cwd:args.workingDir });
 	else
 		this.process = cp.spawn(args.program, { cwd:args.workingDir });
-
+	this.process.on("error", e =>
+	{
+		tc.sendEvent(new debugadapter.OutputEvent(`unable to start ${args.program} in ${args.workingDir}, check that all path exists.`,"stderr"))
+		tc.sendEvent(new debugadapter.TerminatedEvent());
+		return
+	})
 	this.process.on("exit",function(code)
 	{
 		//tc.sendEvent(new debugadapter.Event("exited",{"exitCode":code}));
@@ -155,9 +162,6 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
 	this.process.stdout.on('data', data => 
 		tc.sendEvent(new debugadapter.OutputEvent(data.toString(),"stdout"))
 	);
-	// is debugging?
-	this.Debugging = !args.noDebug;
-	this.startGo = args.stopOnEntry===false || args.noDebug===true;
 	this.sendResponse(response);
 }
 

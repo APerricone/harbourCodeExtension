@@ -41,7 +41,7 @@ function validate(textDocument)
 	var diagnostics = {};
 	diagnostics[textDocument.fileName] = [];
 	var errorLines = "";
-	process.stderr.on('data', data => 
+	function parseData(data)
 	{
 		errorLines += data.toString();
 		var p;
@@ -87,10 +87,9 @@ function validate(textDocument)
 						r[4], r[3]=="Warning"? 1 : 0))
 			}
 		}
-	});
-	process.stdout.on('data', data => 
-		{} //console.log(data.toString())
-	);
+	}
+	process.stderr.on('data', parseData);
+	process.stdout.on('data', parseData);
 	process.on("exit",function(code)
 	{
 		for (var file in diagnostics) {
@@ -99,7 +98,6 @@ function validate(textDocument)
 				diagnosticCollection.set(vscode.Uri.file(file), infos);		
 			}
 		}
-		//diagnosticCollection.set(textDocument.uri, diagnostics[textDocument.fileName]);
 	});
 }
 
