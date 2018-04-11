@@ -2,7 +2,7 @@
 All notable changes to the "harbour" extension will be documented in this file.
 
 ## 0.6.4
- - Fixed: bad arguments counting when alone bracket inside string
+ -  Fixed arguments counting when lone bracket are presents inside string
 
 ## 0.6.3
  - Fixed debugger
@@ -11,7 +11,7 @@ All notable changes to the "harbour" extension will be documented in this file.
  - Fixed server
 
 ## 0.6.1
- - Fixed: arguments counting when comma inside curly or squared bracket, or inside string
+ -  Fixed arguments counting when commas are presents inside string or inside curly or squared brackets
  - Added message when unable to start the executable on debugging
 
 ## 0.6.0
