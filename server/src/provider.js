@@ -364,10 +364,12 @@ Provider.prototype.parse = function(line)
 	this.lastCodeLine = this.lineNr;
 }
 
-Provider.prototype.parseString = function(txt)
+Provider.prototype.parseString = function(txt,cMode)
 {
 	var providerThisContext = this;
 	this.Clear();
+	if(cMode != undefined)
+		this.cMode = cMode;
 	var lines = txt.split(/\r?\n/);
 	for (var i = 0; i < lines.length; i++) {
 		providerThisContext.parse(lines[i])
@@ -380,12 +382,14 @@ Provider.prototype.endParse = function()
 	if(this.currentMethod) this.currentMethod.endLine = this.lastCodeLine;
 }
 
-Provider.prototype.parseFile = function(file,encoding)
+Provider.prototype.parseFile = function(file,cMode,encoding)
 {
 	var providerThisContext = this;
 	this.Clear();
 	var startDoc = this.currentDocument;
 	this.currentDocument = file;
+	if(cMode != undefined)
+		this.cMode = cMode;
 	encoding = encoding || "utf8";
 	return new Promise((resolve,reject) =>
 	{

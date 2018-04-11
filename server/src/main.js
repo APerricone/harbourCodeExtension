@@ -50,11 +50,12 @@ function ParseDir(dir)
         if(ff==undefined) return;
         for (var i = 0; i < ff.length; i++) {
             var fileName = ff[i];
-            if(fileName.substr(-4).toLowerCase() == ".prg")
+			var ext = path.extname(fileName).toLowerCase();
+			if(	ext == ".prg" || ext == ".c" )
             {
                 var fileUri = Uri.file(dir+"/"+fileName)
                 var pp = new provider.Provider();
-                pp.parseFile(dir+"/"+fileName);
+                pp.parseFile(dir+"/"+fileName,ext == ".c");
                 files[fileUri.toString()] = pp;    
             } else
             if(fileName.indexOf(".")<0)
@@ -91,9 +92,15 @@ var documents = new server.TextDocuments();
 documents.listen(connection);
 documents.onDidSave((e)=>
 {
-    var pp = new provider.Provider();
-    files[e.document.uri] = pp;
-    pp.parseString(e.document.getText());
+    var uri = Uri.parse(e.document.uri);
+    if(uri.scheme != "file") return;
+    var ext = path.extname(uri.fsPath).toLowerCase();
+    if(	ext == ".prg" || ext == ".c" )
+    {
+        var pp = new provider.Provider();
+        files[e.document.uri] = pp;
+        pp.parseString(e.document.getText(),ext == ".c");
+    }
 })
 
 function kindTOVS(kind)
@@ -411,8 +418,8 @@ function getStdHelp(word, nC)
                 });
             }
             s["parameters"] = subParams;
-            if (subParams.length > nC)
-                signatures.push(s);
+            //if (subParams.length > nC)
+            //    signatures.push(s);
         }
     }
     return signatures;
