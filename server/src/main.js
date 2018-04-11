@@ -260,7 +260,7 @@ connection.onSignatureHelp((params)=>
         }
     }
     var signatures = [].concat(getStdHelp(word, nC));
-    signatures = signatures.concat(getWorkspaceSignatures(word, className, nC));
+    signatures = signatures.concat(getWorkspaceSignatures(word, doc, className, nC));
     return {signatures:signatures, activeParameter:nC}
 })
 
@@ -336,7 +336,7 @@ function CountParameter(txt, position)
     return (txt.substr(0,position).match(/,/g) || []).length
 }
 
-function getWorkspaceSignatures(word, className, nC)
+function getWorkspaceSignatures(word, doc, className, nC)
 {
     var signatures = [];
     for (var file in files) if (files.hasOwnProperty(file)) 
