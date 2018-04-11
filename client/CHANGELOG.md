@@ -4,6 +4,7 @@ All notable changes to the "harbour" extension will be documented in this file.
 ## -.-.--
  - Added signature for 342 standard procedure
  - Manage of special case of New
+ - Server: parse c file searching harbour function
 
 ## 0.5.11
 - Fixed debugger expression managing
@@ -87,7 +88,7 @@ All notable changes to the "harbour" extension will be documented in this file.
 - removed refused debug prints
 
 ## 0.3.1
-- Added missin method on debugger... still not working
+- Added missing method on debugger... still not working
 - better validation message when the correct line is inside the message
 - recognization of method procedure and method function
 
