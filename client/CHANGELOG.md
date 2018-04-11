@@ -1,12 +1,12 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
-## -.-.--
+## 0.6.5
  - Server: parse c file searching harbour function
+ - Fixed crash on signature for static proc/func
 
 ## 0.6.4
  - Fixed arguments counting when lone bracket are presents inside string
- - Fixed crash on signature for static proc/func
 
 ## 0.6.3
  - Fixed debugger
