@@ -364,7 +364,7 @@ Provider.prototype.parse = function(line)
 	this.lastCodeLine = this.lineNr;
 }
 
-Provider.prototype.parseString = function(txt)
+Provider.prototype.parseString = function(txt,cMode)
 {
 	var providerThisContext = this;
 	this.Clear();
