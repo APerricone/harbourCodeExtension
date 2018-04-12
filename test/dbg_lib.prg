@@ -426,6 +426,7 @@ static procedure setBreakpoint(cInfo)
 	local nReq, nLine, nReason
 	LOCAL t_oDebugInfo := __DEBUGITEM()
 	nReq := val(aInfos[3])
+	aInfos[2] := lower(aInfos[2])
 	if aInfos[1]=="-"
 		// remove
 		if hb_HHasKey(t_oDebugInfo['aBreaks'],aInfos[2])
@@ -479,7 +480,7 @@ static function inBreakpoint()
 	LOCAL aBreaks := __DEBUGITEM()['aBreaks']
 //	LOCAL aInfos := t_oDebugInfo['aStack',len(t_oDebugInfo['aStack'])]
 	LOCAL nLine := procLine(3)
-	local idLine, cFile := procFile(3)
+	local idLine, cFile := lower(procFile(3))
 	if .not. hb_HHasKey(aBreaks,cFile)
 		return .F.
 	endif
@@ -499,7 +500,7 @@ static procedure AddModule(aInfo)
 		fSeek(fFileModules,0,2)
 	#endif
 	for i:=1 to len(aInfo)
-		aInfo[i,1] := alltrim(aInfo[i,1])
+		aInfo[i,1] := lower(alltrim(aInfo[i,1]))
 		if len(aInfo[i,1])=0
 			loop
 		endif
