@@ -35,6 +35,88 @@ function activate(context)
 	vscode.window.onDidChangeTextEditorSelection((e) => showGroups(e) );
 }
 
+/**
+ * Removes all strings an comments an replace them with XXXX of same length
+ * @param {String} txt Text to parse
+ */
+function RemoveStringAndComments(txt)
+{
+    var  i=0;
+	while(true)
+	{
+		i++;
+		var filter=undefined;
+		switch(i)
+		{
+			case 1: filter = /\/\/[^\n]*\n/g; break;	 // // comments
+			case 2: filter = /&&[^\n]*\n/g; break;	 // && comments
+			case 3: filter = /^\s*\*[^\n]*\n/mg; break;	 // * comments			
+			case 4: filter = /^\s*NOTE[^\n]*\n/mg; break;	 // NOTE comments			
+			case 5: filter = /\/\*((?!\*\/)[\s\S])*\*\//g; break; // /* */ comments
+			case 6: filter = /'[^']*'/g; break; // ' string
+			case 7: filter = /"[^"]*"/g; break; // " string
+			case 8: filter = /\[[^\[\]]*\]/g; break;  // [] string
+		}
+		if (filter == undefined)
+			break;
+		do
+		{
+            var someChange = false
+            txt=txt.replace(filter,function(matchString)
+            {
+                someChange = true;
+                return Array(matchString.length+1).join("X");
+            })
+		} while(someChange)
+	}
+	// Special cases, inline if in this form if(condition,truePart,falseParte)
+	var inlineIf = /\bif\s*\(/gi;
+	/** @type {RegExpMatchArray|undefined} */
+	var mm;
+	while(mm=inlineIf.exec(txt))
+	{
+		var i=mm.index + mm[0].length, nPar = 0, keepLooking = true, isInlineIf = false
+		var precC,c="";
+		while(keepLooking)
+		{
+			precC=c
+			c = txt.charAt(i)
+			switch(c)
+			{
+				case '\r':
+				case '\n':
+					if (precC==';')
+						c = ';'
+					else
+						keepLooking = false;
+					break;
+				case ')':
+					if(nPar==0)
+						keepLooking = false;
+					else
+						nPar--;
+					break;
+				case '(':
+					nPar++;
+					break;
+				case ',':
+					if(nPar==0)
+					{
+						isInlineIf = true;
+						keepLooking = false;
+					}
+					break
+			}
+			i++;
+		}
+		if(isInlineIf)
+		{
+			txt = txt.substring(0,mm.index) + "XX" + txt.substring(mm.index+2)
+		}
+	}
+	return txt	
+}
+
 function setDecorator(editor)
 {
 	if(!editor)
@@ -43,7 +125,7 @@ function setDecorator(editor)
 					/\b((for(?:\s+each)?)|loop|exit|(next))\b/ig,
 					/\b((switch|do\s+case)|case|otherwise|exit|(endswitch|endcase))\b/ig,
 					/\b((do\s+while)|loop|exit|(enddo))\b/ig];
-	var text = editor.document.getText();
+	var text = RemoveStringAndComments(editor.document.getText());
 	var places = [];
 	var match;
 	groups = [];
