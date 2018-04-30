@@ -283,6 +283,8 @@ function findBracket(text,pos,dir,bracket)
     var nP = 0, str
     while(nP!=0 || text[pos]!=bracket || str!=undefined )
     {
+        if(pos<0) return undefined;
+        if(pos>=text.length) return undefined;
         if(str)
         {
             if(text[pos]==str)
