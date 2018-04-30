@@ -292,7 +292,10 @@ function findBracket(text,pos,dir,bracket)
             switch (text[pos]) {
                 case '(': nP--; break;
                 case ')': nP++; break;
-                case '[': str=']'; break
+                case '[': if(dir>0) str=']'; break
+                case ']': if(dir<0) str='['; break
+                case '{': if(dir>0) str='}'; break
+                case '}': if(dir<0) str='{'; break
                 case '"': str='"'; break
                 case "'": str="'"; break
                 case '\n': 
@@ -418,8 +421,7 @@ function getStdHelp(word, nC)
                 });
             }
             s["parameters"] = subParams;
-            //if (subParams.length > nC)
-            //    signatures.push(s);
+            signatures.push(s);
         }
     }
     return signatures;
