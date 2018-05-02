@@ -53,9 +53,10 @@ function RemoveStringAndComments(txt)
 			case 3: filter = /^\s*\*[^\n]*\n/mg; break;	 // * comments			
 			case 4: filter = /^\s*NOTE[^\n]*\n/mg; break;	 // NOTE comments			
 			case 5: filter = /\/\*((?!\*\/)[\s\S])*\*\//g; break; // /* */ comments
-			case 6: filter = /'[^']*'/g; break; // ' string
-			case 7: filter = /"[^"]*"/g; break; // " string
-			case 8: filter = /\[[^\[\]]*\]/g; break;  // [] string
+			case 6: filter = /'[^'\r\n]*'/g; break; // ' string
+			case 7: filter = /"[^"\r\n]*"/g; break; // " string
+			case 8: filter = /\[[^\[\]\r\n]*\]/g; break;  // [] string
+			case 9: filter = /#(if|else|endif)/g; break;  // precompiled if
 		}
 		if (filter == undefined)
 			break;
@@ -64,7 +65,13 @@ function RemoveStringAndComments(txt)
             var someChange = false
             txt=txt.replace(filter,function(matchString)
             {
-                someChange = true;
+				someChange = true;
+				if(matchString.endsWith("\r\n"))
+					return Array(matchString.length-1).join("X")+"\r\n";
+				if(matchString.endsWith("\n"))
+					return Array(matchString.length).join("X")+"\n";				
+				if(matchString.endsWith("\r"))
+					return Array(matchString.length).join("X")+"\r";
                 return Array(matchString.length+1).join("X");
             })
 		} while(someChange)
@@ -121,10 +128,14 @@ function setDecorator(editor)
 {
 	if(!editor)
 		return;
+	var section = vscode.workspace.getConfiguration('harbour');
+	if(!section.validating)
+		return;
+			
 	var regExs = [	/\b((if)|else|elseif|(endif))\b/ig,
 					/\b((for(?:\s+each)?)|loop|exit|(next))\b/ig,
 					/\b((switch|do\s+case)|case|otherwise|exit|(endswitch|endcase))\b/ig,
-					/\b((do\s+while)|loop|exit|(enddo))\b/ig];
+					/\b(((?:do\s+)?while)|loop|exit|(enddo))\b/ig];
 	var text = RemoveStringAndComments(editor.document.getText());
 	var places = [];
 	var match;
@@ -163,8 +174,16 @@ function setDecorator(editor)
 function showGroups(evt)
 {
 	if(evt.selections.length!=1)
+	{
 		evt.textEditor.setDecorations(decoration, []);
-
+		return;
+	}
+	var section = vscode.workspace.getConfiguration('harbour');
+	if(!section.decorator)
+	{
+		evt.textEditor.setDecorations(decoration, []);
+		return;
+	}
 	var sel = evt.selections[0];
 	for (var j = 0; j < groups.length; j++) {
 		var gr = groups[j];

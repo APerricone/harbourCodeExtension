@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
+## 0.6.7
+ - added setting to disable the decorator
+ - better decorator code
+
 ## 0.6.6
  - enabled decorator (marks correspondent if, else, endif, for, next ect ect), BETA.
  - Fixed stall on signature request
