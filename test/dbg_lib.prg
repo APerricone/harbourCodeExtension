@@ -23,9 +23,11 @@ static procedure CheckSocket(lStopSent)
 	// if no server then start it.
 	if(empty(t_oDebugInfo['socket']))
 		hb_inetInit()
-		t_oDebugInfo['socket'] := hb_inetCreate()
-		hb_inetTimeout( t_oDebugInfo['socket'],1000 )
+		t_oDebugInfo['socket'] := hb_inetCreate(1000)
 		hb_inetConnect("127.0.0.1",DBG_PORT,t_oDebugInfo['socket'])
+		IF hb_INetErrorCode( t_oDebugInfo['socket'] ) != 0
+			t_oDebugInfo['lRunning'] := .T.
+		endif
 	endif
 	do while .T.
 		//if hb_inetErrorCode(oSocket) <> 0

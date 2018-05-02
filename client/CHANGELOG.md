@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
+## 0.6.6
+ - enabled decorator (marks correspondent if, else, endif, for, next ect ect), BETA.
+ - Fixed stall on signature request
+
 ## 0.6.5
  - Server: parse c file searching harbour function
  - Fixed crash on signature for static proc/func
