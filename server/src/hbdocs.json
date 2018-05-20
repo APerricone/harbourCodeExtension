@@ -1594,10 +1594,10 @@
   "name": "dbCommit"
  },
  {
-  "label": "dbCommit()",
+  "label": "dbCommitAll()",
   "documentation": "Flushes the memory buffer and performs a hard-disk write",
   "arguments": [],
-  "name": "dbCommit"
+  "name": "dbCommitAll"
  },
  {
   "label": "dbCreate( <cDatabase>, <aStruct>, [<cDriver>], [<lOpen>], [<cAlias>] )",
