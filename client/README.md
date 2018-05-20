@@ -2,9 +2,6 @@
 
 This is an extension for visual studio code about harbour programming language, it is still W.I.P. :)
 
-## Warning
-the version 0.3 has a new debugger library, you must update it!!
-
 ## Features
 
 - simple and complete syntax hightlight
@@ -12,8 +9,6 @@ the version 0.3 has a new debugger library, you must update it!!
 - Diagnostic infos
 - Symbol Definitions Within a Document provider (access it by pressing <kbd>CTRL</kbd>+<kbd>P</kbd> then <kbd>@</kbd>)
 - Symbol Definitions in folder provider (access it by pressing <kbd>CTRL</kbd>+<kbd>P</kbd> then <kbd>#</kbd>)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
 
 ## Requirements
 
@@ -32,7 +27,9 @@ This extension contributes the following settings:
 ## How to use the debugger<a name="DEBUG"></a>
 You can use the command "Harbour: Get debugger code" to get the source of the debbugger, save it to a file naming it as you like, for example dbg_lib-prg. You can include this file in your project or **BETTER** create a library with this file to link in your project.
 
-> NOTE: don't forget to compile harbour file with debug information <kbd>-b</kbd>
+> NOTE: don't forget to compile harbour file with debug information ***-b***
+
+### **IT IS STRONGLY RECOMMENDED TO UPDATE THE FILES EVERY EXTENSION VERSION**
 
 ## Known Issues
 
