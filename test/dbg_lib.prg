@@ -17,7 +17,7 @@
 
 // returns .T. if need step
 static procedure CheckSocket(lStopSent) 
-	LOCAL tmp
+	LOCAL tmp, lNeedExit := .F.
 	LOCAL t_oDebugInfo := __DEBUGITEM()
 	lStopSent := iif(empty(lStopSent),.F.,lStopSent)
 	// if no server then start it.
@@ -38,108 +38,113 @@ static procedure CheckSocket(lStopSent)
 		//	t_oDebugInfo['maxLevel'] := nil
 		//	return 
 		//
-		if hb_inetDataReady(t_oDebugInfo['socket']) = 1
+		do while hb_inetDataReady(t_oDebugInfo['socket']) = 1
 			tmp := hb_inetRecvLine(t_oDebugInfo['socket'])
+			if .not. empty(tmp)
+				//? "<<", tmp
+				if subStr(tmp,4,1)==":"
+					sendCoumpoundVar(tmp, hb_inetRecvLine(t_oDebugInfo['socket']))
+					loop
+				endif
+				switch tmp
+					case "PAUSE"
+						t_oDebugInfo['lRunning'] := .F.
+						if .not. lStopSent
+							hb_inetSend(t_oDebugInfo['socket'],"STOP:pause"+CRLF)
+							lStopSent := .T.
+						endif
+						exit
+					case "GO"
+						t_oDebugInfo['lRunning'] := .T.
+						lNeedExit := .T.
+						exit
+					case "STEP" // go to next line of code even if is in another procedure
+						t_oDebugInfo['lRunning'] := .F.
+						lNeedExit := .T.
+						exit
+					case "NEXT" // go to next line of same procedure
+						t_oDebugInfo['lRunning'] := .T.
+						t_oDebugInfo['maxLevel'] := __dbgProcLevel()
+						lNeedExit := .T.
+						exit
+					case "EXIT" // go to callee procedure
+						t_oDebugInfo['lRunning'] := .T.
+						t_oDebugInfo['maxLevel'] := __dbgProcLevel() -1
+						lNeedExit := .T.
+						exit
+					case "STACK" 
+						sendStack()
+						exit
+					case "BREAKPOINT"
+						setBreakpoint(hb_inetRecvLine(t_oDebugInfo['socket']))
+						exit
+					case "LOCALS"
+						sendFromStack(hb_inetRecvLine(t_oDebugInfo['socket']),tmp,HB_DBG_CS_LOCALS)
+						exit							
+					case "STATICS"
+						sendFromStack(hb_inetRecvLine(t_oDebugInfo['socket']),tmp,HB_DBG_CS_STATICS)
+						exit
+					case "PRIVATES"
+						sendFromInfo(tmp,hb_inetRecvLine(t_oDebugInfo['socket']),HB_MV_PRIVATE, .T.)
+						exit
+					case "PRIVATE_CALLEE"
+						sendFromInfo(tmp,hb_inetRecvLine(t_oDebugInfo['socket']),HB_MV_PRIVATE, .F.)
+						exit
+					case "PUBLICS"
+						sendFromInfo(tmp,hb_inetRecvLine(t_oDebugInfo['socket']),HB_MV_PUBLIC)
+						exit
+					//case "GLOBALS"
+					//	sendVariables(HB_MV_PUBLIC,.F.)
+					//	exit
+					//case "EXTERNALS"
+					//	sendVariables(HB_MV_PUBLIC,.F.)
+					//	exit
+					case "EXPRESSION"
+						sendExpression(hb_inetRecvLine(t_oDebugInfo['socket']))
+						exit
+				endswitch
+			endif
+		enddo
+		if lNeedExit
+			return
+		endif	
+		if t_oDebugInfo['lRunning']
+			if inBreakpoint()
+				t_oDebugInfo['lRunning'] := .F.
+				if .not. lStopSent
+					hb_inetSend(t_oDebugInfo['socket'],"STOP:break"+CRLF)
+					lStopSent := .T.
+				endif
+			endif
+			if __dbgInvokeDebug(.F.)
+				t_oDebugInfo['lRunning'] := .F.
+				if .not. lStopSent
+					hb_inetSend(t_oDebugInfo['socket'],"STOP:AltD"+CRLF)
+					lStopSent := .T.
+				endif
+			endif
+			if .not. empty(t_oDebugInfo['maxLevel']) 
+				if t_oDebugInfo['maxLevel'] < __dbgProcLevel()
+					// we are not in the same procedure
+					return
+				endif
+				t_oDebugInfo['maxLevel'] := nil
+				t_oDebugInfo['lRunning'] := .F.
+				if .not. lStopSent
+					hb_inetSend(t_oDebugInfo['socket'],"STOP:next"+CRLF)
+					lStopSent := .T.
+				endif
+			endif
+		endif	
+		if t_oDebugInfo['lRunning'] 
+			return
 		else
-			tmp := ""
-		endif
-		if len(tmp)>0
-			//? "<<", tmp
-			if subStr(tmp,4,1)==":"
-				sendCoumpoundVar(tmp, hb_inetRecvLine(t_oDebugInfo['socket']))
-				loop
-			endif
-			switch tmp
-				case "PAUSE"
-					t_oDebugInfo['lRunning'] := .F.
-					if .not. lStopSent
-						hb_inetSend(t_oDebugInfo['socket'],"STOP:pause"+CRLF)
-						lStopSent := .T.
-					endif
-					exit
-				case "GO"
-					t_oDebugInfo['lRunning'] := .T.
-					return
-				case "STEP" // go to next line of code even if is in another procedure
-					t_oDebugInfo['lRunning'] := .F.
-					return
-				case "NEXT" // go to next line of same procedure
-					t_oDebugInfo['lRunning'] := .T.
-					t_oDebugInfo['maxLevel'] := __dbgProcLevel()
-					return
-				case "EXIT" // go to callee procedure
-					t_oDebugInfo['lRunning'] := .T.
-					t_oDebugInfo['maxLevel'] := __dbgProcLevel() -1
-					return
-				case "STACK" 
-					sendStack()
-					exit
-				case "BREAKPOINT"
-					setBreakpoint(hb_inetRecvLine(t_oDebugInfo['socket']))
-					exit
-				case "LOCALS"
-					sendFromStack(hb_inetRecvLine(t_oDebugInfo['socket']),tmp,HB_DBG_CS_LOCALS)
-					exit							
-				case "STATICS"
-					sendFromStack(hb_inetRecvLine(t_oDebugInfo['socket']),tmp,HB_DBG_CS_STATICS)
-					exit
-				case "PRIVATES"
-					sendFromInfo(tmp,hb_inetRecvLine(t_oDebugInfo['socket']),HB_MV_PRIVATE, .T.)
-					exit
-				case "PRIVATE_CALLEE"
-					sendFromInfo(tmp,hb_inetRecvLine(t_oDebugInfo['socket']),HB_MV_PRIVATE, .F.)
-					exit
-				case "PUBLICS"
-					sendFromInfo(tmp,hb_inetRecvLine(t_oDebugInfo['socket']),HB_MV_PUBLIC)
-					exit
-				//case "GLOBALS"
-				//	sendVariables(HB_MV_PUBLIC,.F.)
-				//	exit
-				//case "EXTERNALS"
-				//	sendVariables(HB_MV_PUBLIC,.F.)
-				//	exit
-				case "EXPRESSION"
-					sendExpression(hb_inetRecvLine(t_oDebugInfo['socket']))
-					exit
-			endswitch
-		else
-			if t_oDebugInfo['lRunning']
-				if inBreakpoint()
-					t_oDebugInfo['lRunning'] := .F.
-					if .not. lStopSent
-						hb_inetSend(t_oDebugInfo['socket'],"STOP:break"+CRLF)
-						lStopSent := .T.
-					endif
-				endif
-				if __dbgInvokeDebug(.F.)
-					t_oDebugInfo['lRunning'] := .F.
-					if .not. lStopSent
-						hb_inetSend(t_oDebugInfo['socket'],"STOP:AltD"+CRLF)
-						lStopSent := .T.
-					endif
-				endif
-				if .not. empty(t_oDebugInfo['maxLevel']) 
-					if t_oDebugInfo['maxLevel'] < __dbgProcLevel()
-						// we are not in the same procedure
-						return
-					endif
-					t_oDebugInfo['maxLevel'] := nil
-					t_oDebugInfo['lRunning'] := .F.
-					if .not. lStopSent
-						hb_inetSend(t_oDebugInfo['socket'],"STOP:next"+CRLF)
-						lStopSent := .T.
-					endif
-				endif
-			endif
-			if t_oDebugInfo['lRunning'] 
-				return
-			endif
 			if .not. lStopSent
 				hb_inetSend(t_oDebugInfo['socket'],"STOP:step"+CRLF)
 				lStopSent := .T.
 			endif
 			hb_idleSleep(0.1)
-		endif	
+		endif
 	enddo
 	// unreachable code
 return
@@ -427,6 +432,7 @@ static procedure setBreakpoint(cInfo)
 	LOCAL aInfos := hb_aTokens(cInfo,":"), idLine
 	local nReq, nLine, nReason
 	LOCAL t_oDebugInfo := __DEBUGITEM()
+	//? " - ", cInfo
 	nReq := val(aInfos[3])
 	aInfos[2] := lower(aInfos[2])
 	if aInfos[1]=="-"
@@ -471,9 +477,18 @@ static procedure setBreakpoint(cInfo)
 	if .not. hb_HHasKey(t_oDebugInfo['aBreaks'],aInfos[2])
 		t_oDebugInfo['aBreaks'][aInfos[2]] := {}
 	endif
-	idLine := aScan(t_oDebugInfo['aBreaks'][aInfos[2]], {|v| v=nLine })
-	if(idLine=0)
-		aadd(t_oDebugInfo['aBreaks'][aInfos[2]],nLine)
+	idLine := aScan(t_oDebugInfo['aBreaks'][aInfos[2]], {|v| v[1]=nLine })
+	if idLine=0
+		aAdd(t_oDebugInfo['aBreaks'][aInfos[2]],{nLine})
+		idLine = len(t_oDebugInfo['aBreaks'][aInfos[2]])
+	endif
+	if len(aInfos) > 3
+		if .not. (aInfos[4] $ "?CL")
+			hb_inetSend(t_oDebugInfo['socket'],"BREAK:"+aInfos[2]+":"+aInfos[3]+":-1:invalid request "+ aInfos[4]+CRLF)
+			return
+		endif
+		aAdd(t_oDebugInfo['aBreaks'][aInfos[2]][idLine],aInfos[4])
+		aAdd(t_oDebugInfo['aBreaks'][aInfos[2]][idLine],aInfos[5])
 	endif
 	hb_inetSend(t_oDebugInfo['socket'],"BREAK:"+aInfos[2]+":"+aInfos[3]+":"+alltrim(str(nLine))+CRLF)
 return
@@ -481,13 +496,71 @@ return
 static function inBreakpoint() 
 	LOCAL aBreaks := __DEBUGITEM()['aBreaks']
 //	LOCAL aInfos := t_oDebugInfo['aStack',len(t_oDebugInfo['aStack'])]
-	LOCAL nLine := procLine(3)
+	LOCAL nLine := procLine(3), aBreakInfo
 	local idLine, cFile := lower(procFile(3))
+	LOCAL ck
 	if .not. hb_HHasKey(aBreaks,cFile)
 		return .F.
 	endif
-	idLine := aScan(aBreaks[cFile], {|v| v=nLine })
-return idLine<>0
+	idLine := aScan(aBreaks[cFile], {|v| aBreakInfo:=v, v[1]=nLine })
+	if idLine = 0
+		return  .F.
+	endif
+	if len(aBreakInfo) == 1
+		return .T.
+	endif
+	switch aBreakInfo[2]
+		case '?'
+			ck:=evalExpression(aBreakInfo[3],1)
+			if valtype(ck)='L'
+				return ck
+			else
+				return .F.
+			endif
+		case 'C'
+			if len(aBreakInfo)=3
+				aAdd(aBreakInfo,1)
+			else
+				aBreakInfo[4]+=1
+			endif
+			if valtype(aBreakInfo[3])<>'N'
+				aBreakInfo[3]:=Val(aBreakInfo[3])
+			endif
+			return aBreakInfo[4] = aBreakInfo[3]
+		case 'L'
+			BreakLog(aBreakInfo[3])
+			return .F.
+	endswitch
+return .F.
+
+static procedure BreakLog(cMessage)
+	LOCAL cResponse := "", cCur, cExpr 
+	LOCAL nCurly:=0, i
+	for i:=1 to len(cMessage)
+		cCur := subStr(cMessage,i,1)
+		if nCurly=0
+			if cCur = "{"
+				nCurly := 1
+				cExpr := ""
+			else
+				cResponse+=cCur
+			endif
+		else
+			if cCur = "{"
+				nCurly+=1
+				cExpr+=cCur
+			elseif cCur = "}"
+				nCurly-=1
+				if nCurly=0
+					cResponse+=format(evalExpression(cExpr,1))
+				endif
+			else
+				cExpr+=cCur
+			endif
+		endif
+	next
+	hb_inetSend(__DEBUGITEM()['socket'],"LOG:"+cResponse+CRLF)
+return
 
 //#define SAVEMODULES 
 static procedure AddModule(aInfo) 
@@ -544,7 +617,7 @@ return xExpr
 static function evalExpression( xExpr, level ) 
 	local oErr, xResult, __dbg := {}
 	local i, cName, v
-	LOCAL t_oDebugInfo := __DEBUGITEM()
+	LOCAL t_oDebugInfo := __DEBUGITEM(), lOldRunning
 	local aStack := t_oDebugInfo['aStack',len(t_oDebugInfo['aStack'])-level+1]
 	//? "Expression:", xExpr
 	xExpr := strTran(xExpr,";",":")
@@ -570,13 +643,14 @@ static function evalExpression( xExpr, level )
 		xExpr := replaceExpression(xExpr, @__dbg, cName, v)
 	next
 	// ******
+	lOldRunning := t_oDebugInfo['lRunning']
 	t_oDebugInfo['lRunning'] := .T.
 	BEGIN SEQUENCE WITH {|oErr| BREAK( oErr ) }
 		xResult := Eval(&("{|__dbg| "+xExpr+"}"),__dbg)
 	RECOVER USING oErr
 		xResult := oErr
 	END SEQUENCE
-	t_oDebugInfo['lRunning'] := .F.
+	t_oDebugInfo['lRunning'] := lOldRunning
 return xResult
 
 static procedure sendExpression( xExpr ) 

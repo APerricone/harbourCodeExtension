@@ -79,6 +79,11 @@ harbourDebugSession.prototype.processInput = function(buff)
 			this.processExpression(line);
 			continue;
 		}
+		if(line.startsWith("LOG"))
+		{
+			this.sendEvent(new debugadapter.OutputEvent(line.substring(4),"stdout"))
+			continue;
+		}
 		for(var j=this.variableCommands.length-1;j>=0;j--)
 		{
 			if(line.startsWith(this.variableCommands[j]))
@@ -102,12 +107,20 @@ harbourDebugSession.prototype.initializeRequest = function (response, args)
 	response.body = response.body || {};
 	response.body.supportsConfigurationDoneRequest = true;
 	response.body.supportsDelayedStackTraceLoading = false;
+	response.body.supportsConditionalBreakpoints = true;
+	response.body.supportsHitConditionalBreakpoints = true;
+	response.body.supportsLogPoint = true;
 	//response.body.supportsEvaluateForHovers = true; too risky
 	this.sendResponse(response);
 };
 
 harbourDebugSession.prototype.configurationDoneRequest = function(response, args)
 {	
+	if(this.startGo)
+	{
+		this.command("GO\r\n");
+		this.sendEvent(new debugadapter.ContinuedEvent(1,true));
+	}
 	this.sendResponse(response);
 }
 
@@ -137,7 +150,6 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
 		socket.write(tc.queue);
 		this.justStart = false;
 		tc.queue = "";
-		if(tc.startGo) tc.command("GO\r\n");
 	}).listen(port);
 	// starts the program
 	//console.log("start the program");
@@ -372,23 +384,25 @@ harbourDebugSession.prototype.pauseRequest = function(response, args)
 harbourDebugSession.prototype.setBreakPointsRequest = function(response,args)
 {
 	var message = "";
+	// prepare a response
 	response.body = {"breakpoints": []};
 	response.body.breakpoints = [];
 	response.body.breakpoints.length = args.breakpoints.length;
-	//var src = args.source.path;
-	//if(src.startsWith(this.workspaceRoot)) src = src.substring(this.workspaceRoot.length)
-	var src = args.source.name;
+	// check if the source is already configurated for breakpoints
+	var src = args.source.name.toLowerCase();
 	var dest
 	if(!(src in this.breakpoints))
 	{
 		this.breakpoints[src] = {};
 	}
+	// mark all old breakpoints for deletion
 	dest = this.breakpoints[src];
 	for (var i in dest) {
 		if (dest.hasOwnProperty(i)) {
-			dest[i] = -1; // this indicates that it mus be deleted
+			dest[i] = -1; 
 		}
 	}
+	// check current breakpoints
 	dest.response = response;
 	for (var i = 0; i < args.breakpoints.length; i++) {
 		var breakpoint = args.breakpoints[i];
@@ -399,11 +413,21 @@ harbourDebugSession.prototype.setBreakPointsRequest = function(response,args)
 			response.body.breakpoints[i].verified = true;
 		} else
 		{
+			//require breakpoint
 			message += "BREAKPOINT\r\n"
-			message += `+:${src}:${breakpoint.line}\r\n`
+			message += `+:${src}:${breakpoint.line}`
+			if('condition' in breakpoint) {
+				message += `:?:${breakpoint.condition.replace(/:/g,";")}`
+			} else if('hitCondition' in breakpoint) {
+				message += `:C:${breakpoint.hitCondition}`
+			} else if('logMessage' in breakpoint) {
+				message += `:L:${breakpoint.logMessage.replace(/:/g,";")}`
+			}
+			message += "\r\n"
 			dest[breakpoint.line] = 0;
 		}
 	}
+	// require delete old breakpoints
 	var n1 = 0;
 	for (var i in dest) {
 		if (dest.hasOwnProperty(i) && i!="response") {

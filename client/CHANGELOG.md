@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
+## 0.6.8
+ - Added command: "Harbour: Get debugger code"
+ - Debugger: fixed startOnEntry = false 
+ - Debugger: Added support for conditional breakpoint, hit count breakoint and LogPoint
+ 
+
 ## 0.6.7
  - added setting to disable the decorator
  - better decorator code
