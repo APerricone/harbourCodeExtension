@@ -10,7 +10,8 @@
         "url": "https://github.com/APerricone/harbourCodeExtension"
     },
     "activationEvents": [
-        "onLanguage:harbour"
+        "onLanguage:harbour",
+        "onCommand:harbour.getdbgcode"
     ],
     "engines": {
         "vscode": "^1.11.0"
@@ -40,6 +41,10 @@
                 }
             }
         ],
+        "commands": [{
+            "command": "harbour.getdbgcode",
+            "title": "Harbour: Get debugger code"
+        }],
         "configuration": {
             "type": "object",
             "title": "Harbour compiler",
