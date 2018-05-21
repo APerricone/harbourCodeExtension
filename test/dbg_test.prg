@@ -30,7 +30,7 @@ METHOD otherMedhod() CLASS oggetto
 return ::soo + " " + str(::noo)
 
 proc main( )
-	local i as numeric
+	local i as numeric, j
 	local c := oggetto():New()
 	local bs := "{|a,c| QOut(c:otherMedhod()) }"
 	local b := {|c| QOut(c:otherMedhod()) }
@@ -40,6 +40,9 @@ proc main( )
 	c:newData := {1,2,3,4,5}
 	c:ioo := oggetto():New()
 	c:ioo:newData := {6,7,8,9,10}
+	for i:=1 to 10
+		j:=i*2
+	next
 	AltD()
 	? "Perry"
 	eval(&bs,"",c)

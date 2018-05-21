@@ -132,7 +132,7 @@ function setDecorator(editor)
 	if(!section.validating)
 		return;
 			
-	var regExs = [	/\b((if)|else|elseif|(endif))\b/ig,
+	var regExs = [	/\b((if)|else(?:if)?|(endif))\b/ig,
 					/\b((for(?:\s+each)?)|loop|exit|(next))\b/ig,
 					/\b((switch|do\s+case)|case|otherwise|exit|(endswitch|endcase))\b/ig,
 					/\b(((?:do\s+)?while)|loop|exit|(enddo))\b/ig];

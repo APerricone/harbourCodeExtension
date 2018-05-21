@@ -1,6 +1,6 @@
 // DO NOT REMOVE THIS PRAGMA
 // if the debugger code has DEBUGINFO the program will crash for stack overflow 
-#pragma DEBUGINFO=Off
+#pragma -B-
 
 #include <hbdebug.ch>
 #include <hbmemvar.ch>
@@ -25,19 +25,17 @@ static procedure CheckSocket(lStopSent)
 		hb_inetInit()
 		t_oDebugInfo['socket'] := hb_inetCreate(1000)
 		hb_inetConnect("127.0.0.1",DBG_PORT,t_oDebugInfo['socket'])
-		IF hb_INetErrorCode( t_oDebugInfo['socket'] ) != 0
-			t_oDebugInfo['lRunning'] := .T.
-		endif
 	endif
 	do while .T.
-		//if hb_inetErrorCode(oSocket) <> 0
-		//	//disconnected?
-		//	OutErr(hb_inetErrorDesc(oSocket)+CRLF)
-		//	t_oDebugInfo['lRunning'] := .T.
-		//	t_oDebugInfo['aBreaks'] := {=>}
-		//	t_oDebugInfo['maxLevel'] := nil
-		//	return 
-		//
+		if hb_inetErrorCode(t_oDebugInfo['socket']) <> 0
+			//? "socket error",hb_inetErrorDesc( t_oDebugInfo['socket'] )
+			//disconnected?
+			t_oDebugInfo['lRunning'] := .T.
+			t_oDebugInfo['aBreaks'] := {=>}
+			t_oDebugInfo['maxLevel'] := nil
+			return 
+		endif
+		
 		do while hb_inetDataReady(t_oDebugInfo['socket']) = 1
 			tmp := hb_inetRecvLine(t_oDebugInfo['socket'])
 			if .not. empty(tmp)
@@ -438,7 +436,7 @@ static procedure setBreakpoint(cInfo)
 	if aInfos[1]=="-"
 		// remove
 		if hb_HHasKey(t_oDebugInfo['aBreaks'],aInfos[2])
-			idLine := aScan(t_oDebugInfo['aBreaks'][aInfos[2]], {|v| v=nReq })
+			idLine := aScan(t_oDebugInfo['aBreaks'][aInfos[2]], {|v| v[1]=nReq })
 			if idLine>0
 				aDel(t_oDebugInfo['aBreaks'][aInfos[2]],idLine)
 			endif
