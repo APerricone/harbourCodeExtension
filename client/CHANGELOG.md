@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
+## 0.6.9
+ - Debugger: fixed crash adding/removing breakpoints when the program running
+ - Debugger: fixed freeze starting debug program without debugger
+
 ## 0.6.8
  - Added command: "Harbour: Get debugger code"
  - Debugger: fixed startOnEntry = false 
