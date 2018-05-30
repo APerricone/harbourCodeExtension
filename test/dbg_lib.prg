@@ -500,7 +500,7 @@ static function inBreakpoint()
 	if .not. hb_HHasKey(aBreaks,cFile)
 		return .F.
 	endif
-	idLine := aScan(aBreaks[cFile], {|v| aBreakInfo:=v, v[1]=nLine })
+	idLine := aScan(aBreaks[cFile], {|v| iif(!empty(v),(aBreakInfo:=v, v[1]=nLine),.F.) })
 	if idLine = 0
 		return  .F.
 	endif
