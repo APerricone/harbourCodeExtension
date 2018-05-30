@@ -439,6 +439,7 @@ static procedure setBreakpoint(cInfo)
 			idLine := aScan(t_oDebugInfo['aBreaks'][aInfos[2]], {|v| v[1]=nReq })
 			if idLine>0
 				aDel(t_oDebugInfo['aBreaks'][aInfos[2]],idLine)
+				aSize(t_oDebugInfo['aBreaks'][aInfos[2]],len(t_oDebugInfo['aBreaks'][aInfos[2]])-1)
 			endif
 		endif
 		hb_inetSend(t_oDebugInfo['socket'],"BREAK:"+aInfos[2]+":"+aInfos[3]+":-1:request"+CRLF)
