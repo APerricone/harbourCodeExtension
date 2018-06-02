@@ -13,7 +13,7 @@
     "vscode-uri": "^1.0.3"
   },
   "devDependencies": {
-    "@types/node": "^6.0.102"
+    "@types/node": "^6.0.111"
   },
   "scripts": {}
 }
