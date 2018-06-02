@@ -2,7 +2,7 @@
     "name": "harbour",
     "displayName": "harbour",
     "description": "Harbour language support for visual studio code",
-    "version": "0.6.8",
+    "version": "0.6.p",
     "publisher": "aperricone",
     "icon": "harbourIcon.png",
     "main": "./src/extension",
@@ -99,7 +99,8 @@
                 "extensions": [
                     "prg",
                     "ch",
-                    "hbx"
+                    "hbx",
+                    "hb"
                 ],
                 "configuration": "./syntaxes/language-configuration.json"
             }

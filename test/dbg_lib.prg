@@ -439,6 +439,7 @@ static procedure setBreakpoint(cInfo)
 			idLine := aScan(t_oDebugInfo['aBreaks'][aInfos[2]], {|v| v[1]=nReq })
 			if idLine>0
 				aDel(t_oDebugInfo['aBreaks'][aInfos[2]],idLine)
+				aSize(t_oDebugInfo['aBreaks'][aInfos[2]],len(t_oDebugInfo['aBreaks'][aInfos[2]])-1)
 			endif
 		endif
 		hb_inetSend(t_oDebugInfo['socket'],"BREAK:"+aInfos[2]+":"+aInfos[3]+":-1:request"+CRLF)
@@ -500,7 +501,7 @@ static function inBreakpoint()
 	if .not. hb_HHasKey(aBreaks,cFile)
 		return .F.
 	endif
-	idLine := aScan(aBreaks[cFile], {|v| aBreakInfo:=v, v[1]=nLine })
+	idLine := aScan(aBreaks[cFile], {|v| iif(!empty(v),(aBreakInfo:=v, v[1]=nLine),.F.) })
 	if idLine = 0
 		return  .F.
 	endif
