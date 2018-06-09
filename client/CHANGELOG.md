@@ -4,6 +4,7 @@ All notable changes to the "harbour" extension will be documented in this file.
 ## 0.6.9
  - Debugger: fixed crash adding/removing breakpoints when the program running
  - Debugger: fixed freeze starting debug program without debugger
+ - Validator: fixed "invalid filename" error in validation
 
 ## 0.6.8
  - Added command: "Harbour: Get debugger code"

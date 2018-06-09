@@ -32,7 +32,7 @@ function validate(textDocument)
 		var path = section.extraIncludePaths[i];
 		args.push("-i"+path);
 	}
-	args = args.concat(section.extraOptions.split(" "));
+	args = args.concat(section.extraOptions.split(" ").filter(function(el) {return el.length != 0}));
 	var process = cp.spawn(section.compilerExecutable,args, { cwd: vscode.workspace.path });
 	process.on("error", e=>
 	{

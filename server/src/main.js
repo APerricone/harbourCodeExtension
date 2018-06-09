@@ -43,6 +43,13 @@ connection.onInitialize(params =>
 	}
 });
 
+connection.onDidChangeConfiguration(params=>{
+    var i=0;
+    var searchExclude = params.settings.search.exclude;
+    // minimatch
+    var extraInclude = params.settings.harbour.extraIncludePaths;
+})
+
 function ParseDir(dir)
 {
 	fs.readdir(dir,function(err,ff)
@@ -57,11 +64,11 @@ function ParseDir(dir)
                 var pp = new provider.Provider();
                 pp.parseFile(dir+"/"+fileName,ext == ".c");
                 files[fileUri.toString()] = pp;    
-            } else
+            }/* else
             if(fileName.indexOf(".")<0)
             {
                 checkDir(dir+"/"+fileName)
-            }
+            }*/
         }
     });
 }

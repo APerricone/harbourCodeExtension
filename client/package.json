@@ -2,7 +2,7 @@
     "name": "harbour",
     "displayName": "harbour",
     "description": "Harbour language support for visual studio code",
-    "version": "0.6.p",
+    "version": "0.6.9",
     "publisher": "aperricone",
     "icon": "harbourIcon.png",
     "main": "./src/extension",
@@ -83,6 +83,16 @@
                     "type": "boolean",
                     "default": true,
                     "description": "if true enables the beta feature of decoration of correspondents if/endif, for/next, while/endwhile, etc etc"
+                },
+                "harbour.includePattern": {
+                    "type": "string",
+                    "default": "**/*.prg",
+                    "description": "Extra pattern to include for symbols"
+                },
+                "harbour.excludePattern": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Extra pattern to exclude for symbols"
                 }
             }
         },
