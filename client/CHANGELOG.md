@@ -1,7 +1,7 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
-## 0.7.X
+## 0.7.0
  - Debugger: [beta] added interception of error
  - Debugger: Better support for statics.
 
