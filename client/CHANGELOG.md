@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
+## 0.7.X
+ - Debugger: [beta] added interception of error
+ - Debugger: Better support for statics.
+
 ## 0.6.9
  - Debugger: fixed crash adding/removing breakpoints when the program running
  - Debugger: fixed freeze starting debug program without debugger
@@ -8,9 +12,9 @@ All notable changes to the "harbour" extension will be documented in this file.
 
 ## 0.6.8
  - Added command: "Harbour: Get debugger code"
- - Debugger: fixed startOnEntry = false 
+ - Debugger: fixed startOnEntry = false
  - Debugger: Added support for conditional breakpoint, hit count breakoint and LogPoint
- 
+
 
 ## 0.6.7
  - added setting to disable the decorator
@@ -149,7 +153,7 @@ All notable changes to the "harbour" extension will be documented in this file.
 - first version of symbol provider.
 
 ## 0.1.5
-- Removed server code and use of harbour executable to provide diagnostic informations. 
+- Removed server code and use of harbour executable to provide diagnostic informations.
 
 ## 0.1.0
 - semi complete debugging support (see [README](README.md#DEBUG) to know how integrate.)

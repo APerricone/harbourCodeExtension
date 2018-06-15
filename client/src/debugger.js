@@ -68,7 +68,7 @@ harbourDebugSession.prototype.processInput = function(buff)
 			this.processBreak(line);
 			continue;
 		}
-		if(line.startsWith("ERROR"))
+		if(line.startsWith("ERROR") && !line.startsWith("ERROR_VAR"))
 		{
 			//console.log("ERROR")
 			this.sendEvent(new debugadapter.StoppedEvent("exception",1,line.substring(6)));
@@ -82,6 +82,11 @@ harbourDebugSession.prototype.processInput = function(buff)
 		if(line.startsWith("LOG"))
 		{
 			this.sendEvent(new debugadapter.OutputEvent(line.substring(4),"stdout"))
+			continue;
+		}
+		if(line.startsWith("INERROR"))
+		{
+			this.sendScope(line[8]=='T')
 			continue;
 		}
 		for(var j=this.variableCommands.length-1;j>=0;j--)
@@ -247,24 +252,39 @@ harbourDebugSession.prototype.scopesRequest = function(response, args)
 {
 	// save wanted stack
 	this.currentStack = args.frameId+1;
+
+	this.scopeResponse = response
+	this.command("INERROR\r\n")
+}
+
+harbourDebugSession.prototype.sendScope = function(inError)
+{
 	// reset references
-	this.variableCommands = ["LOCALS","PUBLICS","PRIVATES", "PRIVATE_CALLEE","STATICS"];
+	this.variableCommands = [];
+	if(inError)
+		this.variableCommands.push("ERROR_VAR")
+	this.variableCommands = this.variableCommands.concat(["LOCALS","PUBLICS","PRIVATES", "PRIVATE_CALLEE","STATICS"]);
 	//TODO: "GLOBALS","EXTERNALS"
 	this.varResp = [];
-	this.varResp.length = this.variableCommands.length;
-	response.body = 
+	this.varResp.length = this.variableCommands.length;	
+	var n=0;
+	var scopes = [];
+	if(inError)
 	{
-		scopes:
-		[
-			new debugadapter.Scope("Local",1),
-			new debugadapter.Scope("Public",2),
-			new debugadapter.Scope("Private local",3),
-			new debugadapter.Scope("Private external",4),
-			new debugadapter.Scope("Statics",5)
-			//new debugadapter.Scope("Globals",6),
-			//new debugadapter.Scope("Externals",7)
-		]
-	};
+		n=1;
+		scopes.push(new debugadapter.Scope("Error",1))
+	}
+	scopes = scopes.concat([
+		new debugadapter.Scope("Local",n+1),
+		new debugadapter.Scope("Public",n+2),
+		new debugadapter.Scope("Private local",n+3),
+		new debugadapter.Scope("Private external",n+4),
+		new debugadapter.Scope("Statics",n+5)
+		//new debugadapter.Scope("Globals",6),
+		//new debugadapter.Scope("Externals",7)
+	])
+	var response = this.scopeResponse;
+	response.body =  { scopes: scopes };
 	this.sendResponse(response)
 }
 

@@ -26,7 +26,8 @@
 			"name": "Launch currentFile",
 			"program": "${workspaceRoot}/${fileBasenameNoExtension}",
 			"workspaceRoot": "${workspaceRoot}",
-			"workingDir": "${workspaceRoot}/"
+			"workingDir": "${workspaceRoot}/",
+			"stopOnEntry": false
 		}
 	]
 }

@@ -9,7 +9,8 @@
 ///OK
 #include <hbclass.ch>
 
-STATIC TestStatic
+STATIC TestStatic_file
+MEMVAR t_aGlobal
 
 class oggetto
 protected:
@@ -29,14 +30,19 @@ METHOD otherMedhod() CLASS oggetto
 	endif
 return ::soo + " " + str(::noo)
 
+PROC MyErrorBlock(e)
+	? "ERRORISSIMO"
+
 proc main( )
 	local i as numeric, j
 	local c := oggetto():New()
 	local bs := "{|a,c| QOut(c:otherMedhod()) }"
 	local b := {|c| QOut(c:otherMedhod()) }
 	STATIC TestStatic, TestStatic2
-	TestStatic := {1,1,2,3,5,8,13,21,34,55,89,144}
+	//ErrorBlock({|e| MyErrorBlock(e) })
+	TestStatic_File := {1,1,2,3,5,8,13,21,34,55,89,144}
 	TestStatic2 := {1,1,2,3,5,8,13,21,34,55,89,144}
+	? "S",valtype(TestStatic),valtype(TestStatic2)
 	c:newData := {1,2,3,4,5}
 	c:ioo := oggetto():New()
 	c:ioo:newData := {6,7,8,9,10}
