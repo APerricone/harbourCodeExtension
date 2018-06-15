@@ -736,10 +736,12 @@ static function evalExpression( xExpr, level )
 		xExpr := replaceExpression(xExpr, @__dbg, cName, v)
 	next
 	// replace all module statics
-	for i:=1 to len(aModules[idxModule,4])
-		xExpr := replaceExpression(xExpr, @__dbg, aModules[idxModule,4,i,HB_DBG_VAR_NAME], ;
-					__dbgVMVarSGet(aModules[idxModule,4,i,HB_DBG_VAR_FRAME],aModules[idxModule,4,i,HB_DBG_VAR_INDEX]))
-	next
+	if idxModule>0
+		for i:=1 to len(aModules[idxModule,4])
+			xExpr := replaceExpression(xExpr, @__dbg, aModules[idxModule,4,i,HB_DBG_VAR_NAME], ;
+						__dbgVMVarSGet(aModules[idxModule,4,i,HB_DBG_VAR_FRAME],aModules[idxModule,4,i,HB_DBG_VAR_INDEX]))
+		next
+	endif
 	// ******
 	lOldRunning := t_oDebugInfo['lRunning']
 	t_oDebugInfo['lRunning'] := .T.
