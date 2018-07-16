@@ -81,6 +81,7 @@ proc Called()
 	local date := d"2017-05-23"
 	local timeStamp2 := t"14:00"
 	local test := "1978-06-11 17:10:23.324"
+	static provaStat := 611
 	? test2
 	
 
@@ -94,6 +95,7 @@ proc TestLibInside()
 
 proc TestLibInside2(v)
 	LOCAL a := "a"
+	LOCAL arr := {4,3,2,1}
 	? a,v
 
 proc testLotParameter(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r)
