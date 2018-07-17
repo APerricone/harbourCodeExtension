@@ -292,7 +292,6 @@ static procedure sendStatics(cParams,prefix)
 	if idxModule>0
 		nVarMod:=len(aModules[idxModule,4])
 	else
-		aEval(aModules,{|x| QOut(x[1])})
 		nVarMod:=0
 	endif
 	nVarStack := iif(iStack>0,len(aStack[iStack,HB_DBG_CS_STATICS]),0)
@@ -714,10 +713,10 @@ return
 
 static procedure AddStaticModule(idx,name,frame)
 	LOCAL t_oDebugInfo := __DEBUGITEM()
-	local currModule := t_oDebugInfo['aStack'][len(t_oDebugInfo['aStack']),1]
+	local currModule := t_oDebugInfo['aStack'][len(t_oDebugInfo['aStack']),HB_DBG_CS_MODULE]
 	local idxModule
-	currModule := lower(alltrim(currModule))
-	idxModule := aScan(t_oDebugInfo['aModules'], {|v| v[1]=currModule})
+   currModule := lower(alltrim(currModule))
+	idxModule := aScan(t_oDebugInfo['aModules'], {|v| v[1]==currModule})
 	if idxModule=0
 		aadd(t_oDebugInfo['aModules'],{currModule,0,{},{}})
 		idxModule := len(t_oDebugInfo['aModules'])
@@ -843,7 +842,7 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 					'aStack' =>  {}, ;
 					'aModules' =>  {}, ;
 					'maxLevel' =>  nil, ;
-					'bInitStatics' =>  .F., ;
+					'bInitStatics' => .F., ;
 					'bInitGlobals' =>  .F., ;
 					'bInitLines' =>  .F., ;
 					'errorBlock' => nil, ;
@@ -865,6 +864,11 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 				t_oDebugInfo['bInitLines'] := .T.
 			endif
 			tmp := hb_aTokens(uParam1,":") //1,2 file,function
+			if(t_oDebugInfo['bInitStatics'])
+				// Fix
+				tmp[1] := procFile(1)
+				tmp[2] := "(_INITSTATICS)"
+			endif
 			aadd(tmp,procLine(1)) // line
 			aadd(tmp,__dbgProcLevel()-1) //level
 			aadd(tmp,{}) //locals
@@ -905,6 +909,7 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 				*tmp := __GETLASTRETURN(14); ? 14,valtype(tmp),tmp
 				AddModule(tmp)
 			endif
+
 			t_oDebugInfo['bInitStatics'] := .F.
 			t_oDebugInfo['bInitGlobals'] := .F.
 			t_oDebugInfo['bInitLines'] := .F.
