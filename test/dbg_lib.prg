@@ -101,6 +101,7 @@ static procedure CheckSocket(lStopSent)
 						sendExpression(hb_inetRecvLine(t_oDebugInfo['socket']))
 						exit
 					case "INERROR"
+						//? "INERROR",t_oDebugInfo['inError']
 						if t_oDebugInfo['inError']
 							hb_inetSend(t_oDebugInfo['socket'],"INERROR:True"+CRLF)
 						else
@@ -163,16 +164,19 @@ static procedure CheckSocket(lStopSent)
 return
 
 static procedure sendStack() 
-	local i,d,p, line, module, functionName,l
+	local i,d,p, line, module, functionName,l, start := 3
 	LOCAL t_oDebugInfo := __DEBUGITEM()
 	local aStack := t_oDebugInfo['aStack']
+	if t_oDebugInfo['inError']
+		start := 4
+	endif
 	d := __dbgProcLevel()-1
-	hb_inetSend(t_oDebugInfo['socket'],"STACK " + alltrim(str(d-2))+CRLF)
-	//? "send stack---", d, d-2
-	for i:=3 to d
+	hb_inetSend(t_oDebugInfo['socket'],"STACK " + alltrim(str(d-start+1))+CRLF)
+	//? "send stack---", d, d-start+1
+	for i:=start to d
 		l := d-i+1
 		IF ( p := AScan( aStack, {| a | a[ HB_DBG_CS_LEVEL ] == l } ) ) > 0
-			line			:= aStack[p,HB_DBG_CS_LINE]
+		line			:= aStack[p,HB_DBG_CS_LINE]
 			module			:= aStack[p,HB_DBG_CS_MODULE]
 			functionName	:= aStack[p,HB_DBG_CS_FUNCTION]
 			//? i," DEBUG ", module+":"+alltrim(str(line))+ ":"+functionName + "- ("+ ;
@@ -916,17 +920,18 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			exit
 		case HB_DBG_SHOWLINE
 			//TODO check if ErrorBlock is setted by user and save user's errorBlock
+			t_oDebugInfo['__dbgEntryLevel'] := __dbgProcLevel()
 			tmp := ErrorBlock()
 			if empty(tmp) .or. empty(t_oDebugInfo['errorBlock']) .or. !(t_oDebugInfo['errorBlock']==tmp)
+				//? "Changed ErrorBlock",tmp, valtype(tmp),procFile(1),ProcName(1),procLine(1)
 				t_oDebugInfo['userErrorBlock'] := tmp
 				t_oDebugInfo['errorBlock'] :=  {| e | ErrorBlockCode( e ) }
 				__DEBUGITEM(t_oDebugInfo)
 				ErrorBlock( t_oDebugInfo['errorBlock'] )
 			endif
 			t_oDebugInfo['error'] := nil
-			t_oDebugInfo['inerror'] := .F.
-			t_oDebugInfo['aStack'][len(t_oDebugInfo['aStack'])][HB_DBG_CS_LINE] := uParam1
-			t_oDebugInfo['__dbgEntryLevel'] := __dbgProcLevel()
+			t_oDebugInfo['inError'] := .F.
+			t_oDebugInfo['aStack'][len(t_oDebugInfo['aStack'])][HB_DBG_CS_LINE] := uParam1			
 			CheckSocket()
 			__dbgInvokeDebug(.F.)
 			exit
