@@ -419,7 +419,7 @@ harbourDebugSession.prototype.setBreakPointsRequest = function(response,args)
 	dest = this.breakpoints[src];
 	for (var i in dest) {
 		if (dest.hasOwnProperty(i)) {
-			dest[i] = -1; 
+			dest[i] = "-" + dest[i]; 
 		}
 	}
 	// check current breakpoints
@@ -427,35 +427,37 @@ harbourDebugSession.prototype.setBreakPointsRequest = function(response,args)
 	for (var i = 0; i < args.breakpoints.length; i++) {
 		var breakpoint = args.breakpoints[i];
 		response.body.breakpoints[i] = new debugadapter.Breakpoint(false,breakpoint.line);
-		if(dest.hasOwnProperty(breakpoint.line))
+		var thisBreakpoint = "BREAKPOINT\r\n"
+		thisBreakpoint += `+:${src}:${breakpoint.line}`
+		if('condition' in breakpoint && breakpoint.condition.length>0) {
+			thisBreakpoint += `:?:${breakpoint.condition.replace(/:/g,";")}`
+		}
+		if('hitCondition' in breakpoint) {
+			thisBreakpoint += `:C:${breakpoint.hitCondition}`
+		}
+		if('logMessage' in breakpoint) {
+			thisBreakpoint += `:L:${breakpoint.logMessage.replace(/:/g,";")}`
+		}
+		if(dest.hasOwnProperty(breakpoint.line) &&  dest[breakpoint.line].substring(1)==thisBreakpoint)
 		{ // breakpoint already exists
-			dest[breakpoint.line] = 1;
+			dest[breakpoint.line] = thisBreakpoint
 			response.body.breakpoints[i].verified = true;
 		} else
 		{
 			//require breakpoint
-			message += "BREAKPOINT\r\n"
-			message += `+:${src}:${breakpoint.line}`
-			if('condition' in breakpoint) {
-				message += `:?:${breakpoint.condition.replace(/:/g,";")}`
-			} else if('hitCondition' in breakpoint) {
-				message += `:C:${breakpoint.hitCondition}`
-			} else if('logMessage' in breakpoint) {
-				message += `:L:${breakpoint.logMessage.replace(/:/g,";")}`
-			}
-			message += "\r\n"
-			dest[breakpoint.line] = 0;
+			message += thisBreakpoint+"\r\n"
+			dest[breakpoint.line] = thisBreakpoint;
 		}
 	}
 	// require delete old breakpoints
 	var n1 = 0;
 	for (var i in dest) {
 		if (dest.hasOwnProperty(i) && i!="response") {
-			if(dest[i]==-1)
+			if(dest[i].substring(0,1)=="-")
 			{
 				message += "BREAKPOINT\r\n"
 				message += `-:${src}:${i}\r\n`
-				dest[i] = 0;
+				dest[i] = "-";
 			}
 		}
 	}
@@ -510,7 +512,7 @@ harbourDebugSession.prototype.checkBreakPoint = function(src)
 	var dest = this.breakpoints[src];
 	for (var i in dest) {
 		if (dest.hasOwnProperty(i) && i!="response") {
-			if(dest[i]==0)
+			if(dest[i]!=1)
 			{
 				return; 
 			}

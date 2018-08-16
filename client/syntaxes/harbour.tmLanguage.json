@@ -150,6 +150,32 @@
 		"strings": {
 			"patterns": [
 				{
+					"begin": "(?i:^\\s*(TEXT(?:\\s+INTO\\s+([a-z0-9_]+)(?:\\s*(?:WRAP\\s+([a-z0-9_]+)|TRIMMED))*|TO\\s+(?:PRINTER|FILE\\s+(.*)))?))",
+					"end": "(?i:^\\s*(ENDTEXT))",
+					"contentName": "string.multiline.harbour",
+					"beginCaptures": {
+						"1": { "name": "meta.preprocessor.command.harbour" },
+						"2": { "name": "variable.text.harbor" },
+						"3": { "patterns": [
+							{"include":"source.harbour"},
+							{
+								"name": "variable.string.replace.harbour",
+								"match": "%s"
+							}
+						] },
+						"4": { "patterns": [
+							{"include":"source.harbour"},
+							{
+								"name": "variable.string.replace.harbour",
+								"match": "%s"
+							}
+						] }
+					},
+					"endCaptures": {
+						"1": { "name": "meta.preprocessor.command.harbour" }
+					}
+				},
+				{
 					"begin": "(?i:^\\s*(#pragma)\\s+(__text|__stream)(?:\\s*\\|([^\n]*))*)",
 					"end": "(?i:^\\s*(#pragma)\\s+(__endtext))",
 					"contentName": "string.multiline.harbour",
