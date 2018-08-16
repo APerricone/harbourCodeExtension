@@ -542,9 +542,9 @@ return HB_BITAND(HB_BITSHIFT(nInfo, -(nIdx-tmp*8)),1)
 
 static procedure setBreakpoint(cInfo) 
 	LOCAL aInfos := hb_aTokens(cInfo,":"), idLine
-	local nReq, nLine, nReason
+	local nReq, nLine, nReason, nExtra
 	LOCAL t_oDebugInfo := __DEBUGITEM()
-	//? " - ", cInfo
+	//? " BRAEK - ", cInfo
 	nReq := val(aInfos[3])
 	aInfos[2] := lower(aInfos[2])
 	if aInfos[1]=="-"
@@ -557,10 +557,12 @@ static procedure setBreakpoint(cInfo)
 			endif
 		endif
 		hb_inetSend(t_oDebugInfo['socket'],"BREAK:"+aInfos[2]+":"+aInfos[3]+":-1:request"+CRLF)
+		//? "BREAK:"+aInfos[2]+":"+aInfos[3]+":-1:request"
 		return
 	endif
 	if aInfos[1]<>"+"
 		hb_inetSend(t_oDebugInfo['socket'],"BREAK:"+aInfos[2]+":"+aInfos[3]+":-1:invalid request"+CRLF)
+		//? "BREAK:"+aInfos[2]+":"+aInfos[3]+":-1:invalid request"
 		return
 	endif
 	nLine := nReq
@@ -582,8 +584,10 @@ static procedure setBreakpoint(cInfo)
 	if nReason!=1
 		if nReason==0
 			hb_inetSend(t_oDebugInfo['socket'],"BREAK:"+aInfos[2]+":"+aInfos[3]+":-1:invalid"+CRLF)
+			//? "BREAK:"+aInfos[2]+":"+aInfos[3]+":-1:invalid"
 		else
-			hb_inetSend(t_oDebugInfo['socket'],"BREAK:"+aInfos[2]+":"+aInfos[3]+":-1:notfound"+CRLF)
+			hb_inetSend(t_oDebugInfo['socket'],"BREAK:"+aInfos[2]+":"+aInfos[3]+":-1:not found"+CRLF)
+			//? "BREAK:"+aInfos[2]+":"+aInfos[3]+":-1:not found"
 		endif
 		return
 	endif
@@ -595,21 +599,29 @@ static procedure setBreakpoint(cInfo)
 		aAdd(t_oDebugInfo['aBreaks'][aInfos[2]],{nLine})
 		idLine = len(t_oDebugInfo['aBreaks'][aInfos[2]])
 	endif
-	if len(aInfos) > 3
-		if .not. (aInfos[4] $ "?CL")
-			hb_inetSend(t_oDebugInfo['socket'],"BREAK:"+aInfos[2]+":"+aInfos[3]+":-1:invalid request "+ aInfos[4]+CRLF)
+	nExtra := 4
+	do While len(aInfos) >= nExtra
+		if .not. (aInfos[nExtra] $ "?CL")
+			hb_inetSend(t_oDebugInfo['socket'],"BREAK:"+aInfos[2]+":"+aInfos[3]+":-1:invalid request "+ aInfos[nExtra]+CRLF)
+			//? "BREAK:"+aInfos[2]+":"+aInfos[3]+":-1:invalid request "+ aInfos[nExtra]
 			return
 		endif
-		aAdd(t_oDebugInfo['aBreaks'][aInfos[2]][idLine],aInfos[4])
-		aAdd(t_oDebugInfo['aBreaks'][aInfos[2]][idLine],aInfos[5])
-	endif
+		if aInfos[nExtra]='C' //count
+			aInfos[nExtra+1] := Val(aInfos[nExtra+1])
+		endif
+		aAdd(t_oDebugInfo['aBreaks'][aInfos[2]][idLine],aInfos[nExtra])
+		aAdd(t_oDebugInfo['aBreaks'][aInfos[2]][idLine],aInfos[nExtra+1])
+		aAdd(t_oDebugInfo['aBreaks'][aInfos[2]][idLine],0)
+		nExtra += 2
+	enddo
 	hb_inetSend(t_oDebugInfo['socket'],"BREAK:"+aInfos[2]+":"+aInfos[3]+":"+alltrim(str(nLine))+CRLF)
+	//? "BREAK:"+aInfos[2]+":"+aInfos[3]+":"+alltrim(str(nLine))
 return
 
 static function inBreakpoint() 
 	LOCAL aBreaks := __DEBUGITEM()['aBreaks']
 	LOCAL nLine := procLine(3), aBreakInfo
-	local idLine, cFile := lower(procFile(3))
+	local idLine, cFile := lower(procFile(3)), nExtra := 2
 	LOCAL ck
 	if .not. hb_HHasKey(aBreaks,cFile)
 		return .F.
@@ -618,32 +630,34 @@ static function inBreakpoint()
 	if idLine = 0
 		return  .F.
 	endif
-	if len(aBreakInfo) == 1
-		return .T.
-	endif
-	switch aBreakInfo[2]
-		case '?'
-			ck:=evalExpression(aBreakInfo[3],1)
-			if valtype(ck)='L'
-				return ck
-			else
+	//? "BRK in line " + str(nLine)
+	do while len(aBreakInfo) >= nExtra
+		switch aBreakInfo[nExtra]
+			case '?'
+				BEGIN SEQUENCE 
+					ck:=evalExpression(aBreakInfo[nExtra+1],1)			
+				END SEQUENCE
+				if valtype(ck)<>'L' .or. ck=.F.
+					//?? " check Exp .F."
+					return .F.
+				endif
+				//?? "check Exp .T."
+				exit
+			case 'C'
+				aBreakInfo[nExtra+2]+=1
+				//?? " counts " + alltrim(str(aBreakInfo[nExtra+2])) + "<" + alltrim(str(aBreakInfo[nExtra+1]))
+				if aBreakInfo[nExtra+2] < aBreakInfo[nExtra+1]
+					return .F.
+				endif
+				exit
+			case 'L'
+				BreakLog(aBreakInfo[nExtra+1])
 				return .F.
-			endif
-		case 'C'
-			if len(aBreakInfo)=3
-				aAdd(aBreakInfo,1)
-			else
-				aBreakInfo[4]+=1
-			endif
-			if valtype(aBreakInfo[3])<>'N'
-				aBreakInfo[3]:=Val(aBreakInfo[3])
-			endif
-			return aBreakInfo[4] = aBreakInfo[3]
-		case 'L'
-			BreakLog(aBreakInfo[3])
-			return .F.
-	endswitch
-return .F.
+		endswitch
+		nExtra +=3
+	end if
+	//?? " >>.t. "
+return .T.
 
 static procedure BreakLog(cMessage)
 	LOCAL cResponse := "", cCur, cExpr 
