@@ -150,8 +150,8 @@
 		"strings": {
 			"patterns": [
 				{
-					"begin": "(?i:^\\s*(TEXT(?:\\s+INTO\\s+([a-z0-9_]+)(?:\\s*(?:WRAP\\s+([a-z0-9_]+)|TRIMMED))*|TO\\s+(?:PRINTER|FILE\\s+(.*)))?))",
-					"end": "(?i:^\\s*(ENDTEXT))",
+					"begin": "(?i:^\\s*(TEXT(?:\\s+INTO\\s+([a-z0-9_]+)(?:\\s*(?:WRAP\\s+([a-z0-9_]+)|TRIMMED))*|TO\\s+(?:PRINTER|FILE\\s+(.*)))?))\\s*$",
+					"end": "(?i:^\\s*(ENDTEXT)\\s*$)",
 					"contentName": "string.multiline.harbour",
 					"beginCaptures": {
 						"1": { "name": "meta.preprocessor.command.harbour" },
