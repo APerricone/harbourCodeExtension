@@ -16,7 +16,7 @@
     "engines": {
         "vscode": "^1.11.0"
     },
-    "categories": ["Programming Languages"],
+    "categories": ["Programming Languages","Linters","Debuggers"],
     "dependencies": {
         "vscode-debugadapter": "^1.28.0",
         "vscode-debugprotocol": "^1.28.0",
