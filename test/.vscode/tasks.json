@@ -13,7 +13,7 @@
         {
             "taskName": "build",
             "isBuildCommand": true,
-            "args": [ "-lcode_dbg", "-L.", "${relativeFile}", "-gtcgi", "-w", "-ql", "-b", "-debug", "-gc3","-inc"],
+            "args": [ "-lcode_dbg", "-L.", "${relativeFile}", "-gtcgi", "-w", "-ql", "-b", "-gc3", "-inc", "-debug"],
             "problemMatcher": [
             {
                 "owner": "cpp",

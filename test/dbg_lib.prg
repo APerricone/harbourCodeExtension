@@ -176,7 +176,7 @@ static procedure sendStack()
 	for i:=start to d
 		l := d-i+1
 		IF ( p := AScan( aStack, {| a | a[ HB_DBG_CS_LEVEL ] == l } ) ) > 0
-		line			:= aStack[p,HB_DBG_CS_LINE]
+			line			:= aStack[p,HB_DBG_CS_LINE]
 			module			:= aStack[p,HB_DBG_CS_MODULE]
 			functionName	:= aStack[p,HB_DBG_CS_FUNCTION]
 			//? i," DEBUG ", module+":"+alltrim(str(line))+ ":"+functionName + "- ("+ ;
@@ -844,7 +844,7 @@ STATIC PROCEDURE ErrorBlockCode( e )
 return
 
 PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
-	local tmp
+	local tmp, i
 	LOCAL t_oDebugInfo
 	if nMode = HB_DBG_GETENTRY
 		return
@@ -865,6 +865,7 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 					'bInitLines' =>  .F., ;
 					'errorBlock' => nil, ;
 					'userErrorBlock' => nil, ;
+					'errorBlockHistory' => {}, ;
 					'error' => nil, ;
 					'inError' => .F., ;
 					'__dbgEntryLevel' => 0 ;
@@ -920,11 +921,11 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			if t_oDebugInfo['bInitLines']
 				// I don't like this hack, shoud be better if in case of HB_DBG_ENDPROC 
 				// uParam1 is the returned value, it allow to show it in watch too...
-				*tmp := __GETLASTRETURN(10); ? 10,valtype(tmp),tmp
-				tmp := __GETLASTRETURN(11)//; ? 11,valtype(tmp),tmp
-				*tmp := __GETLASTRETURN(12); ? 10,valtype(tmp),tmp
-				*tmp := __GETLASTRETURN(13); ? 13,valtype(tmp),tmp
-				*tmp := __GETLASTRETURN(14); ? 14,valtype(tmp),tmp
+				* tmp := __GETLASTRETURN(10); ? 10,valtype(tmp),tmp
+				* tmp := __GETLASTRETURN(11); ? 11,valtype(tmp),tmp
+				tmp := __GETLASTRETURN(12) //; ? 12,valtype(tmp),tmp
+				* tmp := __GETLASTRETURN(13); ? 13,valtype(tmp),tmp
+				* tmp := __GETLASTRETURN(14); ? 14,valtype(tmp),tmp
 				AddModule(tmp)
 			endif
 
@@ -937,9 +938,19 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			t_oDebugInfo['__dbgEntryLevel'] := __dbgProcLevel()
 			tmp := ErrorBlock()
 			if empty(tmp) .or. empty(t_oDebugInfo['errorBlock']) .or. !(t_oDebugInfo['errorBlock']==tmp)
-				//? "Changed ErrorBlock",tmp, valtype(tmp),procFile(1),ProcName(1),procLine(1)
-				t_oDebugInfo['userErrorBlock'] := tmp
-				t_oDebugInfo['errorBlock'] :=  {| e | ErrorBlockCode( e ) }
+				//? "Error block changed " + procFile(1) + "("+alltrim(str(uParam1))+")"
+				//check if the new error block is an oldone
+				i:=aScan(t_oDebugInfo['errorBlockHistory'], {|x| x[1]==tmp })
+				if i>0 // it is an old one!
+					//? "OLD:" + alltrim(str(i))
+					t_oDebugInfo['userErrorBlock'] := t_oDebugInfo['errorBlockHistory',i,2]
+					t_oDebugInfo['errorBlock'] :=  t_oDebugInfo['errorBlockHistory',i,1]
+				else
+					//? "NEW:" + alltrim(str(i))
+					t_oDebugInfo['userErrorBlock'] := tmp
+					t_oDebugInfo['errorBlock'] :=  {| e | ErrorBlockCode( e ) }
+					aAdd(t_oDebugInfo['errorBlockHistory'],{t_oDebugInfo['errorBlock'], tmp })
+				endif
 				__DEBUGITEM(t_oDebugInfo)
 				ErrorBlock( t_oDebugInfo['errorBlock'] )
 			endif

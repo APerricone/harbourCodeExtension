@@ -5,7 +5,6 @@
 /// no code unltil line 14
 /// include, static are not code :)
 
-
 ///OK
 #include <hbclass.ch>
 
@@ -39,7 +38,7 @@ proc main( )
 	local bs := "{|a,c| QOut(c:otherMedhod()) }"
 	local b := {|c| QOut(c:otherMedhod()) }
 	STATIC TestStatic, TestStatic2
-	//ErrorBlock({|e| MyErrorBlock(e) })
+	ErrorBlock({|e| MyErrorBlock(e) })
 	TestStatic_File := {1,1,2,3,5,8,13,21,34,55,89,144}
 	TestStatic2 := {1,1,2,3,5,8,13,21,34,55,89,144}
 	? "S",valtype(TestStatic),valtype(TestStatic2)
@@ -49,9 +48,12 @@ proc main( )
 	for i:=1 to 10
 		j:=i*2
 	next
-	AltD()
+	//AltD()
 	? "Perry"
-	eval(&bs,"",c)
+	begin sequence with {|| QOut("eh") }
+		eval(&bs,"",c)
+	end sequence
+	i:=1+{2}
 	//eval(b,"",c)
 	AltraFunzione()
 	? i:=2
@@ -60,6 +62,9 @@ proc main( )
 	testLotParameter(1,[2,3],{4,5},"6,7",'A,2',;
 		"PROVA,TEST","Pippo",{6,5,3,2,1},234 ;
 			)
+	for i:=1 to 10
+		? i
+	next
 return
 
 func AltraFunzione( )

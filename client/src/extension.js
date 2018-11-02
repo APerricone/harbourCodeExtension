@@ -37,7 +37,7 @@ function activate(context) {
 }	
 
 function GetDbgCode() {
-	fs.readFile(path.resolve(__dirname, '../extra/dbg_lib.prg'),(err,data) =>
+	fs.readFile(path.resolve(__dirname, path.join('..','extra','dbg_lib.prg')),(err,data) =>
     {
         if(!err)
 			vscode.workspace.openTextDocument({
