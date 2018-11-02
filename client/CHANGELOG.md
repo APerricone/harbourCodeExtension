@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
+## 0.7.3
+ - Fix: Get debugger code on linux and mac
+
 ## 0.7.2
  - Syntax: fixed text/endtext
 
