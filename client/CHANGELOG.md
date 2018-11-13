@@ -2,7 +2,7 @@
 All notable changes to the "harbour" extension will be documented in this file.
 
 ## 0.7.4
- - Debugger: changed workspaceRoot with sourcePaths in debugger, to allow more than one directory with code.
+ - Debugger: added sourcePaths in debugger, to allow to specify more than one directory with code.
 
 ## 0.7.3
  - Fix: Get debugger code on linux and mac
