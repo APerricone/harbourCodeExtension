@@ -10,7 +10,7 @@
 				"command": "./copy.sh"
 			},
 			"windows": {
-				"command": "copy.bat"
+				"command": ".\\copy.bat"
 			},
 			"options": {
 				"cwd": "${workspaceFolder}/../server"
