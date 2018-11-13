@@ -2,6 +2,7 @@ var debugadapter = require("vscode-debugadapter");
 var debugprotocol = require("vscode-debugprotocol");
 var net = require("net");
 var path = require("path");
+var fs = require("fs");
 var cp = require("child_process");
 /** @requires vscode-debugadapter   */
 /// CLASS DEFINITION
@@ -18,7 +19,7 @@ var harbourDebugSession = function()
 	this.socket = null;
 	/** @type{boolean} */
 	this.Debbugging = true;
-	this.workspaceRoot = "";
+	this.sourcePaths = [];
 	/** @description the current process line function
 	 * @type{function(string)} */
 	this.processLine = undefined;
@@ -134,12 +135,14 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
 	var port = 6110; //temp
 	var tc=this;
 	this.justStart = true;
+	this.sourcePaths = []; //[path.dirname(args.program)];
 	if("workspaceRoot" in args)
 	{
-		this.workspaceRoot = args.workspaceRoot + path.sep; 
-	} else
+		this.sourcePaths.push(args.workspaceRoot); 
+	}
+	if("sourcePaths" in args)
 	{
-		this.workspaceRoot = path.dirname(args.program) + path.sep;
+		this.sourcePaths = this.sourcePaths.concat(args.sourcePaths);
 	}
 	this.Debugging = !args.noDebug;
 	this.startGo = args.stopOnEntry===false || args.noDebug===true;	
@@ -224,8 +227,17 @@ harbourDebugSession.prototype.sendStack = function(line)
 	this.processLine = function(line)
 	{
 		var infos = line.split(":");
+		var completePath = infos[0];
+		for(i=0;i<this.sourcePaths.length;i++)
+		{
+			if(fs.existsSync(path.join(this.sourcePaths[i],infos[0])))
+			{
+				completePath = path.join(this.sourcePaths[i],infos[0]);
+				break;
+			}
+		}
 		frames[j] = new debugadapter.StackFrame(j,infos[2],
-			new debugadapter.Source(infos[0],this.workspaceRoot+infos[0]),
+			new debugadapter.Source(infos[0],completePath),
 			parseInt(infos[1]));
 		j++;
 		if(j==nStack)

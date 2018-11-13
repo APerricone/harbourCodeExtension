@@ -132,10 +132,10 @@ function setDecorator(editor)
 	if(!section.validating)
 		return;
 			
-	var regExs = [	/\b((if)|else(?:if)?|(endif))\b/ig,
+	var regExs = [	/\b((if)|else(?:if)?|(end\s?if))\b/ig,
 					/\b((for(?:\s+each)?)|loop|exit|(next))\b/ig,
-					/\b((switch|do\s+case)|case|otherwise|exit|(endswitch|endcase))\b/ig,
-					/\b(((?:do\s+)?while)|loop|exit|(enddo))\b/ig];
+					/\b((switch|do\s+case)|case|otherwise|default|exit|(end\s?switch|end\s?case))\b/ig,
+					/\b(((?:do\s+)?while)|loop|exit|(end\s?do))\b/ig];
 	var text = RemoveStringAndComments(editor.document.getText());
 	var places = [];
 	var match;

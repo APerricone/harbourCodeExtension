@@ -2,7 +2,7 @@
     "name": "harbour",
     "displayName": "harbour",
     "description": "Harbour language support for visual studio code",
-    "version": "0.7.3",
+    "version": "0.7.4",
     "publisher": "aperricone",
     "icon": "harbourIcon.png",
     "main": "./src/extension",
@@ -165,7 +165,8 @@
                         "properties": {
                             "workspaceRoot": {
                                 "type": "string",
-                                "default": "${workspaceRoot}"
+                                "default": "${workspaceRoot}",
+                                "deprecationMessage": "Attribute 'workspaceRoot' is deprecated, use 'sourcePaths' instead"
                             },
                             "program": {
                                 "type": "string",
@@ -187,6 +188,14 @@
                                 "type": "boolean",
                                 "description": "Automatically stop after launch.",
                                 "default": false
+                            },
+                            "sourcePaths": {
+                                "type": "array",
+								"description": "directories where search for source files",
+								"items": {
+									"type": "string"
+                                },
+                                "default": []
                             }
                         }
                     }
