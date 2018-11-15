@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
+## 0.7.5
+ - Added localization: English, Italian and Spanish (thanks to José Luis Sánchez for review)
+
 ## 0.7.4
  - Debugger: added sourcePaths in debugger, to allow to specify more than one directory with code.
 
