@@ -1,0 +1,22 @@
+{
+    "harbour.validating": "Ogni volta che un file è aperto o salvato, viene eseguito harbour per validare il codice (lint).",
+    "harbour.compilerExecutable": "Il percorso completo dell'eseguibile di harbour.",
+    "harbour.extraOptions": "altre opzioni da passare al compilatore harbour.",
+    "harbour.extraIncludePaths": "Altre percorsi da includere durante la compilazione (per include).",
+    "harbour.warningLevel": "livello degli avvisi.",
+    "harbour.decorator": "Abilita l'evidenziazione dei corrispettivi if/endif, for/next, while/endwhile, ecc ecc",
+    "harbour.initialConfigurations": "Avvia il programma",
+    "harbour.configurationSnippetsDesc": "Debugga un programma harbour con i simboli di debug",
+    "harbour.configurationSnippets": "Avvia ${2:programma}",
+    "harbour.launch.workspaceRoot": "l'attributo 'workspaceRoot' è in disuso, usa 'sourcePaths'",
+    "harbour.launch.program": "Percorso assoluto dell'eseguibile.",
+    "harbour.launch.workingDir": "Directory di lavoro.",
+    "harbour.launch.arguments": "Argomenti da passare all'eseguibile.",
+    "harbour.launch.stopOnEntry": "Fermati automaticamente dopo l'avvio.",
+    "harbour.launch.sourcePaths": "Percorsi dove cercare i sorgenti",
+    "harobur.dbgError1": "Incapace di avviare {0} in {1}, controlla che tutti i percorsi esistano.",
+    "harobur.dbgNoModule": "modulo non trovato",
+    "harobur.dbgNoLine": "linea non valida",
+    "harbour.validation.NoExe": "Incapace di avviare {0}, controlla il valore di 'harbour.compilerExecutable'",
+    "harbour.dbgCodeCmd": "Harbour: Ottieni il codice del debugger"
+}

@@ -16,11 +16,16 @@
     "engines": {
         "vscode": "^1.11.0"
     },
-    "categories": ["Programming Languages","Linters","Debuggers"],
+    "categories": [
+        "Programming Languages",
+        "Linters",
+        "Debuggers"
+    ],
     "dependencies": {
         "vscode-debugadapter": "^1.28.0",
         "vscode-debugprotocol": "^1.28.0",
-        "vscode-languageclient": "^3.5.1"
+        "vscode-languageclient": "^3.5.1",
+        "vscode-nls": "^4.0.0"
     },
     "contributes": {
         "problemMatchers": [
@@ -37,32 +42,34 @@
                 }
             }
         ],
-        "commands": [{
-            "command": "harbour.getdbgcode",
-            "title": "Harbour: Get debugger code"
-        }],
+        "commands": [
+            {
+                "command": "harbour.getdbgcode",
+                "title": "%harbour.dbgCodeCmd%"
+            }
+        ],
         "configuration": {
             "type": "object",
             "title": "Harbour compiler",
             "properties": {
                 "harbour.validating": {
                     "type": "boolean",
-                    "description": "Every time a file is opened or saved the executable is called to validate the code(Lint).",
+                    "description": "%harbour.validating%",
                     "default": true
                 },
                 "harbour.compilerExecutable": {
                     "type": "string",
-                    "description": "complete path of the harbour executable.",
+                    "description": "%harbour.compilerExecutable%",
                     "default": "harbour"
                 },
                 "harbour.extraOptions": {
                     "type": "string",
-                    "description": "other options to pass to harbour compiler.",
+                    "description": "%harbour.extraOptions%",
                     "default": ""
                 },
                 "harbour.extraIncludePaths": {
                     "type": "array",
-                    "description": "Extra include paths to use during the compilation.",
+                    "description": "%harbour.extraIncludePaths%",
                     "items": {
                         "type": "string",
                         "default": ""
@@ -73,22 +80,12 @@
                     "default": 1,
                     "maximum": 3,
                     "minimum": 0,
-                    "description": "Warning level."
+                    "description": "%harbour.warningLevel%"
                 },
                 "harbour.decorator": {
                     "type": "boolean",
                     "default": true,
-                    "description": "if true enables the beta feature of decoration of correspondents if/endif, for/next, while/endwhile, etc etc"
-                },
-                "harbour.includePattern": {
-                    "type": "string",
-                    "default": "**/*.prg",
-                    "description": "Extra pattern to include for symbols"
-                },
-                "harbour.excludePattern": {
-                    "type": "string",
-                    "default": "",
-                    "description": "Extra pattern to exclude for symbols"
+                    "description": "%harbour.decorator%"
                 }
             }
         },
@@ -139,20 +136,24 @@
                     {
                         "type": "harbour-dbg",
                         "request": "launch",
-                        "name": "Launch Program",
+                        "name": "%harbour.initialConfigurations%",
                         "program": "${workspaceRoot}/Program",
-                        "sourcePaths": "[${workspaceRoot}]"
+                        "workingDir": "${workspaceRoot}/",
+                        "sourcePaths": [
+                            "${workspaceRoot}"
+                        ]
                     }
                 ],
                 "configurationSnippets": [
                     {
                         "label": "Harbour",
-                        "description": "Debug a harbour program with debug symbols",
+                        "description": "%harbour.configurationSnippetsDesc%",
                         "body": {
                             "type": "harbour-dbg",
                             "request": "launch",
-                            "name": "Launch ${2:Program}",
+                            "name": "%harbour.configurationSnippets%",
                             "program": "^\"\\${workspaceRoot}/${2:Program}\"",
+                            "workingDir": "${workspaceRoot}/",
                             "sourcePaths": "^[\"\\${workspaceRoot}\"]"
                         }
                     }
@@ -166,34 +167,34 @@
                             "workspaceRoot": {
                                 "type": "string",
                                 "default": "${workspaceRoot}",
-                                "deprecationMessage": "Attribute 'workspaceRoot' is deprecated, use 'sourcePaths' instead"
+                                "deprecationMessage": "%harbour.launch.workspaceRoot%"
                             },
                             "program": {
                                 "type": "string",
-                                "description": "Absolute path of executable."
+                                "description": "%harbour.launch.program%"
                             },
                             "workingDir": {
                                 "type": "string",
-                                "description": "Working directory.",
+                                "description": "%harbour.launch.workingDir%",
                                 "default": "${workspaceRoot}/"
                             },
                             "arguments": {
                                 "type": "array",
-                                "description": "arguments to pass to executable.",
+                                "description": "%harbour.launch.arguments%",
                                 "items": {
                                     "type": "string"
                                 }
                             },
                             "stopOnEntry": {
                                 "type": "boolean",
-                                "description": "Automatically stop after launch.",
+                                "description": "%harbour.launch.stopOnEntry%",
                                 "default": false
                             },
                             "sourcePaths": {
                                 "type": "array",
-								"description": "directories where search for source files",
-								"items": {
-									"type": "string"
+                                "description": "%harbour.launch.sourcePaths%",
+                                "items": {
+                                    "type": "string"
                                 },
                                 "default": []
                             }

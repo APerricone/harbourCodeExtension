@@ -4,6 +4,8 @@ var net = require("net");
 var path = require("path");
 var fs = require("fs");
 var cp = require("child_process");
+var localize = require("./myLocalize.js").localize;
+
 /** @requires vscode-debugadapter   */
 /// CLASS DEFINITION
 
@@ -110,6 +112,10 @@ harbourDebugSession.prototype.processInput = function(buff)
  */
 harbourDebugSession.prototype.initializeRequest = function (response, args) 
 {
+	if (args.locale) {
+		require("./myLocalize.js").reInit(args);
+	}
+
 	response.body = response.body || {};
 	response.body.supportsConfigurationDoneRequest = true;
 	response.body.supportsDelayedStackTraceLoading = false;
@@ -167,7 +173,7 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
 		this.process = cp.spawn(args.program, { cwd:args.workingDir });
 	this.process.on("error", e =>
 	{
-		tc.sendEvent(new debugadapter.OutputEvent(`unable to start ${args.program} in ${args.workingDir}, check that all path exists.`,"stderr"))
+		tc.sendEvent(new debugadapter.OutputEvent(localize("harobur.dbgError1",args.program,args.workingDir),"stderr"))
 		tc.sendEvent(new debugadapter.TerminatedEvent());
 		return
 	})
@@ -511,9 +517,9 @@ harbourDebugSession.prototype.processBreak = function(line)
 	{
 		dest.response.body.breakpoints[idBreak].verified = false;
 		if(aInfos[4]=='notfound')
-			dest.response.body.breakpoints[idBreak].message = "module not found"
+			dest.response.body.breakpoints[idBreak].message = localize('harobur.dbgNoModule')
 		else
-			dest.response.body.breakpoints[idBreak].message = "invalid line"		
+			dest.response.body.breakpoints[idBreak].message = localize('harobur.dbgNoLine')
 		dest[aInfos[2]] = 1;
 	} 
 	this.checkBreakPoint(aInfos[1]);

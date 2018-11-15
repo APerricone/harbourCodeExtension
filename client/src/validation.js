@@ -1,5 +1,7 @@
 var vscode = require('vscode');
 var cp = require("child_process");
+var nls = require("vscode-nls");
+var localize = require("./myLocalize.js").localize;
 
 var diagnosticCollection;
 
@@ -36,7 +38,7 @@ function validate(textDocument)
 	var process = cp.spawn(section.compilerExecutable,args, { cwd: vscode.workspace.path });
 	process.on("error", e=>
 	{
-		vscode.window.showWarningMessage(`unable to start ${section.compilerExecutable}, check the "harbour.compilerExecutable" value`);
+		vscode.window.showWarningMessage(localize("harbour.validation.NoExe",section.compilerExecutable));
 	});
 	var diagnostics = {};
 	diagnostics[textDocument.fileName] = [];
