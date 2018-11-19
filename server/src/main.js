@@ -47,7 +47,7 @@ connection.onDidChangeConfiguration(params=>{
     var i=0;
     var searchExclude = params.settings.search.exclude;
     // minimatch
-    var extraInclude = params.settings.harbour.extraIncludePaths;
+    var extraInclude = params.settings.harbour.extrasourcePaths;
 })
 
 function ParseDir(dir)
