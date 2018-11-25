@@ -13,6 +13,8 @@ function activate(context)
 	vscode.workspace.onDidOpenTextDocument(validate,undefined, context.subscriptions);
 	vscode.workspace.onDidSaveTextDocument(validate,undefined, context.subscriptions);
 	vscode.workspace.onDidCloseTextDocument(removeValidation,undefined, context.subscriptions);
+	if(vscode.window.activeTextEditor && vscode.window.activeTextEditor.document)
+		validate(vscode.window.activeTextEditor.document);
 }
 
 function deactivate()
