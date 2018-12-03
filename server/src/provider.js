@@ -105,7 +105,7 @@ Provider.prototype.linePrepare = function()
 	var justStart = true;
 	var precC = "",c;
 	var string = "";
-	if(this.currLine.trim().match(/^NOTE\s/i) || this.currLine.trim().length == 0)
+	if(this.currLine.trim().match(/^\s*NOTE\s/i) || this.currLine.trim().length == 0)
 	{
 		this.currLine="";
 		return;
@@ -194,13 +194,13 @@ Provider.prototype.parseDeclareList = function(list,kind,parent)
 		var filter=undefined;
 		switch(i)
 		{
-			case 0: filter = /:=[^,]/g; break;
-			case 1: filter = /;\r?\n/g; break;
-			case 2: filter = /'[^']*'/g; break;
-			case 3: filter = /"[^"]*"/g; break;
-			case 4: filter = /\[[^\[\]]*\]/g; break;
-			case 5: filter = /{[^{}]*}/g; break;
-			case 6: filter = /\([^\(\)]*\)/g; break;
+			case 0: filter = /:=[^,]/g; break; 		// Assegnation
+			case 1: filter = /;\s*\r?\n/g; break;	//  New line
+			case 2: filter = /'[^']*'/g; break;		// '' string
+			case 3: filter = /"[^"]*"/g; break;		// "" string
+			case 4: filter = /\[[^\[\]]*\]/g; break;	// [] string or array index
+			case 5: filter = /{[^{}]*}/g; break;		// {} array declaration
+			case 6: filter = /\([^\(\)]*\)/g; break;	// () couple
 		}
 		if (filter == undefined)
 			break;
@@ -402,6 +402,50 @@ Provider.prototype.parseFile = function(file,cMode,encoding)
 			resolve(providerThisContext.funcList);
 		})
 	});
+}
+
+Provider.prototype.GetLineAt = function(txt,pos)
+{
+	var lines = [];
+	var posLineStart = pos
+	while(txt[posLineStart]!="\n" && posLineStart>0) posLineStart--;
+	if(txt[posLineStart]=="\n")	posLineStart+=1;
+	var posLineEnd = pos;
+	while(txt[posLineEnd]!="\n" && posLineEnd<txt.length-1) posLineEnd++;
+	// go back until a line without ; found
+	var curStart = posLineStart,curEnd;
+	var line=";"
+	while(line.indexOf(";")>=0 && curStart>0)
+	{
+		curEnd = curStart-1;
+		curStart =  curEnd-1;
+		while(txt[curStart]!="\n" && curStart>0) curStart--;
+		if(txt[curStart]=="\n") curStart+=1;		
+		line = txt.substring(curStart,curEnd)
+		lines.splice(0,0,line)
+	}
+	// go forward until a line without ; found
+	curStart = posLineStart;
+	curEnd = posLineEnd;
+	line = txt.substring(curStart,curEnd)
+	lines.push(line)
+	while(line.indexOf(";")>=0 && curEnd<txt.length-1)
+	{
+		curStart = curEnd+1;
+		curEnd=curStart+1;
+		while(txt[curEnd]!="\n" && curEnd<txt.length-1) curEnd++;
+		line = txt.substring(curStart,curEnd)
+		lines.push(line)	
+	}
+	for(var i=0;i<lines.length;i++)
+	{
+		var line = lines[i];
+		this.linePP(line);
+		if(this.comment || this.cont) contine;
+		this.linePrepare();
+		return this.currLine
+	}
+	return this.currLine
 }
 
 exports.Provider = Provider;

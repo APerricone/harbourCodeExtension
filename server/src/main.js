@@ -50,6 +50,7 @@ connection.onDidChangeConfiguration(params=>{
     var extraInclude = params.settings.harbour.extrasourcePaths;
 })
 
+
 function ParseDir(dir)
 {
 	fs.readdir(dir,function(err,ff)
@@ -244,9 +245,8 @@ connection.onSignatureHelp((params)=>
     pos=findBracket(text,pos,-1,"(")
     if(pos===undefined) return pos;
     // Get parameter position
-    var endPos=findBracket(text,pos+1,1,")")
-    if(endPos===undefined) return endPos;
-    nC = CountParameter(text.substr(pos+1,endPos-pos-1), doc.offsetAt(params.position)-pos-1)
+    var endPos=doc.offsetAt(params.position)
+    var nC = CountParameter(text.substr(pos+1,endPos-pos-1), doc.offsetAt(params.position)-pos-1)
     // Get the word
     pos--;
     var rge = /[0-9a-z_]/i;
@@ -308,7 +308,13 @@ function findBracket(text,pos,dir,bracket)
                 case '"': str='"'; break
                 case "'": str="'"; break
                 case '\n': 
-                    if ((text[pos-1]=='\r' && text[pos-2]==';') || text[pos-1]==';')
+                    var nSpace = 1;
+                    while(text[pos-nSpace]!='\n') nSpace++;                    
+                    var thisLine = text.substr(pos-nSpace+1,nSpace)
+                    thisLine=thisLine.replace( /\/\/[^\n]*\n/,"\n")
+                    thisLine=thisLine.replace( /&&[^\n]*\n/,"\n")
+                    thisLine=thisLine.replace( /\s+\n/,"\n")
+                    if (thisLine[thisLine.length-2]==';')
                         break;
                     return undefined;
                     break;
@@ -333,12 +339,12 @@ function CountParameter(txt, position)
 		var filter=undefined;
 		switch(i)
 		{
-			case 1: filter = /;\r?\n/g; break;
-			case 2: filter = /'[^']*'/g; break;
-			case 3: filter = /"[^"]*"/g; break;
-			case 4: filter = /\[[^\[\]]*\]/g; break;
-			case 5: filter = /{[^{}]*}/g; break;
-			case 6: filter = /\([^\(\)]*\)/g; break;
+			case 1: filter = /;\s*\r?\n/g; break;  // new line with ;
+			case 2: filter = /'[^']*'/g; break; // ' strings
+			case 3: filter = /"[^"]*"/g; break; // " strings
+			case 4: filter = /\[[^\[\]]*\]/g; break; // [] strings or array index
+			case 5: filter = /{[^{}]*}/g; break; // {} array
+			case 6: filter = /\([^\(\)]*\)/g; break; // couple of parenthesis
 		}
 		if (filter == undefined)
 			break;

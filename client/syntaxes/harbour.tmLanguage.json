@@ -62,8 +62,24 @@
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.harbour",
-				"match": "\\b(?i:if|ELSEIF|ELSE|end\\s*(if|while|case|do|switch|class)?|for(\\s+each)?|to|next|do|while|switch|case|endcase|otherwise|default|exit|loop)\\b"
+				"match": "\\b(?i:if|ELSEIF|ELSE|end\\s*(if|while|case|do|switch|class)?|next|do|while|switch|case|endcase|otherwise|default|exit|loop)\\b"
 			},
+			{
+				"name": "for.control.harbour",
+				"match": "\\b(?i:(for)\\s+(?:(?!to)[^\r\n])*(to))\\b",
+				"captures": {
+					"1": {"name": "keyword.for.control.harbour" },
+					"2": {"name": "keyword.for.control.harbour" }
+				}		
+			},
+			{
+				"name": "foreach.control.harbour",
+				"match": "\\b(?i:(for\\s+each)\\s+(?:(?!in)[^\r\n])*(in))\\b",
+				"captures": {
+					"1": {"name": "keyword.foreach.control.harbour" },
+					"2": {"name": "keyword.foreach.control.harbour" }
+				}		
+			},			
 			{
 				"name": "keyword.function.harbour",				
 				"match": "\\b(?i:static|retu(rn?)?|method|proc(e(d(u(re?)?)?)?)?|func(t(i(on?)?)?)?)\\b"
@@ -150,6 +166,20 @@
 		"strings": {
 			"patterns": [
 				{
+					"match": "(?i:^\\s*(#pragma)\\s+(__c?streaminclude)\\s+(\"[^\"]+\")\\s+\\|([^\\n]*))$",
+					"captures": {
+						"1": { "name": "meta.preprocessor.command.harbour"},
+						"2": { "name": "keyword.text.harbor" },
+						"3": { "name": "string.quoted.double.harbour" },
+						"4": { "patterns":[
+							{"include":"source.harbour"},
+							{ 
+								"name": "variable.string.replace.harbour", 
+								"match": "%s" 
+							}]}
+					}
+				},
+				{
 					"begin": "(?i:^\\s*(TEXT(?:\\s+INTO\\s+([a-z0-9_]+)(?:\\s*(?:WRAP\\s+([a-z0-9_]+)|TRIMMED))*|TO\\s+(?:PRINTER|FILE\\s+(.*)))?))\\s*$",
 					"end": "(?i:^\\s*(#pragma)\\s+(__endtext)|(ENDTEXT)\\s*$)",
 					"contentName": "string.multiline.harbour",
@@ -178,7 +208,7 @@
 					}
 				},
 				{
-					"begin": "(?i:^\\s*(#pragma)\\s+(__text|__stream)(?:\\s*\\|([^\n]*))*)",
+					"begin": "(?i:^\\s*(#pragma)\\s+(__text|__stream)(?:\\s+\\|([^\n]*))*)$",
 					"end": "(?i:^\\s*(#pragma)\\s+(__endtext)|(ENDTEXT))",
 					"contentName": "string.multiline.harbour",
 					"beginCaptures": {
