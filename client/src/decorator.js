@@ -126,10 +126,11 @@ function RemoveStringAndComments(txt)
 
 function setDecorator(editor)
 {
-	if(!editor)
-		return;
+	if(!editor) return;
+	if(!editor.document) return;
+	if(editor.document.languageId!="harbour") return;
 	var section = vscode.workspace.getConfiguration('harbour');
-	if(!section.validating)
+	if(!section.decorator)
 		return;
 			
 	var regExs = [	/\b((if)|else(?:if)?|(end\s?if))\b/ig,

@@ -2,10 +2,11 @@
 All notable changes to the "harbour" extension will be documented in this file.
 
 ## 0.7.6
- - fix: sysntax hightlight for datetime constant
- - allow min #pragma and macro for inline miltiline string 
- - validation added validation of opened file
- - added __streaminclude syntax and fix __stream syntax
+ - sysntax hightlight: fix  for datetime constant
+ - sysntax hightlight: allow min #pragma and macro for inline miltiline string 
+ - validation: added validation of opened file
+ - asysntax hightlight: dded __streaminclude syntax and fix __stream syntax
+ - decorator: removed harbour decorator in not-harbour files.
 
 ## 0.7.5
  - Added localization: English, Italian and Spanish (thanks to José Luis Sánchez for review)
