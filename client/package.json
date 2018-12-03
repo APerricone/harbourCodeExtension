@@ -107,7 +107,6 @@
                 ],
                 "configuration": "./syntaxes/language-configuration.json"
             }
-            }
         ],
         "grammars": [
             {
