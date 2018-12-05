@@ -68,16 +68,16 @@
 				"name": "for.control.harbour",
 				"match": "\\b(?i:(for)\\s+(?:(?!to)[^\r\n])*(to))\\b",
 				"captures": {
-					"1": {"name": "keyword.for.control.harbour" },
-					"2": {"name": "keyword.for.control.harbour" }
+					"1": {"name": "keyword.control.for.harbour" },
+					"2": {"name": "keyword.control.for.harbour" }
 				}		
 			},
 			{
 				"name": "foreach.control.harbour",
 				"match": "\\b(?i:(for\\s+each)\\s+(?:(?!in)[^\r\n])*(in))\\b",
 				"captures": {
-					"1": {"name": "keyword.foreach.control.harbour" },
-					"2": {"name": "keyword.foreach.control.harbour" }
+					"1": {"name": "keyword.control.foreach.harbour" },
+					"2": {"name": "keyword.control.foreach.harbour" }
 				}		
 			},			
 			{
