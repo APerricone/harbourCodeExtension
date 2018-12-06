@@ -7,6 +7,24 @@
 #include <hboo.ch>
 #include <hbclass.ch>
 
+#ifndef HB_DBG_CS_LEN
+#define HB_DBG_CS_MODULE      1  /* module name (.prg file) */
+#define HB_DBG_CS_FUNCTION    2  /* function name */
+#define HB_DBG_CS_LINE        3  /* start line */
+#define HB_DBG_CS_LEVEL       4  /* eval stack level of the function */
+#define HB_DBG_CS_LOCALS      5  /* an array with local variables */
+#define HB_DBG_CS_STATICS     6  /* an array with static variables */
+#define HB_DBG_CS_LEN         6
+#endif
+
+#ifndef HB_DBG_VAR_LEN
+#define HB_DBG_VAR_NAME          1  /* variable name */
+#define HB_DBG_VAR_INDEX         2  /* index */
+#define HB_DBG_VAR_TYPE          3  /* type of variable: "L", "S", "G" */
+#define HB_DBG_VAR_FRAME         4  /* eval stack level of the function or static frame */
+#define HB_DBG_VAR_LEN           4
+#endif
+
 #define CRLF e"\r\n"
 #ifndef DBG_PORT
 // Temp, I hope to find another way to do InterProcessCommunication that uses ProcessId as unique key
@@ -44,79 +62,93 @@ static procedure CheckSocket(lStopSent)
 					sendCoumpoundVar(tmp, hb_inetRecvLine(t_oDebugInfo['socket']))
 					loop
 				endif
-				switch tmp
-					case "PAUSE"
+#ifndef __XHARBOUR__
+#define BEGIN_C switch tmp
+#define COMMAND case 
+#dedine END_COM exit
+#define END_C endswitch
+#else
+#define BEGIN_C do case
+#define COMMAND case tmp=
+#define END_COM 
+#define END_C endcase
+#endif
+				BEGIN_C
+					COMMAND "PAUSE"
 						t_oDebugInfo['lRunning'] := .F.
 						if .not. lStopSent
 							hb_inetSend(t_oDebugInfo['socket'],"STOP:pause"+CRLF)
 							lStopSent := .T.
 						endif
-						exit
-					case "GO"
+						END_COM
+					COMMAND "GO"
 						t_oDebugInfo['lRunning'] := .T.
 						lNeedExit := .T.
-						exit
-					case "STEP" // go to next line of code even if is in another procedure
+						END_COM
+					COMMAND "STEP" // go to next line of code even if is in another procedure
 						t_oDebugInfo['lRunning'] := .F.
 						lNeedExit := .T.
-						exit
-					case "NEXT" // go to next line of same procedure
+						END_COM
+					COMMAND "NEXT" // go to next line of same procedure
 						t_oDebugInfo['lRunning'] := .T.
 						t_oDebugInfo['maxLevel'] := t_oDebugInfo['__dbgEntryLevel']
 						lNeedExit := .T.
-						exit
-					case "EXIT" // go to callee procedure
+						END_COM
+					COMMAND "EXIT" // go to callee procedure
 						t_oDebugInfo['lRunning'] := .T.
 						t_oDebugInfo['maxLevel'] := t_oDebugInfo['__dbgEntryLevel'] -1
 						lNeedExit := .T.
-						exit
-					case "STACK" 
+						END_COM
+					COMMAND "STACK" 
 						sendStack()
-						exit
-					case "BREAKPOINT"
+						END_COM
+					COMMAND "BREAKPOINT"
 						setBreakpoint(hb_inetRecvLine(t_oDebugInfo['socket']))
-						exit
-					case "LOCALS"
+						END_COM
+					COMMAND "LOCALS"
 						sendLocals(hb_inetRecvLine(t_oDebugInfo['socket']),tmp)
-						exit							
-					case "STATICS"
+						END_COM							
+					COMMAND "STATICS"
 						sendStatics(hb_inetRecvLine(t_oDebugInfo['socket']),tmp)
-						exit
-					case "PRIVATES"
+						END_COM
+					COMMAND "PRIVATES"
 						sendFromInfo(tmp,hb_inetRecvLine(t_oDebugInfo['socket']),HB_MV_PRIVATE, .T.)
-						exit
-					case "PRIVATE_CALLEE"
+						END_COM
+					COMMAND "PRIVATE_CALLEE"
 						sendFromInfo(tmp,hb_inetRecvLine(t_oDebugInfo['socket']),HB_MV_PRIVATE, .F.)
-						exit
-					case "PUBLICS"
+						END_COM
+					COMMAND "PUBLICS"
 						sendFromInfo(tmp,hb_inetRecvLine(t_oDebugInfo['socket']),HB_MV_PUBLIC)
-						exit
-					//case "GLOBALS"
+						END_COM
+					//COMMAND "GLOBALS"
 					//	sendVariables(HB_MV_PUBLIC,.F.)
-					//	exit
-					//case "EXTERNALS"
+					//	END_COM
+					//COMMAND "EXTERNALS"
 					//	sendVariables(HB_MV_PUBLIC,.F.)
-					//	exit
-					case "EXPRESSION"
+					//	END_COM
+					COMMAND "EXPRESSION"
 						sendExpression(hb_inetRecvLine(t_oDebugInfo['socket']))
-						exit
-					case "INERROR"
+						END_COM
+					COMMAND "INERROR"
 						//? "INERROR",t_oDebugInfo['inError']
 						if t_oDebugInfo['inError']
 							hb_inetSend(t_oDebugInfo['socket'],"INERROR:True"+CRLF)
 						else
 							hb_inetSend(t_oDebugInfo['socket'],"INERROR:False"+CRLF)
 						endif
-					exit
-					case "ERROR_VAR"
+						END_COM
+					COMMAND "ERROR_VAR"
 						hb_inetRecvLine(t_oDebugInfo['socket'])
 						hb_inetSend(t_oDebugInfo['socket'],"ERROR_VAR 0"+CRLF)
 						if t_oDebugInfo['inError']
 							hb_inetSend(t_oDebugInfo['socket'],"ERR:0:0::Error:O:" + format(t_oDebugInfo['error'])+CRLF)
 						endif
 						hb_inetSend(t_oDebugInfo['socket'],"END"+CRLF)
-					exit
-				endswitch
+					END_COM
+				END_C	
+#undef BEGIN_C
+#undef COMMAND 
+#undef END_C
 			endif
 		enddo
 		if lNeedExit
@@ -258,13 +290,13 @@ static procedure sendLocals(cParams,prefix)
 	hb_inetSend(t_oDebugInfo['socket'],prefix+" "+alltrim(str(aParams[5]))+CRLF)
 	if iStack>0
 		if iCount=0
-			iCount := len(aStack[iStack,HB_DBG_CS_LOCALS])
+			iCount := len(aStack[iStack,])
 		endif
 		for i:=iStart to iStart+iCount
-			if(i>len(aStack[iStack,HB_DBG_CS_LOCALS]))
+			if(i>len(aStack[iStack,]))
 				exit
 			endif
-			aInfo := aStack[iStack,HB_DBG_CS_LOCALS,i]
+			aInfo := aStack[iStack,,i]
 			value := __dbgVMVarLGet( __dbgProcLevel()-aInfo[ HB_DBG_VAR_FRAME ], aInfo[ HB_DBG_VAR_INDEX ] )
 			// LOC:LEVEL:IDX::
 			cLine := left(prefix,3) + ":" + alltrim(str(aInfo[ HB_DBG_VAR_FRAME ])) + ":" + ;
@@ -390,30 +422,47 @@ static function getValue(req)
 	local aInfos := hb_aTokens(req,":")
 	local v, i, aIndices, cName
 	//? "getValue", req
-	switch aInfos[1]
-		case "ERR"
+#ifndef __XHARBOUR__
+#define BEGIN_T switch aInfos[1]
+#define TYPE case 
+#define ENDTYPE exit
+#define END_T endswitch
+#else
+#define BEGIN_T do case
+#define TYPE case aInfos[1]=
+#define ENDTYPE 
+#define END_T endcase
+#endif
+	
+	BEGIN_T
+		TYPE "ERR"
 			v := __DEBUGITEM()["error"]
-			exit
-		case "LOC"
+			ENDTYPE
+		TYPE "LOC"
 			v := __dbgVMVarLGet(__dbgProcLevel()-val(aInfos[2]),val(aInfos[3]))
-			exit
-		case "STA"
+			ENDTYPE
+		TYPE "STA"
 			v := MyGetSta(val(aInfos[2]),val(aInfos[3]))
-			exit
-		case "GLO"
-		case "EXT"
+			ENDTYPE
+		TYPE "GLO"
 			v := __dbgVMVarSGet(val(aInfos[2]),val(aInfos[3]))
-			exit
-		case "PRI"
+			ENDTYPE
+		TYPE "EXT"
+			v := __dbgVMVarSGet(val(aInfos[2]),val(aInfos[3]))
+			ENDTYPE
+		TYPE "PRI"
 			v := __mvDbgInfo(HB_MV_PRIVATE,val(aInfos[3]), @cName)
-			exit
-		case "PUB"
+			ENDTYPE
+		TYPE "PUB"
 			v := __mvDbgInfo(HB_MV_PUBLIC,val(aInfos[3]), @cName)
-			exit
-		case "EXP"
+			ENDTYPE
+		TYPE "EXP"
 			// TODO: aInfos[3] can include a : 
 			v := evalExpression( aInfos[3], val(aInfos[2]))
-	endswitch
+		END_T
+#undef BEGIN_T
+#undef TYPE
+#undef END_T
 	// some variable changes its type during execution. mha
 	if at(valtype(v),"AHO") == 0
 		return {}
@@ -634,9 +683,15 @@ static function inBreakpoint()
 	do while len(aBreakInfo) >= nExtra
 		switch aBreakInfo[nExtra]
 			case '?'
+			#ifdef __XHARBOUR__
 				BEGIN SEQUENCE 
 					ck:=evalExpression(aBreakInfo[nExtra+1],1)			
 				END SEQUENCE
+			#else
+				TRY 
+					ck:=evalExpression(aBreakInfo[nExtra+1],1)			
+				END
+			#endif
 				if valtype(ck)<>'L' .or. ck=.F.
 					//?? " check Exp .F."
 					return .F.
@@ -772,9 +827,9 @@ static function evalExpression( xExpr, level )
 	xExpr := strTran(xExpr,"::","self:")
 	if iStack>0
 		// replace all locals
-		for i:=1 to len(aStack[iStack,HB_DBG_CS_LOCALS])
-			xExpr := replaceExpression(xExpr, @__dbg, aStack[iStack,HB_DBG_CS_LOCALS,i,HB_DBG_VAR_NAME], ;
-						__dbgVMVarLGet(__dbgProcLevel()-aStack[iStack,HB_DBG_CS_LOCALS, i, HB_DBG_VAR_FRAME], aStack[iStack,HB_DBG_CS_LOCALS, i, HB_DBG_VAR_INDEX]))
+		for i:=1 to len(aStack[iStack,])
+			xExpr := replaceExpression(xExpr, @__dbg, aStack[iStack,,i,HB_DBG_VAR_NAME], ;
+						__dbgVMVarLGet(__dbgProcLevel()-aStack[iStack,, i, HB_DBG_VAR_FRAME], aStack[iStack,, i, HB_DBG_VAR_INDEX]))
 		next
 		// replace all proc statics
 		for i:=1 to len(aStack[iStack,HB_DBG_CS_STATICS])
@@ -802,11 +857,19 @@ static function evalExpression( xExpr, level )
 	// ******
 	lOldRunning := t_oDebugInfo['lRunning']
 	t_oDebugInfo['lRunning'] := .T.
+#ifndef __XHARBOUR__
 	BEGIN SEQUENCE WITH {|oErr| BREAK( oErr ) }
 		xResult := Eval(&("{|__dbg| "+xExpr+"}"),__dbg)
 	RECOVER USING oErr
 		xResult := oErr
 	END SEQUENCE
+#else
+	TRY
+		xResult := Eval(&("{|__dbg| "+xExpr+"}"),__dbg)
+	CATCH oErr
+		xResult := oErr
+	END
+#endif	
 	t_oDebugInfo['lRunning'] := lOldRunning
 return xResult
 
@@ -882,16 +945,24 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			elseif at("_INITLINES", uParam1)<>0
 				t_oDebugInfo['bInitLines'] := .T.
 			endif
-			tmp := hb_aTokens(uParam1,":") //1,2 file,function
+			i := rat(":",uParam1)
+			tmp := Array(HB_DBG_CS_LEN)
+			if tmp=0
+				tmp[HB_DBG_CS_MODULE] := uParam1
+				tmp[HB_DBG_CS_FUNCTION] := ""
+			else
+				tmp[HB_DBG_CS_MODULE] := left(uParam1,tmp-1)
+				tmp[HB_DBG_CS_FUNCTION] := substr(uParam1,tmp+1)
+			endif
 			if(t_oDebugInfo['bInitStatics'])
 				// Fix
-				tmp[1] := procFile(1)
-				tmp[2] := "(_INITSTATICS)"
+				tmp[HB_DBG_CS_MODULE] := procFile(1)
+				tmp[HB_DBG_CS_FUNCTION] := "(_INITSTATICS)"
 			endif
-			aadd(tmp,procLine(1)) // line
-			aadd(tmp,__dbgProcLevel()-1) //level
-			aadd(tmp,{}) //locals
-			aadd(tmp,{}) //statics
+			tmp[HB_DBG_CS_LINE] := procLine(1) // line
+			tmp[HB_DBG_CS_LEVEL] := __dbgProcLevel()-1 // level
+			tmp[HB_DBG_CS_LOCALS] := {} // locals
+			tmp[HB_DBG_CS_STATICS] := {} // statics
 			//? "MODULENAME", uParam1, uParam2, uParam3, valtype(uParam1), valtype(uParam2), valtype(uParam3),  __dbgProcLevel()-1,procLine(__dbgProcLevel()-1),procLine(__dbgProcLevel()-2),procLine(__dbgProcLevel()-3),procLine(1)
 			aAdd(t_oDebugInfo['aStack'], tmp)
 			exit
