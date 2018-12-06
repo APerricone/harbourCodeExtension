@@ -62,23 +62,15 @@
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.harbour",
-				"match": "\\b(?i:if|ELSEIF|ELSE|end\\s*(if|while|case|do|switch|class)?|next|do|while|switch|case|endcase|otherwise|default|exit|loop)\\b"
+				"match": "\\b(?i:if|ELSEIF|ELSE|end\\s*(if|while|case|do|switch|class|sequence)?|next|do|while|switch|case|endcase|otherwise|default|exit|loop|try|catch|begin\\s+sequence(\\s+with)?|recover(\\s+using)?|try|catch|finally)\\b"
 			},
 			{
 				"name": "for.control.harbour",
-				"match": "\\b(?i:(for)\\s+(?:(?!to)[^\r\n])*(to))\\b",
-				"captures": {
-					"1": {"name": "keyword.control.for.harbour" },
-					"2": {"name": "keyword.control.for.harbour" }
-				}		
-			},
-			{
-				"name": "foreach.control.harbour",
-				"match": "\\b(?i:(for\\s+each)\\s+(?:(?!in)[^\r\n])*(in))\\b",
-				"captures": {
-					"1": {"name": "keyword.control.foreach.harbour" },
-					"2": {"name": "keyword.control.foreach.harbour" }
-				}		
+				"begin": "\\b(?i:for(?:\\s+each)?)\\b",
+				"end": "\\b(?i:to|in|(?=//|&&|/\\*)|$)\\b",
+				"beginCaptures": {"0": {"name": "keyword.control.for.harbour"}},
+				"endCaptures": {"0": {"name": "keyword.control.for.harbour"}},
+				"patterns": [{"include": "source.harbour"}]
 			},			
 			{
 				"name": "keyword.function.harbour",				
@@ -104,13 +96,17 @@
 				"match": "\\b(?i:(end)?class(data)?|method|data|message|init|constructor|destructor|hidden:|exported:)\\b"
 			},
 			{
+				"name": "keyword.object.harbour",
+				"match": "\\b(?i:with\\s+object|end(?:\\s+with)?)\\b"
+			},
+			{
 				"name": "keyword.operator.logical.harbour",
 				"match": "(?i)(\\.(T|F|and|or|not)\\.)"
 			},
 			{
 				"name": "meta.preprocessor.include.harbour",
 				"begin": "(?i:^\\s*#include\\s)",
-				"end": "(?=//|&&|/\\*)|(?<!;)(?=\\n)",
+				"end": "(?=//|&&|/\\*)|$",
 				"patterns": [
 					{
 						"include": "#strings"
@@ -140,21 +136,18 @@
 			]
 		},
 		"escapes": {
+			"name": "constant.character.escape.harbour",
 			"patterns": [
 				{
-					"name": "constant.character.escape.harbour",
 					"match": "\\\\u\\h{4}|\\\\U\\h{8}"
 				},
 				{
-					"name": "constant.character.escape.harbour",
 					"match": "\\\\['\"?\\\\abfnrtv]"
 				},
 				{
-					"name": "constant.character.escape.harbour",
 					"match": "\\\\[0-7]{1,3}"
 				},
 				{
-					"name": "constant.character.escape.harbour",
 					"match": "\\\\x\\h+"
 				}
 			]
