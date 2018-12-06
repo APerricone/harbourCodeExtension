@@ -290,13 +290,13 @@ static procedure sendLocals(cParams,prefix)
 	hb_inetSend(t_oDebugInfo['socket'],prefix+" "+alltrim(str(aParams[5]))+CRLF)
 	if iStack>0
 		if iCount=0
-			iCount := len(aStack[iStack,])
+			iCount := len(aStack[iStack,HB_DBG_CS_LOCALS])
 		endif
 		for i:=iStart to iStart+iCount
-			if(i>len(aStack[iStack,]))
+			if(i>len(aStack[iStack,HB_DBG_CS_LOCALS]))
 				exit
 			endif
-			aInfo := aStack[iStack,,i]
+			aInfo := aStack[iStack,HB_DBG_CS_LOCALS,i]
 			value := __dbgVMVarLGet( __dbgProcLevel()-aInfo[ HB_DBG_VAR_FRAME ], aInfo[ HB_DBG_VAR_INDEX ] )
 			// LOC:LEVEL:IDX::
 			cLine := left(prefix,3) + ":" + alltrim(str(aInfo[ HB_DBG_VAR_FRAME ])) + ":" + ;
@@ -827,9 +827,9 @@ static function evalExpression( xExpr, level )
 	xExpr := strTran(xExpr,"::","self:")
 	if iStack>0
 		// replace all locals
-		for i:=1 to len(aStack[iStack,])
-			xExpr := replaceExpression(xExpr, @__dbg, aStack[iStack,,i,HB_DBG_VAR_NAME], ;
-						__dbgVMVarLGet(__dbgProcLevel()-aStack[iStack,, i, HB_DBG_VAR_FRAME], aStack[iStack,, i, HB_DBG_VAR_INDEX]))
+		for i:=1 to len(aStack[iStack,HB_DBG_CS_LOCALS])
+			xExpr := replaceExpression(xExpr, @__dbg, aStack[iStack,HB_DBG_CS_LOCALS,i,HB_DBG_VAR_NAME], ;
+						__dbgVMVarLGet(__dbgProcLevel()-aStack[iStack,HB_DBG_CS_LOCALS, i, HB_DBG_VAR_FRAME], aStack[iStack,HB_DBG_CS_LOCALS, i, HB_DBG_VAR_INDEX]))
 		next
 		// replace all proc statics
 		for i:=1 to len(aStack[iStack,HB_DBG_CS_STATICS])
