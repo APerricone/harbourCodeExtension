@@ -65,7 +65,7 @@ static procedure CheckSocket(lStopSent)
 #ifndef __XHARBOUR__
 #define BEGIN_C switch tmp
 #define COMMAND case 
-#dedine END_COM exit
+#define END_COM exit
 #define END_C endswitch
 #else
 #define BEGIN_C do case
@@ -683,7 +683,7 @@ static function inBreakpoint()
 	do while len(aBreakInfo) >= nExtra
 		switch aBreakInfo[nExtra]
 			case '?'
-			#ifdef __XHARBOUR__
+			#ifndef __XHARBOUR__
 				BEGIN SEQUENCE 
 					ck:=evalExpression(aBreakInfo[nExtra+1],1)			
 				END SEQUENCE
@@ -945,14 +945,18 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			elseif at("_INITLINES", uParam1)<>0
 				t_oDebugInfo['bInitLines'] := .T.
 			endif
+			// special case, the user press 'exit' but there is another method on same leve, I will go in it.
+			if t_oDebugInfo['maxLevel'] = t_oDebugInfo['__dbgEntryLevel'] -1 .and. t_oDebugInfo['__dbgEntryLevel'] = __dbgProcLevel()
+				t_oDebugInfo['lRunning'] := .F.
+			endif
 			i := rat(":",uParam1)
 			tmp := Array(HB_DBG_CS_LEN)
-			if tmp=0
+			if i=0
 				tmp[HB_DBG_CS_MODULE] := uParam1
 				tmp[HB_DBG_CS_FUNCTION] := ""
 			else
-				tmp[HB_DBG_CS_MODULE] := left(uParam1,tmp-1)
-				tmp[HB_DBG_CS_FUNCTION] := substr(uParam1,tmp+1)
+				tmp[HB_DBG_CS_MODULE] := left(uParam1,i-1)
+				tmp[HB_DBG_CS_FUNCTION] := substr(uParam1,i+1)
 			endif
 			if(t_oDebugInfo['bInitStatics'])
 				// Fix
