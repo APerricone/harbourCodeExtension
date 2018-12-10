@@ -89,8 +89,12 @@
 				"match": "\\b(?i:local|private|public|field|thread|memvar|parameter)\\b"
 			},
 			{
+				"name": "storage.type.harbour",
+				"match": "\\b(?i:as\\s+(?:character|numeric|date|logical|codeblock|array|nil))\\b"
+			},
+			{
 				"name": "keyword.reserved.harbour",
-				"match": "(?i)\\b(nil)\\b"
+				"match": "(?i)\\b(iif|nil)\\b"
 			},
 			{
 				"name": "meta.function.harbour",
@@ -110,7 +114,7 @@
 			{
 				"name": "meta.preprocessor.include.harbour",
 				"begin": "(?i:^\\s*#include\\s)",
-				"end": "(?=//|&&|/\\*)|(?<!;)(?=\\n)",
+				"end": "(?=//|&&|/\\*|\\n|\\r)",
 				"patterns": [
 					{
 						"include": "#strings"

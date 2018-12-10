@@ -5,7 +5,7 @@ All notable changes to the "harbour" extension will be documented in this file.
  - sysntax hightlight: fix  for datetime constant
  - sysntax hightlight: allow min #pragma and macro for inline miltiline string 
  - validation: added validation of opened file
- - asysntax hightlight: dded __streaminclude syntax and fix __stream syntax
+ - sysntax hightlight: added __streaminclude syntax and fix __stream syntax
  - decorator: removed harbour decorator in not-harbour files.
 
 ## 0.7.5
