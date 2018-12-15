@@ -118,7 +118,7 @@
 					{
 						"name": "string.quoted.angle.harbour",
 						"begin": "<",
-						"end": ">"
+						"end": ">|$"
 					}
 				]
 			},
@@ -246,29 +246,29 @@
 				{
 					"name": "string.escaped.harbour",
 					"begin": "[eE]\"",
-					"end": "\"|\\n",
+					"end": "\"|$",
 					"patterns": [{"include":"#escapes"}]
 				},
 				{
 					"name": "string.quoted.double.harbour",
 					"begin": "\"",
-					"end": "\"|\\n"
+					"end": "\"|$"
 				},
 				{
 					"name": "string.quoted.single.harbour",
 					"begin": "'",
-					"end": "'|\\n"
+					"end": "'|$"
 				},
 				{
 					"name": "string.square.harbour",
 					"begin": "(?<![a-zA-Z0-9_\\]\\(\\)])\\s*\\[",
-					"end": "\\]|\\n"
+					"end": "\\]|$"
 				}
 			]
 		},
 		"c_code": {
 			"patterns": [
-				{
+					{
 					"begin": "(?i:^\\s*(#pragma)\\s+(BEGINDUMP))",
 					"end": "(?i:^\\s*(#pragma)\\s+(ENDDUMP))",
 					"contentName": "source.c.embedded.harbour",

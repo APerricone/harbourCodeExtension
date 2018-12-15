@@ -6,6 +6,13 @@
 #include <hbmemvar.ch>
 #include <hboo.ch>
 #include <hbclass.ch>
+#ifdef __XHARBOUR__
+#include <hbcompat.ch>
+#define __dbgInvokeDebug hb_dbg_InvokeDEBUG
+#define __dbgProcLevel hb_dbg_ProcLevel
+#define __dbgVMVarLGet hb_dbg_vmVarLGet
+#define __dbgVMVarSGet hb_dbg_vmVarSGet
+#endif
 
 #ifndef HB_DBG_CS_LEN
 #define HB_DBG_CS_MODULE      1  /* module name (.prg file) */
@@ -496,10 +503,10 @@ STATIC FUNCTION __dbgObjGetValue( nProcLevel, oObject, cVar )
 
 #ifdef __XHARBOUR__
    TRY
-      xResult := dbgSENDMSG( nProcLevel, oObject, cVar )
+      xResult := __objSendMsg( oObject, cVar )
    CATCH
       TRY
-         xResult := dbgSENDMSG( 0, oObject, cVar )
+         xResult := __objSendMsg( oObject, cVar )
       CATCH
          xResult := oErr:description
       END
@@ -689,7 +696,8 @@ static function inBreakpoint()
 				END SEQUENCE
 			#else
 				TRY 
-					ck:=evalExpression(aBreakInfo[nExtra+1],1)			
+					ck:=evalExpression(aBreakInfo[nExtra+1],1)	
+				catch		
 				END
 			#endif
 				if valtype(ck)<>'L' .or. ck=.F.
@@ -1041,7 +1049,7 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 
 #include <hbapi.h>
 #include <hbstack.h>
-#include <hbvmint.h>
+//#include <hbvmint.h>
 #include <hbapiitm.h>
 #include <stdio.h>
 

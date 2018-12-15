@@ -27,7 +27,7 @@
 			"program": "${workspaceRoot}/${fileBasenameNoExtension}",
 			"workspaceRoot": "${workspaceRoot}",
 			"workingDir": "${workspaceRoot}/",
-			"stopOnEntry": false
+			"stopOnEntry": true
 		}
 	]
 }

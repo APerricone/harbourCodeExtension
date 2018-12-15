@@ -8,5 +8,5 @@
 		"**/.DS_Store": true,
 		"**/.hbmk": true
 	},
-	"harbour.warningLevel": 3
+	"harbour.warningLevel": 2
 }
