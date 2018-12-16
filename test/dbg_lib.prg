@@ -14,6 +14,13 @@
 #define __dbgVMVarSGet hb_dbg_vmVarSGet
 #endif
 
+//#define _DEBUGDEBUG
+#ifdef _DEBUGDEBUG
+#command ? [<explist,...>] => dbgQOut( <explist> )
+#else
+#command ? [<explist,...>] => 
+#endif
+
 #ifndef HB_DBG_CS_LEN
 #define HB_DBG_CS_MODULE      1  /* module name (.prg file) */
 #define HB_DBG_CS_FUNCTION    2  /* function name */
@@ -64,7 +71,7 @@ static procedure CheckSocket(lStopSent)
 		do while hb_inetDataReady(t_oDebugInfo['socket']) = 1
 			tmp := hb_inetRecvLine(t_oDebugInfo['socket'])
 			if .not. empty(tmp)
-				//? "<<", tmp
+				? "<<", tmp
 				if subStr(tmp,4,1)==":"
 					sendCoumpoundVar(tmp, hb_inetRecvLine(t_oDebugInfo['socket']))
 					loop
@@ -396,7 +403,11 @@ static procedure sendFromInfo(prefix, cParams, HB_MV, lLocal)
 	local iCount := aParams[3]
 	local iLevel := aParams[4]
 	local i, cLine, cName, value
-	local nLocal := __mvDbgInfo( HB_MV_PRIVATE_LOCAL, iLevel )
+	#ifdef __XHARBOUR__
+		local nLocal := nVars
+	#else
+		local nLocal := __mvDbgInfo( HB_MV_PRIVATE_LOCAL, iLevel )
+	#endif
 	hb_inetSend(t_oDebugInfo['socket'],prefix+" "+alltrim(str(aParams[5]))+CRLF)
 	if iCount=0
 		iCount := nVars
@@ -486,7 +497,11 @@ static function getValue(req)
 					if i>len(v)
 						v := nil
 					else
-						v := hb_HValueAt(v,val(aIndices[i]))
+						#ifdef __XHARBOUR__
+							v := HGetValueAt(v,val(aIndices[i]))
+						#else
+							v := hb_HValueAt(v,val(aIndices[i]))
+						#endif
 					endif
 					exit
 				case "O"
@@ -536,8 +551,11 @@ static procedure sendCoumpoundVar(req, cParams )
 	LOCAL t_oDebugInfo := __DEBUGITEM()
 	//? "sendCoumpoundVar",req,cParams
 	if valtype(value) == "O"
-		//aData := __objGetValueList(value) // , value:aExcept())
+#ifdef __XHARBOUR__
+		aData := __objGetValueList(value) // , value:aExcept())
+#else
 		aData :=   __objGetMsgList( value )
+#endif
 		nMax := len(aData)
 	endif
 	hb_inetSend(t_oDebugInfo['socket'],req+CRLF)
@@ -558,8 +576,13 @@ static procedure sendCoumpoundVar(req, cParams )
 				vSend:=value[i]
 				exit
 			case "H"
-				vSend:=hb_HValueAt(value,i)
-				idx2 := format(hb_HKeyAt(value,i))
+				#ifdef __XHARBOUR__
+					vSend:=HGetValueAt(value,i)
+					idx2 := format(HGetKeyAt(value,i))
+				#else
+					vSend:=hb_HValueAt(value,i)
+					idx2 := format(hb_HKeyAt(value,i))
+				#endif
 				idx := alltrim(str(i))
 				exit
 			case "O"
@@ -569,6 +592,7 @@ static procedure sendCoumpoundVar(req, cParams )
 		endswitch
 		cLine := req + idx + ":" +;
 			idx2 + ":" + valtype(vSend) + ":" + format(vSend)
+		//? cLine
 		hb_inetSend(t_oDebugInfo['socket'],cLine + CRLF )
 	next
 
@@ -757,9 +781,6 @@ static procedure AddModule(aInfo)
 	local i, idx
 	#ifdef SAVEMODULES
 		local j, tmp, cc,fFileModules
-		if !file("modules.dbg")
-			fclose(fcreate("modules.dbg"))
-		endif
 		fFileModules := fopen("modules.dbg",1+64)
 		fSeek(fFileModules,0,2)
 	#endif
@@ -808,7 +829,7 @@ return
 static function replaceExpression(xExpr, __dbg, name, value) 
 	local aMatches := HB_REGEXALL("\b"+name+"\b",xExpr,.F./*CASE*/,/*line*/,/*nMat*/,/*nGet*/,.F.)
 	local i, cVal
-	if len(aMatches)=0
+	if empty(aMatches)
 		return xExpr
 	endif
 	aadd(__dbg, value )
@@ -944,39 +965,41 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 				__DEBUGITEM(t_oDebugInfo)
 				#ifdef SAVEMODULES
 					ferase("modules.dbg")
+					fclose(fcreate("modules.dbg"))
 				#endif
-			endif
-			if at("_INITSTATICS", uParam1)<>0
-				t_oDebugInfo['bInitStatics'] := .T.
-			elseif at("_INITGLOBALS", uParam1)<>0
-				t_oDebugInfo['bInitGlobals'] := .T.
-			elseif at("_INITLINES", uParam1)<>0
-				t_oDebugInfo['bInitLines'] := .T.
 			endif
 			// special case, the user press 'exit' but there is another method on same leve, I will go in it.
 			if t_oDebugInfo['maxLevel'] = t_oDebugInfo['__dbgEntryLevel'] -1 .and. t_oDebugInfo['__dbgEntryLevel'] = __dbgProcLevel()
 				t_oDebugInfo['lRunning'] := .F.
 			endif
+
 			i := rat(":",uParam1)
 			tmp := Array(HB_DBG_CS_LEN)
 			if i=0
 				tmp[HB_DBG_CS_MODULE] := uParam1
-				tmp[HB_DBG_CS_FUNCTION] := ""
+				tmp[HB_DBG_CS_FUNCTION] := procName(1)
 			else
 				tmp[HB_DBG_CS_MODULE] := left(uParam1,i-1)
 				tmp[HB_DBG_CS_FUNCTION] := substr(uParam1,i+1)
-			endif
-			if(t_oDebugInfo['bInitStatics'])
-				// Fix
-				tmp[HB_DBG_CS_MODULE] := procFile(1)
-				tmp[HB_DBG_CS_FUNCTION] := "(_INITSTATICS)"
 			endif
 			tmp[HB_DBG_CS_LINE] := procLine(1) // line
 			tmp[HB_DBG_CS_LEVEL] := __dbgProcLevel()-1 // level
 			tmp[HB_DBG_CS_LOCALS] := {} // locals
 			tmp[HB_DBG_CS_STATICS] := {} // statics
-			//? "MODULENAME", uParam1, uParam2, uParam3, valtype(uParam1), valtype(uParam2), valtype(uParam3),  __dbgProcLevel()-1,procLine(__dbgProcLevel()-1),procLine(__dbgProcLevel()-2),procLine(__dbgProcLevel()-3),procLine(1)
+			#ifdef SAVEMODULES
+				i := fopen("modules.dbg",1+64)
+				fSeek(i,0,2)
+				fWrite(i,"HB_DBG_MODULENAME "+tmp[HB_DBG_CS_MODULE]+" "+ tmp[HB_DBG_CS_FUNCTION]+e"\r\n")
+				fclose(i)
+			#endif
 			aAdd(t_oDebugInfo['aStack'], tmp)
+			if at("_INITSTATICS", tmp[HB_DBG_CS_FUNCTION])<>0
+				t_oDebugInfo['bInitStatics'] := .T.
+			elseif at("_INITGLOBALS", tmp[HB_DBG_CS_FUNCTION])<>0
+				t_oDebugInfo['bInitGlobals'] := .T.
+			elseif at("_INITLINES", tmp[HB_DBG_CS_FUNCTION])<>0
+				t_oDebugInfo['bInitLines'] := .T.
+			endif
 			exit
 		case HB_DBG_LOCALNAME
 			if t_oDebugInfo['bInitGlobals']
@@ -986,14 +1009,21 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			endif
 			exit
 		case HB_DBG_STATICNAME
+			#ifdef SAVEMODULES
+				i := fopen("modules.dbg",1+64)
+				fSeek(i,0,2)
+				fWrite(i,"STATICNAME "+valtype(uParam1)+" "+ valtype(uParam2)+" "+valtype(uParam3)+e"\r\n")
+				fclose(i)
+			#endif
+
 			if t_oDebugInfo['bInitStatics']
-				//? "STATICNAME - bInitStatics", len(uParam1), uParam2, uParam3, valtype(uParam1), valtype(uParam2), valtype(uParam3)
+				? "STATICNAME - bInitStatics", len(uParam1), uParam2, uParam3, valtype(uParam1), valtype(uParam2), valtype(uParam3)
 				//aEval(uParam1,{|x,n| QOut(n,valtype(x),x)})
 				AddStaticModule(uParam2, uParam3, uParam1)
 			elseif t_oDebugInfo['bInitGlobals']
-				//? "STATICNAME - bInitGlobals", uParam1, uParam2, uParam3
+				? "STATICNAME - bInitGlobals", uParam1, uParam2, uParam3
 			else
-				//? "STATICNAME", uParam1, uParam2, uParam3, valtype(uParam1), valtype(uParam2), valtype(uParam3),  __dbgProcLevel()
+				? "STATICNAME", uParam1, uParam2, uParam3, valtype(uParam1), valtype(uParam2), valtype(uParam3),  __dbgProcLevel()
 				//aEval(uParam1,{|x,n| QOut(n,valtype(x),x)})
 				aAdd(t_oDebugInfo['aStack'][len(t_oDebugInfo['aStack'])][HB_DBG_CS_STATICS], {uParam3, uParam2, "S", uParam1})
 			endif
@@ -1004,11 +1034,13 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			if t_oDebugInfo['bInitLines']
 				// I don't like this hack, shoud be better if in case of HB_DBG_ENDPROC 
 				// uParam1 is the returned value, it allow to show it in watch too...
-				* tmp := __GETLASTRETURN(10); ? 10,valtype(tmp),tmp
-				* tmp := __GETLASTRETURN(11); ? 11,valtype(tmp),tmp
-				tmp := __GETLASTRETURN(12) //; ? 12,valtype(tmp),tmp
-				* tmp := __GETLASTRETURN(13); ? 13,valtype(tmp),tmp
-				* tmp := __GETLASTRETURN(14); ? 14,valtype(tmp),tmp
+				// * Harbour is 12
+				// * xHarbur is 13
+				#ifdef __XHARBOUR__
+					tmp := __GETLASTRETURN(13) //; ? 13,valtype(tmp),tmp
+				#else
+					tmp := __GETLASTRETURN(12) //; ? 12,valtype(tmp),tmp
+				#endif
 				AddModule(tmp)
 			endif
 
@@ -1020,23 +1052,25 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			//TODO check if ErrorBlock is setted by user and save user's errorBlock
 			t_oDebugInfo['__dbgEntryLevel'] := __dbgProcLevel()
 			tmp := ErrorBlock()
-			if empty(tmp) .or. empty(t_oDebugInfo['errorBlock']) .or. !(t_oDebugInfo['errorBlock']==tmp)
-				//? "Error block changed " + procFile(1) + "("+alltrim(str(uParam1))+")"
-				//check if the new error block is an oldone
-				i:=aScan(t_oDebugInfo['errorBlockHistory'], {|x| x[1]==tmp })
-				if i>0 // it is an old one!
-					//? "OLD:" + alltrim(str(i))
-					t_oDebugInfo['userErrorBlock'] := t_oDebugInfo['errorBlockHistory',i,2]
-					t_oDebugInfo['errorBlock'] :=  t_oDebugInfo['errorBlockHistory',i,1]
-				else
-					//? "NEW:" + alltrim(str(i))
-					t_oDebugInfo['userErrorBlock'] := tmp
-					t_oDebugInfo['errorBlock'] :=  {| e | ErrorBlockCode( e ) }
-					aAdd(t_oDebugInfo['errorBlockHistory'],{t_oDebugInfo['errorBlock'], tmp })
+			#ifndef __XHARBOUR__ //temp
+				if empty(tmp) .or. empty(t_oDebugInfo['errorBlock']) .or. !(t_oDebugInfo['errorBlock']==tmp)
+					//? "Error block changed " + procFile(1) + "("+alltrim(str(uParam1))+")"
+					//check if the new error block is an oldone
+					i:=aScan(t_oDebugInfo['errorBlockHistory'], {|x| x[1]==tmp })
+					if i>0 // it is an old one!
+						//? "OLD:" + alltrim(str(i))
+						t_oDebugInfo['userErrorBlock'] := t_oDebugInfo['errorBlockHistory',i,2]
+						t_oDebugInfo['errorBlock'] :=  t_oDebugInfo['errorBlockHistory',i,1]
+					else
+						//? "NEW:" + alltrim(str(i))
+						t_oDebugInfo['userErrorBlock'] := tmp
+						t_oDebugInfo['errorBlock'] :=  {| e | ErrorBlockCode( e ) }
+						aAdd(t_oDebugInfo['errorBlockHistory'],{t_oDebugInfo['errorBlock'], tmp })
+					endif
+					__DEBUGITEM(t_oDebugInfo)
+					ErrorBlock( t_oDebugInfo['errorBlock'] )
 				endif
-				__DEBUGITEM(t_oDebugInfo)
-				ErrorBlock( t_oDebugInfo['errorBlock'] )
-			endif
+			#endif
 			t_oDebugInfo['error'] := nil
 			t_oDebugInfo['inError'] := .F.
 			t_oDebugInfo['aStack'][len(t_oDebugInfo['aStack'])][HB_DBG_CS_LINE] := uParam1			
@@ -1044,6 +1078,20 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			__dbgInvokeDebug(.F.)
 			exit
 	endswitch
+return
+
+#ifdef _DEBUGDEBUG
+static proc dbgQOut(...)
+	LOCAL nPar := PCOUNT()
+	LOCAL cMsg := ""
+	LOCAL oSocket := __DEBUGITEM()['socket']
+	IF nPar == 0 .or. empty(oSocket)
+   		RETURN
+	ENDIF
+	aEval(HB_APARAMS(), {|x| cMsg += hb_ValToStr(x) })
+	hb_inetSend(oSocket,"LOG:"+cMsg+CRLF)
+RETURN
+#endif
 
 #pragma BEGINDUMP
 
