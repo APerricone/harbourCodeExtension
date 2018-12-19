@@ -517,14 +517,19 @@ STATIC FUNCTION __dbgObjGetValue( nProcLevel, oObject, cVar )
    LOCAL oErr
 
 #ifdef __XHARBOUR__
+	LOCAL i
    TRY
-      xResult := __objSendMsg( oObject, cVar )
-   CATCH
-      TRY
-         xResult := __objSendMsg( oObject, cVar )
-      CATCH
-         xResult := oErr:description
-      END
+	  //xResult := __objSendMsg( oObject, cVar )
+	  xResult := __objGetValueList( oObject )
+	  cVar := upper(cVar)
+	  i:=aScan(xResult,{|x| upper(x[1])=cVar})
+	  if i>0
+		xResult := xResult[i,2]
+	  else
+		xResult := nil
+	  endif
+   CATCH oErr
+      xResult := oErr:description
    END
 #else
    BEGIN SEQUENCE WITH {|| Break() }
@@ -586,8 +591,13 @@ static procedure sendCoumpoundVar(req, cParams )
 				idx := alltrim(str(i))
 				exit
 			case "O"
-				idx2 := idx := aData[i]
-				vSend := __dbgObjGetValue(VAL(aInfos[2]),value, aData[i])
+				#ifdef __XHARBOUR__
+					idx2 := idx := aData[i,1]
+					vSend := aData[i,2] //__dbgObjGetValue(VAL(aInfos[2]),value, aData[i])
+				#else
+					idx2 := idx := aData[i]
+					vSend := __dbgObjGetValue(VAL(aInfos[2]),value, aData[i])
+				#endif
 				exit
 		endswitch
 		cLine := req + idx + ":" +;
