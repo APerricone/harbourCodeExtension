@@ -1,8 +1,8 @@
 {
     "name": "harbour",
     "displayName": "harbour",
-    "description": "Harbour language support for visual studio code",
-    "version": "0.7.6",
+    "description": "Harbour and xHarbour languages support for visual studio code",
+    "version": "0.7.7",
     "publisher": "aperricone",
     "icon": "harbourIcon.png",
     "main": "./src/extension",
@@ -137,10 +137,10 @@
                         "type": "harbour-dbg",
                         "request": "launch",
                         "name": "%harbour.initialConfigurations%",
-                        "program": "${workspaceRoot}/Program",
-                        "workingDir": "${workspaceRoot}/",
+                        "program": "${workspaceFolder}/Program",
+                        "workingDir": "${workspaceFolder}/",
                         "sourcePaths": [
-                            "${workspaceRoot}"
+                            "${workspaceFolder}"
                         ]
                     }
                 ],
@@ -152,9 +152,9 @@
                             "type": "harbour-dbg",
                             "request": "launch",
                             "name": "%harbour.configurationSnippets%",
-                            "program": "^\"\\${workspaceRoot}/${2:Program}\"",
-                            "workingDir": "${workspaceRoot}/",
-                            "sourcePaths": "^[\"\\${workspaceRoot}\"]"
+                            "program": "^\"\\${workspaceFolder}/${2:Program}\"",
+                            "workingDir": "${workspaceFolder}/",
+                            "sourcePaths": "^[\"\\${workspaceFolder}\"]"
                         }
                     }
                 ],
@@ -166,7 +166,7 @@
                         "properties": {
                             "workspaceRoot": {
                                 "type": "string",
-                                "default": "${workspaceRoot}",
+                                "default": "${workspaceFolder}",
                                 "deprecationMessage": "%harbour.launch.workspaceRoot%"
                             },
                             "program": {
@@ -176,7 +176,7 @@
                             "workingDir": {
                                 "type": "string",
                                 "description": "%harbour.launch.workingDir%",
-                                "default": "${workspaceRoot}/"
+                                "default": "${workspaceFolder}/"
                             },
                             "arguments": {
                                 "type": "array",
@@ -196,7 +196,7 @@
                                 "items": {
                                     "type": "string"
                                 },
-                                "default": []
+                                "default": ["${workspaceFolder}"]
                             }
                         }
                     }

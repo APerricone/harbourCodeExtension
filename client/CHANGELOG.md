@@ -1,42 +1,50 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
+## 0.7.7
+ - **Debugger**: Added beta xHarbour support
+ - **Debugger**: Fixed case when the module name contains colon
+ - **Debugger**: Fixed Log message without carriage return
+ - **syntax hightlight**: simplified datetime regex
+ - **syntax hightlight**: better for support
+ - **syntax hightlight**: added keywords
+
 ## 0.7.6
- - sysntax hightlight: fix  for datetime constant
- - sysntax hightlight: allow min #pragma and macro for inline miltiline string 
- - validation: added validation of opened file
- - sysntax hightlight: added __streaminclude syntax and fix __stream syntax
- - decorator: removed harbour decorator in not-harbour files.
+ - **syntax hightlight**: fix  for datetime constant
+ - **syntax hightlight**: allow min #pragma and macro for inline miltiline string 
+ - **validation**: added validation of opened file
+ - **syntax hightlight**: added __streaminclude syntax and fix __stream syntax
+ - **decorator**: removed harbour decorator in not-harbour files.
 
 ## 0.7.5
- - Added localization: English, Italian and Spanish (thanks to José Luis Sánchez for review)
+ - Added **localization**: English, Italian and Spanish (thanks to José Luis Sánchez for review)
 
 ## 0.7.4
- - Debugger: added sourcePaths in debugger, to allow to specify more than one directory with code.
+ - **Debugger**: added sourcePaths in debugger, to allow to specify more than one directory with code.
 
 ## 0.7.3
- - Fix: Get debugger code on linux and mac
+ - **Fix**: Get debugger code on linux and mac
 
 ## 0.7.2
- - Syntax: fixed text/endtext
+ - **Syntax**: fixed text/endtext
 
 ## 0.7.1
- - Debugger: Better support for conditional breakpoint and hit count breakoint 
- - Syntax: Added TEXT/ENDTEXT 
+ - **Debugger**: Better support for conditional breakpoint and hit count breakoint 
+ - **Syntax**: Added TEXT/ENDTEXT 
 
 ## 0.7.0
- - Debugger: [beta] added interception of error
- - Debugger: Better support for statics.
+ - **Debugger**: [beta] added interception of error
+ - **Debugger**: Better support for statics.
 
 ## 0.6.9
- - Debugger: fixed crash adding/removing breakpoints when the program running
- - Debugger: fixed freeze starting debug program without debugger
- - Validator: fixed "invalid filename" error in validation
+ - **Debugger**: fixed crash adding/removing breakpoints when the program running
+ - **Debugger**: fixed freeze starting debug program without debugger
+ - **Validator**: fixed "invalid filename" error in validation
 
 ## 0.6.8
- - Added command: "Harbour: Get debugger code"
- - Debugger: fixed startOnEntry = false
- - Debugger: Added support for conditional breakpoint, hit count breakoint and LogPoint
+ - **Added command**: "Harbour: Get debugger code"
+ - **Debugger**: fixed startOnEntry = false
+ - **Debugger**: Added support for conditional breakpoint, hit count breakoint and LogPoint
 
 
 ## 0.6.7
@@ -44,25 +52,25 @@ All notable changes to the "harbour" extension will be documented in this file.
  - better decorator code
 
 ## 0.6.6
- - enabled decorator (marks correspondent if, else, endif, for, next ect ect), BETA.
- - Fixed stall on signature request
+ - enabled **decorator** (marks correspondent if, else, endif, for, next ect ect), BETA.
+ - **Fix**ed stall on signature request
 
 ## 0.6.5
- - Server: parse c file searching harbour function
- - Fixed crash on signature for static proc/func
+ - **Server**: parse c file searching harbour function
+ - **Fix**: crash on signature for static proc/func
 
 ## 0.6.4
- - Fixed arguments counting when lone bracket are presents inside string
+ - **Fix**: arguments counting when lone bracket are presents inside string
 
 ## 0.6.3
- - Fixed debugger
+ - **Fix**ed debugger
 
 ## 0.6.2
- - Fixed server
+ - **Fix**ed server
 
 ## 0.6.1
- -  Fixed arguments counting when commas are presents inside string or inside curly or squared brackets
- - Added message when unable to start the executable on debugging
+ -  **Fix**ed arguments counting when commas are presents inside string or inside curly or squared brackets
+ - Added message when unable to start the executable on **debug**ging
 
 ## 0.6.0
  - Added signature for 342 standard procedure
@@ -102,10 +110,10 @@ All notable changes to the "harbour" extension will be documented in this file.
 - minor fixes on tmlanguage.
 
 ## 0.5.3
-- validation: added harbour.extraOptions to send extra options to harbour compiler.
+- **validation**: added harbour.extraOptions to send extra options to harbour compiler.
 
 ## 0.5.2
-- debugger: better support for object expression, need recompile the library from test\dbg_lib.prg
+- **debugger**: better support for object expression, need recompile the library from test\dbg_lib.prg
 
 ## 0.5.1
 - minimal optimization on debugger
