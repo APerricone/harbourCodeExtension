@@ -71,7 +71,7 @@ static procedure CheckSocket(lStopSent)
 		do while hb_inetDataReady(t_oDebugInfo['socket']) = 1
 			tmp := hb_inetRecvLine(t_oDebugInfo['socket'])
 			if .not. empty(tmp)
-				? "<<", tmp
+				//? "<<", tmp
 				if subStr(tmp,4,1)==":"
 					sendCoumpoundVar(tmp, hb_inetRecvLine(t_oDebugInfo['socket']))
 					loop
@@ -110,7 +110,7 @@ static procedure CheckSocket(lStopSent)
 						END_COM
 					COMMAND "EXIT" // go to callee procedure
 						t_oDebugInfo['lRunning'] := .T.
-						t_oDebugInfo['maxLevel'] := t_oDebugInfo['__dbgEntryLevel'] -1
+						t_oDebugInfo['maxLevel'] := -2
 						lNeedExit := .T.
 						END_COM
 					COMMAND "STACK" 
@@ -167,7 +167,7 @@ static procedure CheckSocket(lStopSent)
 		enddo
 		if lNeedExit
 			return
-		endif	
+		endif
 		if t_oDebugInfo['lRunning']
 			if inBreakpoint()
 				t_oDebugInfo['lRunning'] := .F.
@@ -184,6 +184,7 @@ static procedure CheckSocket(lStopSent)
 				endif
 			endif
 			if .not. empty(t_oDebugInfo['maxLevel']) 
+				//? "maxLevel",t_oDebugInfo['maxLevel'], t_oDebugInfo['__dbgEntryLevel']	
 				if t_oDebugInfo['maxLevel'] < t_oDebugInfo['__dbgEntryLevel']
 					// we are not in the same procedure
 					return
@@ -978,10 +979,7 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 					fclose(fcreate("modules.dbg"))
 				#endif
 			endif
-			// special case, the user press 'exit' but there is another method on same leve, I will go in it.
-			if t_oDebugInfo['maxLevel'] = t_oDebugInfo['__dbgEntryLevel'] -1 .and. t_oDebugInfo['__dbgEntryLevel'] = __dbgProcLevel()
-				t_oDebugInfo['lRunning'] := .F.
-			endif
+			//? "moduleName",uParam1,t_oDebugInfo['maxLevel'], t_oDebugInfo['__dbgEntryLevel']
 
 			i := rat(":",uParam1)
 			tmp := Array(HB_DBG_CS_LEN)
@@ -1027,19 +1025,24 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			#endif
 
 			if t_oDebugInfo['bInitStatics']
-				? "STATICNAME - bInitStatics", len(uParam1), uParam2, uParam3, valtype(uParam1), valtype(uParam2), valtype(uParam3)
+				//? "STATICNAME - bInitStatics", len(uParam1), uParam2, uParam3, valtype(uParam1), valtype(uParam2), valtype(uParam3)
 				//aEval(uParam1,{|x,n| QOut(n,valtype(x),x)})
 				AddStaticModule(uParam2, uParam3, uParam1)
 			elseif t_oDebugInfo['bInitGlobals']
-				? "STATICNAME - bInitGlobals", uParam1, uParam2, uParam3
+				//? "STATICNAME - bInitGlobals", uParam1, uParam2, uParam3
 			else
-				? "STATICNAME", uParam1, uParam2, uParam3, valtype(uParam1), valtype(uParam2), valtype(uParam3),  __dbgProcLevel()
+				//? "STATICNAME", uParam1, uParam2, uParam3, valtype(uParam1), valtype(uParam2), valtype(uParam3),  __dbgProcLevel()
 				//aEval(uParam1,{|x,n| QOut(n,valtype(x),x)})
 				aAdd(t_oDebugInfo['aStack'][len(t_oDebugInfo['aStack'])][HB_DBG_CS_STATICS], {uParam3, uParam2, "S", uParam1})
 			endif
 			exit
 		case HB_DBG_ENDPROC
-			//? "EndPROC", uParam1, uParam2, uParam3, valtype(uParam1), valtype(uParam2), valtype(uParam3) 
+			//? "EndPROC", uParam1, uParam2, uParam3, valtype(uParam1), valtype(uParam2), valtype(uParam3)
+			//? "EndPROC",procName(1),t_oDebugInfo['maxLevel'], t_oDebugInfo['__dbgEntryLevel']
+			if t_oDebugInfo['maxLevel']=-2
+				t_oDebugInfo['lRunning']:=.F.
+			endif
+ 
 			aSize(t_oDebugInfo['aStack'],len(t_oDebugInfo['aStack'])-1)
 			if t_oDebugInfo['bInitLines']
 				// I don't like this hack, shoud be better if in case of HB_DBG_ENDPROC 
