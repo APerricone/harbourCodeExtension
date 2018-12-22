@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
+## 0.7.8
+ - **Debugger**: Added support for copy expression, copy value and add to watch.
+ - **Debugger**: Changed view of date and time value on xHarbour to use a valid xHarbour format.
+
 ## 0.7.7
  - **Debugger**: Added beta xHarbour support
  - **Debugger**: Fixed case when the module name contains colon

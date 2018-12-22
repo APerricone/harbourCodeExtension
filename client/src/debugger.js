@@ -28,6 +28,8 @@ var harbourDebugSession = function()
 	this.breakpoints = {};
 	/** @type{string[]} */
 	this.variableCommands = [];
+	/** @type{string[]} */
+	this.variableEvaluations = [];
 	/** @type{DebugProtocol.StackResponse} */
 	this.stack = [];
 	this.stackArgs = [];
@@ -285,6 +287,8 @@ harbourDebugSession.prototype.sendScope = function(inError)
 	//TODO: "GLOBALS","EXTERNALS"
 	this.varResp = [];
 	this.varResp.length = this.variableCommands.length;	
+	this.variableEvaluations =  [];
+	this.variableEvaluations.length = this.variableCommands.length;	
 	var n=0;
 	var scopes = [];
 	if(inError)
@@ -320,39 +324,49 @@ harbourDebugSession.prototype.variablesRequest = function(response,args)
 		this.sendResponse(response)
 }
 
-harbourDebugSession.prototype.getVarReference = function(line)
+harbourDebugSession.prototype.getVarReference = function(line,eval)
 {
 	var r = this.variableCommands.indexOf(line);
 	if(r>=0) return r+1;
 	var infos = line.split(":");
 	if(infos.length>4)
 	{ //the value can contains : , we need to rejoin it.
-		infos[2] = infos.splice(2).join(";").slice(0,-1);
+		infos[2] = infos.splice(2).join(":").slice(0,-1);
 		infos.length = 3;
 		line = infos.join(":")+":"
 	}
 	this.variableCommands.push(line)
+	this.variableEvaluations.push(eval)
 	//this.sendEvent(new debugadapter.OutputEvent("added variable command:'"+line+"'\r\n","stdout"))
 	return this.variableCommands.length;
 }
 
-harbourDebugSession.prototype.getVariableFormat = function(dest,type,value,valueName,line)
+harbourDebugSession.prototype.getVariableFormat = function(dest,type,value,valueName,line,id)
 {
 	dest[valueName] = value;
+	dest.type = type;
+	if(["E","B","P"].indexOf(dest.type)==-1) {
+		dest.evaluateName = "";
+		if(this.variableEvaluations[id])
+			dest.evaluateName = this.variableEvaluations[id];
+		dest.evaluateName += dest.name;
+		if(this.variableEvaluations[id] && this.variableEvaluations[id].endsWith("["))
+			dest.evaluateName += "]";
+	}
 	switch(type)
 	{
 		case "A":
-			dest.variablesReference = this.getVarReference(line);
+			dest.variablesReference = this.getVarReference(line,dest.evaluateName+"[");
 			dest[valueName] = `ARRAY(${value})`;
 			dest.indexedVariables = parseInt(value);
 			break;
 		case "H":
-			dest.variablesReference = this.getVarReference(line);
+			dest.variablesReference = this.getVarReference(line,dest.evaluateName+"[");
 			dest[valueName] = `HASH(${value})`;
 			dest.namedVariables = parseInt(value);
 			break;
 		case "O":
-			dest.variablesReference = this.getVarReference(line);
+			dest.variablesReference = this.getVarReference(line,dest.evaluateName+":");
 			var infos = value.split(" ")
 			dest[valueName] = `CLASS ${infos[0]}`;
 			dest.namedVariables = parseInt(infos[1]);
@@ -382,7 +396,7 @@ harbourDebugSession.prototype.sendVariables = function(id,line)
 			infos[6] = infos.splice(6).join(":");
 		}
 		var v = new debugadapter.Variable(infos[4],infos[6],line);
-		v = this.getVariableFormat(v,infos[5],infos[6],"value",line);
+		v = this.getVariableFormat(v,infos[5],infos[6],"value",line,id);
 		vars.push(v);		
 	}
 }
@@ -560,10 +574,11 @@ harbourDebugSession.prototype.processExpression = function(line)
 	var infos = line.split(":");
 	if(infos.length>4)
 	{ //the value can contains : , we need to rejoin it.
-		infos[3] = infos.splice(3).join(";");
+		infos[3] = infos.splice(3).join(":");
 	}
 	var resp = this.evaluateResponses.shift();
 	var line = "EXP:" + infos[1] + ":" + resp.body.result + ":";
+	resp.body.name = resp.body.result
 	resp.body = this.getVariableFormat(resp.body,infos[2],infos[3],"result",line);
 	this.sendResponse(resp);	
 }

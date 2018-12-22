@@ -257,10 +257,17 @@ static function format(value)
 			return alltrim(str(value))
 		case "L"
 			return iif(value,".T.",".F.")
+	#ifdef __XHARBOUR__
+		case "D"
+			return '{^ '+strTran(left(hb_TsToStr(value),10),"-","/")+' }'
+		case "T"
+			return '{^ '+strTran(hb_TsToStr(value),"-","/")+' }'
+	#else
 		case "D"
 			return 'd"'+left(hb_TsToStr(value),10)+'"'
 		case "T"
 			return 't"'+hb_TsToStr(value)+'"'
+	#endif
 		case "A"
 		case "H"
 			return alltrim(str(len(value)))
@@ -1037,6 +1044,7 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			endif
 			exit
 		case HB_DBG_ENDPROC
+			//uParam1 := __GETLASTRETURN(12)
 			//? "EndPROC", uParam1, uParam2, uParam3, valtype(uParam1), valtype(uParam2), valtype(uParam3)
 			//? "EndPROC",procName(1),t_oDebugInfo['maxLevel'], t_oDebugInfo['__dbgEntryLevel']
 			if t_oDebugInfo['maxLevel']=-2
@@ -1101,7 +1109,7 @@ static proc dbgQOut(...)
 	IF nPar == 0 .or. empty(oSocket)
    		RETURN
 	ENDIF
-	aEval(HB_APARAMS(), {|x| cMsg += hb_ValToStr(x) })
+	aEval(HB_APARAMS(), {|x| cMsg += hb_ValToStr(x)+" " })
 	hb_inetSend(oSocket,"LOG:"+cMsg+CRLF)
 RETURN
 #endif
