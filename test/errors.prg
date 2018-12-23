@@ -1,14 +1,14 @@
-/** PERRY */
-/*
-#include <hbclass.ch>
+// errors.prg
 
-class oggetto
-   METHOD aBitmap( n )      INLINE ( If( empty(n) .or. (n > 0 .and. n <= 10), 5 , nil ) )
-endclass
-//*/
-proc test()
-	LOCAL i:= 1, b:= "  fff"
-	i += 2
-	? i
-	? j, pippo
+static lNoComment
+
+/**********************************
+ main func
+ It is important
+**********************************/
+proc main(a,b)
+	/* test declaration */
+	local testDecl:=::soo
 return
+
+main()

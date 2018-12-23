@@ -410,6 +410,8 @@ function getWorkspaceSignatures(word, doc, className, nC)
             }
             s["label"] += ")"
             s["parameters"]=subParams;
+            if(info.comment && info.comment.trim().length>0)
+                s["documentation"]=info.comment 
             if(subParams.length>nC)
                 signatures.push(s);
         }

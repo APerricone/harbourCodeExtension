@@ -22,6 +22,7 @@ Provider.prototype.Clear = function()
 	this.currentDocument = "";
 	this.currentClass = undefined;
 	this.currentMethod = undefined;
+	this.currentComment = "";
 }
 
 /**
@@ -33,9 +34,10 @@ Provider.prototype.Clear = function()
  * @param {number} startLine 
  * @param {number} startCol 
  * @param {number} endLine 
- * @param {number} endCol 
+ * @param {number} endCol
+ * @param {string} [comment] 
  */
-function Info(name,kind,parent,document,startLine,startCol,endLine,endCol)
+function Info(name,kind,parent,document,startLine,startCol,endLine,endCol,comment)
 {
 	/** @type {string} */
 	this.name = name;
@@ -53,6 +55,8 @@ function Info(name,kind,parent,document,startLine,startCol,endLine,endCol)
 	this.endLine = endLine;
 	/** @type {number} */
 	this.endCol = endCol;
+	if(comment)
+		this.comment = comment.substr(2);
 }
 
 Provider.prototype.addInfo = function(name,kind,parent, search)
@@ -68,14 +72,16 @@ Provider.prototype.addInfo = function(name,kind,parent, search)
 			if(m)
 			{
 				var ii = new Info(name,kind,parent,this.currentDocument,
-					this.startLine+i,m.index,this.startLine+i,m.index+name.length);
+					this.startLine+i,m.index,this.startLine+i,m.index+name.length, this.currentComment);
+				this.currentComment=""
 				this.funcList.push(ii);
 				return ii;
 			}			
 		}
 	}
 	var ii = new Info(name,kind,parent,this.currentDocument,
-		this.startLine,0,this.lineNr,1000);
+		this.startLine,0,this.lineNr,1000, this.currentComment);
+	this.currentComment=""
 	this.funcList.push(ii);
 	return ii;
 }
@@ -86,7 +92,12 @@ Provider.prototype.linePP = function(line)
 	if(this.comment)
 	{
 		var eC = line.indexOf("*/");
-		if(eC==-1) return;
+		if(eC==-1)
+		{
+			this.currentComment += "\r\n"+line;
+			return;
+		}
+		this.currentComment += "\r\n" + line.substr(0,eC)
 		line = line.substr(0,eC+2).replace(/[^\s]/g," ") + line.substr(eC+2);
 		this.comment = false;
 	}
@@ -100,19 +111,28 @@ Provider.prototype.linePP = function(line)
 	this.cont = line.endsWith(";") && !this.cMode;
 }
 
-Provider.prototype.linePrepare = function()
+Provider.prototype.linePrepare = function(line)
 {
-	var justStart = true;
-	var precC = "",c;
+	var justStart = true, precJustStart=true;
+	var precC = " ",c= " ";
 	var string = "";
-	if(this.currLine.trim().match(/^\s*NOTE\s/i) || this.currLine.trim().length == 0)
+	if(this.currLine.trim().length == 0)
 	{
+		if(line.trim().length == 0)
+			this.currentComment="";
+		this.currLine="";
+		return;
+	}
+	if(this.currLine.trim().match(/^NOTE\s/i))
+	{
+		this.currentComment += "\r\n"+this.currLine.trim().substr(4);
 		this.currLine="";
 		return;
 	}
 	for(var i=0;i<this.currLine.length;i++)
 	{
 		precC = c;
+		precJustStart = justStart;
 		c = this.currLine[i];
 		if(justStart)
 		{
@@ -137,12 +157,16 @@ Provider.prototype.linePrepare = function()
 				var endC = this.currLine.indexOf("*/",i+1)
 				if(endC>0)
 				{
+					this.currentComment="\r\n"+this.currLine.substr(i+1,endC-i-1)
 					this.currLine = this.currLine.substr(0,i-1) + 
 							" ".repeat(endC-i+3) +
 							this.currLine.substr(endC+2);
 					continue;
 				} else
 				{
+					if(!justStart)
+						this.currentComment=""
+					this.currentComment+="\r\n"+this.currLine.substr(i+1)
 					this.comment = true;
 					this.currLine = this.currLine.substr(0,i-1)
 					return;
@@ -151,12 +175,16 @@ Provider.prototype.linePrepare = function()
 			if(justStart)
 			{
 				// commented line: skip
+				this.currentComment+="\r\n"+this.currLine.substr(i+1)
 				this.currLine="";
 				return;
 			}
 		}
 		if((c=="/" && precC=="/")||(c=="&" && precC=="&"))
 		{
+			if(!precJustStart)
+				this.currentComment=""
+			this.currentComment+="\r\n"+this.currLine.substr(i+1)
 			this.currLine = this.currLine.substr(0,i-1)
 			return;
 		}
@@ -194,7 +222,7 @@ Provider.prototype.parseDeclareList = function(list,kind,parent)
 		var filter=undefined;
 		switch(i)
 		{
-			case 0: filter = /:=[^,]/g; break; 		// Assegnation
+			case 0: filter = /:=(?:[^,]|$)*/g; break; 		// Assegnation
 			case 1: filter = /;\s*\r?\n/g; break;	//  New line
 			case 2: filter = /'[^']*'/g; break;		// '' string
 			case 3: filter = /"[^"]*"/g; break;		// "" string
@@ -213,6 +241,7 @@ Provider.prototype.parseDeclareList = function(list,kind,parent)
 	}
 	list=list.split(",");
 	//return list.split(",");
+	if(list.length>1) this.currentComment = ""
 	for (var i = 0; i < list.length; i++) 
 	{
 		var m = list[i].split(/\s+/).filter((el) => el.length!=0);
@@ -347,7 +376,7 @@ Provider.prototype.parse = function(line)
 {
 	this.linePP(line);
 	if(this.comment || this.cont) return;
-	this.linePrepare();
+	this.linePrepare(line);
 	if(this.currLine.trim().length==0) return;
 	/** @type{string[]} */
 	var words = this.currLine.split(/\s/).filter((el) => el.length!=0);

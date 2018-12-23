@@ -1,14 +1,11 @@
 :start
-harbour %1.prg -oobj\%1.c -I%HB_INSTALL_PREFIX%\include -gc0 -b 
+harbour %1.prg -oobj\%1.c -I%HB_INSTALL_PREFIX%\include -gc2 -b 
 IF %ERRORLEVEL% GEQ 1000 goto setup 
 cl obj\%1.c -I%HB_INSTALL_PREFIX%\include  /c /Foobj/%1.obj 
-link obj/%1.obj /libpath:%HB_INSTALL_PREFIX%\lib /subsystem:windows ^
-      code_dbgX.lib vm.lib rtl.lib common.lib rdd.lib pcrepos.lib ^
-    macro.lib dbfntx.lib dbffpt.lib hbsix.lib lang.lib gtcgi.lib    
-::    gtwin.lib compiler.lib^
-
-::zlib.lib gtwin.lib pp.lib bmdbfcdx.lib redbfcdx.lib hsx.lib sixcdx.lib ct.lib tip.lib usrrdd.lib rdds.lib
-::vm.lib rtl.lib common.lib
+link obj/%1.obj /libpath:%HB_INSTALL_PREFIX%\lib /subsystem:console ^
+    code_dbgX.lib vm.lib rtl.lib common.lib rdd.lib pcrepos.lib ^
+    macro.lib dbfntx.lib dbffpt.lib hbsix.lib lang.lib gtwin.lib    
+:: 
 goto exit
 
 :setup

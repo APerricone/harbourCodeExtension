@@ -2,6 +2,7 @@
 All notable changes to the "harbour" extension will be documented in this file.
 
 ## 0.7.8
+ - **Server**: show comment before function declaration as help
  - **Debugger**: Added support for copy expression, copy value and add to watch.
  - **Debugger**: Changed view of date and time value on xHarbour to use a valid xHarbour format.
 
@@ -14,8 +15,8 @@ All notable changes to the "harbour" extension will be documented in this file.
  - **syntax hightlight**: added keywords
 
 ## 0.7.6
- - **syntax hightlight**: fix  for datetime constant
- - **syntax hightlight**: allow min #pragma and macro for inline miltiline string 
+ - **syntax hightlight**: fix for datetime constant
+ - **syntax hightlight**: allow min #pragma and macro for inline multiline string 
  - **validation**: added validation of opened file
  - **syntax hightlight**: added __streaminclude syntax and fix __stream syntax
  - **decorator**: removed harbour decorator in not-harbour files.

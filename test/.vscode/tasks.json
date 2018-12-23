@@ -1,19 +1,20 @@
 {
     // See https://go.microsoft.com/fwlink/?LinkId=733558
     // for the documentation about the tasks.json format
-    "version": "0.1.0",
-    "command": "hbmk2",
-    "isShellCommand": true,
-    "suppressTaskName": true,
-    "showOutput": "always",
-    "windows": {
-        "command": "myBuild.bat"
-    },
+    "version": "2.0.0",
+    "type": "shell",
     "tasks": [
         {
-            "taskName": "build",
-            "isBuildCommand": true,
-            "args": [ "-lcode_dbg", "-L.", "${relativeFile}", "-gtcgi", "-w", "-ql", "-b", "-gc3", "-inc", "-debug"],
+            "label": "build",
+            "command": "hbmk2",
+            "windows": {
+                "command": "myBuild.bat"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "args": [ "-lcode_dbg", "-L.", "${relativeFile}", "-gtcgi", "-w", "-ql", "-b", "-gc3", "-winuni", "-debug"],
             "problemMatcher": [
             {
                 "owner": "cpp",
@@ -32,8 +33,11 @@
             }, "$harbour"]
         },
         {
-            "taskName": "build_noLib",
-            "isBuildCommand": false,
+            "label": "build_noLib",
+            "command": "hbmk2",
+            "windows": {
+                "command": "myBuild.bat"
+            },
             "args": [ "${relativeFile}", "-gtcgi", "-w", "-ql", "-debug", "-inc" ],
             "problemMatcher": [
             {
@@ -53,8 +57,33 @@
             }, "$harbour"]
         },
         {
-            "taskName": "createLibrary",
-            "args": [ "dbg_lib", "-w", "-ql", "-ocode_dbg","-gc3", "-hblib","-inc"],
+            "label": "createLibrary",
+            "command": "hbmk2",
+            "windows": {
+                "command": "myBuild.bat"
+            },
+            "args": [ "dbg_lib", "-w", "-ql", "-ocode_dbg","-gc3", "-hblib","-inc","-winuni"],
+            "problemMatcher": [
+            {
+                "owner": "cpp",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceRoot}"
+                ],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5
+                }
+            }, "$harbour"]
+        },
+        {
+            "label": "createLibraryX",
+            "command": "myBuildX.bat",
+            "args": [ "dbg_lib", "-ocode_dbgX", "-gc3", "-hblib","-inc","-winuni"],
             "problemMatcher": [
             {
                 "owner": "cpp",
