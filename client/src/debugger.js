@@ -37,6 +37,8 @@ var harbourDebugSession = function()
 	/** @type{string} */
 	this.queue = "";
 	this.evaluateResponses = [];
+	/** @type{DebugProtocol.CompletionsResponse} */
+	this.completionsResponse = undefined;
 }
 
 harbourDebugSession.prototype = new debugadapter.DebugSession();
@@ -94,6 +96,11 @@ harbourDebugSession.prototype.processInput = function(buff)
 			this.sendScope(line[8]=='T')
 			continue;
 		}
+		if(line.startsWith("COMPLETITION"))
+		{
+			this.processCompletion(line);
+			continue;
+		}
 		for(var j=this.variableCommands.length-1;j>=0;j--)
 		{
 			if(line.startsWith(this.variableCommands[j]))
@@ -124,6 +131,7 @@ harbourDebugSession.prototype.initializeRequest = function (response, args)
 	response.body.supportsConditionalBreakpoints = true;
 	response.body.supportsHitConditionalBreakpoints = true;
 	response.body.supportsLogPoint = true;
+	response.body.supportsCompletionsRequest = true;
 	//response.body.supportsEvaluateForHovers = true; too risky
 	this.sendResponse(response);
 };
@@ -583,6 +591,42 @@ harbourDebugSession.prototype.processExpression = function(line)
 	this.sendResponse(resp);	
 }
 
+/// Completition
+
+/**
+ * @param response{DebugProtocol.CompletionsResponse}
+ * @param args{DebugProtocol.CompletionsArguments}
+ */
+harbourDebugSession.prototype.completionsRequest = function(response, args)
+{
+	this.completionsResponse = response;
+	this.command(`COMPLETITION\r\n${args.frameId+1 || this.currentStack}:${args.text}\r\n`)	
+}
+
+/**
+ * @param line{string}
+ */
+harbourDebugSession.prototype.processCompletion = function()
+{
+	this.processLine = function(line)
+	{
+		if(line == "END")
+		{
+			this.sendResponse(this.completionsResponse);
+			this.processLine = undefined;
+			return;
+		}
+		if(!this.completionsResponse.body) this.completionsResponse.body={};
+		if(!this.completionsResponse.body.targets) this.completionsResponse.body.targets=[];
+		var type = line.substr(0,line.indexOf(":"));
+		line = line.substr(line.indexOf(":")+1);
+		var thisCompletion = new debugadapter.CompletionItem(line,0);
+		thisCompletion.type = type=="F"? 'function': 
+							  type=="M"? 'method' : 
+							  type=="D"? 'property' : 'variable';
+		this.completionsResponse.body.targets.push(thisCompletion);
+	}	
+}
 
 
 /// END

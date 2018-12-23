@@ -158,7 +158,10 @@ static procedure CheckSocket(lStopSent)
 							hb_inetSend(t_oDebugInfo['socket'],"ERR:0:0::Error:O:" + format(t_oDebugInfo['error'])+CRLF)
 						endif
 						hb_inetSend(t_oDebugInfo['socket'],"END"+CRLF)
-					END_COM
+						END_COM
+					COMMAND "COMPLETITION"
+						sendCompletition(hb_inetRecvLine(t_oDebugInfo['socket']))
+						END_COM
 				END_C	
 #undef BEGIN_C
 #undef COMMAND 
@@ -922,8 +925,8 @@ return xResult
 
 static procedure sendExpression( xExpr ) 
 	LOCAL xResult
-	   LOCAL cType, level, iDots := at(":",xExpr)
-	   LOCAL t_oDebugInfo := __DEBUGITEM()
+	LOCAL cType, level, iDots := at(":",xExpr)
+	LOCAL t_oDebugInfo := __DEBUGITEM()
 	level := val(left(xExpr,iDots))
 	xResult :=  evalExpression( substr(xExpr,iDots+1), level)
 	if valtype(xResult)="O" .and. xResult:ClassName() == "ERROR"
@@ -935,6 +938,139 @@ static procedure sendExpression( xExpr )
 	ENDIF
 	hb_inetSend(t_oDebugInfo['socket'],"EXPRESSION:"+alltrim(str(level))+":"+cType+":"+xResult+CRLF)
 return
+
+static procedure sendCompletition( cLine )
+	LOCAL iDots := at(":",cLine), cResult:="COMPLETITION"+CRLF
+	LOCAL level := val(left(cLine,iDots-1))
+	LOCAL t_oDebugInfo := __DEBUGITEM()
+	cLine := substr(cLine,iDots+1)
+	if at(":",cLine)>0 //contains : ?
+		cResult+=classSymbols(cLine,level)
+	else
+		cResult+=normalSymbols(cLine,level)
+	endif
+	cResult+="END"+CRLF
+	hb_inetSend(t_oDebugInfo['socket'],cResult)
+return
+
+static func classSymbols(cLine,level)
+	local oClass, aData, aMethods
+	local cResult := "", i,cName, iLen
+	LOCAL iDots := rat(":",cLine)
+	? "CLASSSYMBOL",cLine, iDots,left(cLine,iDots-1) 
+	if(iDots>0)
+		oClass := evalExpression(left(cLine,iDots-1),level)
+	else
+		return ""
+	endif
+	if valtype(oClass)<>"O"
+		return ""
+	endif
+	cLine := substr(cLine, iDots+1)
+	iLen := len(cLine)
+	aData :=  __objGetMsgList( oClass )
+	aMethods :=  __objGetMethodList( oClass )
+	for i:=1 to len(aData)
+		cName := aData[i]
+		if iLen=0 .or. left(cName,iLen)=cLine
+			cResult+="D:"+cName+CRLF
+		endif
+	next
+	for i:=1 to len(aMethods)
+		cName := aMethods[i]
+		if iLen=0 .or. left(cName,iLen)=cLine
+			cResult+="M:"+cName+CRLF
+		endif
+	next
+return cResult
+
+static func normalSymbols(cLine,level)
+	LOCAL t_oDebugInfo := __DEBUGITEM()
+	local aStack := t_oDebugInfo['aStack']
+	local aModules := t_oDebugInfo['aModules']
+	LOCAL iLen:=len(cLine), cName
+	LOCAL cResult:="", i
+	LOCAL iStack := GetStackId(level,aStack)
+	local cModule, idxModule
+	? "Normal symbol"
+	if iStack>0
+		cModule := lower(aStack[iStack,HB_DBG_CS_MODULE])
+		idxModule := aScan(aModules, {|v| v[1]=cModule})
+	endif
+	cLine := upper(cLine)
+	if iStack>0
+		// returns all locals
+		for i:=1 to len(aStack[iStack,HB_DBG_CS_LOCALS])
+			cName := aStack[iStack,HB_DBG_CS_LOCALS,i,HB_DBG_VAR_NAME]
+			if left(cName,iLen)=cLine
+				cResult+="L:"+cName+CRLF
+			endif
+		next
+		// returns all proc statics
+		for i:=1 to len(aStack[iStack,HB_DBG_CS_STATICS])
+			cName := aStack[iStack,HB_DBG_CS_STATICS,i,HB_DBG_VAR_NAME]
+			if left(cName,iLen)=cLine
+				cResult+="S:"+cName+CRLF
+			endif
+		next
+	endif
+	// returns all public
+	for i:=1 to __mvDbgInfo( HB_MV_PUBLIC )
+		__mvDbgInfo( HB_MV_PUBLIC, i, @cName )
+		if left(cName,iLen)=cLine
+			cResult+="PB:"+cName+CRLF
+		endif
+	next
+	// returns all private
+	for i:=1 to __mvDbgInfo( HB_MV_PRIVATE )
+		__mvDbgInfo( HB_MV_PRIVATE, i, @cName )
+		if left(cName,iLen)=cLine
+			cResult+="PR:"+cName+CRLF
+		endif
+	next
+	// returns all module statics
+	if idxModule>0
+		for i:=1 to len(aModules[idxModule,4])
+			cName :=  aModules[idxModule,4,i,HB_DBG_VAR_NAME]
+			if left(cName,iLen)=cLine
+				cResult+="S:"+cName+CRLF
+			endif
+		next
+	endif
+	if len(cLine)>0
+		cResult+=AddDynSymbols(cLine) 
+	endif
+return cResult
+
+static func AddDynSymbols(cmd)
+    LOCAL uiFirst := 0,uiLast := __DynSCount()
+    local uiMiddle, cCurrent, cRet := ""
+    //cmd := upper(cmd)
+    do while  uiFirst < uiLast  
+        uiMiddle = hb_bitshift(( uiFirst + uiLast ), -1)
+        cCurrent := __DynSGetName(uiMiddle)
+        if cCurrent==cmd
+            exit
+        endif
+        if cCurrent<cmd
+          uiLast := uiMiddle
+        else 
+          uiFirst := uiMiddle + 1
+        endif
+    enddo
+    do while __DynSGetName(uiMiddle)<cmd
+        uiMiddle -= 1
+    enddo
+    for uiMiddle:= uiMiddle to 0 step -1
+        cCurrent := __DynSGetName(uiMiddle)
+        if left(cCurrent,len(cmd))<>cmd
+            exit
+		endif
+		if __DynSIsFun(uiMiddle)
+			cRet+="F:"+cCurrent+CRLF
+		endif
+    next
+return cRet
 
 STATIC PROCEDURE ErrorBlockCode( e )
 	LOCAL t_oDebugInfo := __DEBUGITEM()

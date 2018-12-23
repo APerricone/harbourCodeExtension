@@ -9,8 +9,7 @@
 - Symbol Definitions in folder provider (access it by pressing <kbd>CTRL</kbd>+<kbd>P</kbd> then <kbd>#</kbd>)
 
 ## Requirements
-
-Currently only Harbour is supported, sometime is to set `harbour.compilerExecutable` with complete path.
+See the [wiki](https://github.com/APerricone/harbourCodeExtension/wiki) for more information.
 
 ## Extension Settings
 This extension contributes the following settings:
