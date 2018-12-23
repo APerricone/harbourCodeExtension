@@ -2,7 +2,7 @@
 All notable changes to the "harbour" extension will be documented in this file.
 
 ## 0.7.8
- - **Server**: show comment before function declaration as help
+ - **Server**: [show comment before function declaration as help](https://github.com/APerricone/harbourCodeExtension/wiki/Debugger#copy-expression)
  - **Debugger**: Added support for copy expression, copy value and add to watch.
  - **Debugger**: Changed view of date and time value on xHarbour to use a valid xHarbour format.
 

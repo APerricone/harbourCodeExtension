@@ -2,7 +2,7 @@
     "name": "harbour",
     "displayName": "harbour",
     "description": "Harbour and xHarbour languages support for visual studio code",
-    "version": "0.7.7",
+    "version": "0.7.8",
     "publisher": "aperricone",
     "icon": "harbourIcon.png",
     "main": "./src/extension",
@@ -22,8 +22,8 @@
         "Debuggers"
     ],
     "dependencies": {
-        "vscode-debugadapter": "^1.32.1",
-        "vscode-debugprotocol": "^1.32.0",
+        "vscode-debugadapter": "^1.33.0",
+        "vscode-debugprotocol": "^1.33.0",
         "vscode-languageclient": "^3.5.1",
         "vscode-nls": "^4.0.0"
     },
@@ -196,7 +196,9 @@
                                 "items": {
                                     "type": "string"
                                 },
-                                "default": ["${workspaceFolder}"]
+                                "default": [
+                                    "${workspaceFolder}"
+                                ]
                             }
                         }
                     }
