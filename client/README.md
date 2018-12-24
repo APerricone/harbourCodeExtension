@@ -10,7 +10,7 @@
 
 ## Requirements
 
-Currently only Harbour is supported, sometime is to set `harbour.compilerExecutable` with complete path.
+Sometime is necessary to set `harbour.compilerExecutable` with complete path.
 
 ## Extension Settings
 This extension contributes the following settings:

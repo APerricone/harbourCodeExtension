@@ -90,6 +90,7 @@ static procedure CheckSocket(lStopSent)
 				BEGIN_C
 					COMMAND "PAUSE"
 						t_oDebugInfo['lRunning'] := .F.
+						//? "StopRun on pause"
 						if .not. lStopSent
 							hb_inetSend(t_oDebugInfo['socket'],"STOP:pause"+CRLF)
 							lStopSent := .T.
@@ -97,20 +98,26 @@ static procedure CheckSocket(lStopSent)
 						END_COM
 					COMMAND "GO"
 						t_oDebugInfo['lRunning'] := .T.
+						t_oDebugInfo['maxLevel'] := nil
+						t_oDebugInfo['inError'] := .F. // If it was on error, now it doesn't
 						lNeedExit := .T.
 						END_COM
 					COMMAND "STEP" // go to next line of code even if is in another procedure
 						t_oDebugInfo['lRunning'] := .F.
+						t_oDebugInfo['inError'] := .F. // If it was on error, now it doesn't
+						//? "StopRun on step"
 						lNeedExit := .T.
 						END_COM
 					COMMAND "NEXT" // go to next line of same procedure
 						t_oDebugInfo['lRunning'] := .T.
 						t_oDebugInfo['maxLevel'] := t_oDebugInfo['__dbgEntryLevel']
+						t_oDebugInfo['inError'] := .F. // If it was on error, now it doesn't
 						lNeedExit := .T.
 						END_COM
 					COMMAND "EXIT" // go to callee procedure
 						t_oDebugInfo['lRunning'] := .T.
 						t_oDebugInfo['maxLevel'] := -2
+						t_oDebugInfo['inError'] := .F. // If it was on error, now it doesn't
 						lNeedExit := .T.
 						END_COM
 					COMMAND "STACK" 
@@ -171,6 +178,7 @@ static procedure CheckSocket(lStopSent)
 		if t_oDebugInfo['lRunning']
 			if inBreakpoint()
 				t_oDebugInfo['lRunning'] := .F.
+				//? "StopRun on break"
 				if .not. lStopSent
 					hb_inetSend(t_oDebugInfo['socket'],"STOP:break"+CRLF)
 					lStopSent := .T.
@@ -178,6 +186,7 @@ static procedure CheckSocket(lStopSent)
 			endif
 			if __dbgInvokeDebug(.F.)
 				t_oDebugInfo['lRunning'] := .F.
+				//? "StopRun on AltD"
 				if .not. lStopSent
 					hb_inetSend(t_oDebugInfo['socket'],"STOP:AltD"+CRLF)
 					lStopSent := .T.
@@ -191,6 +200,7 @@ static procedure CheckSocket(lStopSent)
 				endif
 				t_oDebugInfo['maxLevel'] := nil
 				t_oDebugInfo['lRunning'] := .F.
+				//? "StopRun on level"
 				if .not. lStopSent
 					hb_inetSend(t_oDebugInfo['socket'],"STOP:next"+CRLF)
 					lStopSent := .T.
@@ -944,6 +954,7 @@ STATIC PROCEDURE ErrorBlockCode( e )
 	t_oDebugInfo["error"] := e
 	t_oDebugInfo["inError"] := .T.
 	t_oDebugInfo['lRunning'] := .F.
+	//? "StopRun on error"
 	hb_inetSend(t_oDebugInfo['socket'],"ERROR:"+e:Description+CRLF)
 	__DEBUGITEM(t_oDebugInfo)
 	CheckSocket(.T.)

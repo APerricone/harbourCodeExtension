@@ -51,7 +51,7 @@ harbourDebugSession.prototype.processInput = function(buff)
 	for (var i = 0; i < lines.length; i++)
 	{
 		var line = lines[i];
-		//if (!line.startsWith("LOG:")) this.sendEvent(new debugadapter.OutputEvent(">>"+line+"\r\n","stdout"))
+		if (!line.startsWith("LOG:")) this.sendEvent(new debugadapter.OutputEvent(">>"+line+"\r\n","stdout"))
 		if(line.length==0) continue;
 		if(this.processLine)
 		{
