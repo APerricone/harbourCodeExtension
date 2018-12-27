@@ -16,7 +16,7 @@ var docs;
 connection.onInitialize(params => 
 {
     workspaceRoot = params.rootUri;
-    if(!workspaceRoot)
+    if(!workspaceRoot && params.rootPath)
     {
         if(path.sep=="\\") //window
             workspaceRoot = "file://"+encodeURI(params.rootPath.replace(/\\/g,"/"));
@@ -38,8 +38,8 @@ connection.onInitialize(params =>
                 triggerCharacters: ['(']
             },
 			// Tell the client that the server works in FULL text document sync mode
-			textDocumentSync: 1,
-		}
+            textDocumentSync: 1
+        }
 	}
 });
 
@@ -49,7 +49,6 @@ connection.onDidChangeConfiguration(params=>{
     // minimatch
     var extraInclude = params.settings.harbour.extrasourcePaths;
 })
-
 
 function ParseDir(dir)
 {
@@ -169,9 +168,10 @@ connection.onWorkspaceSymbol((param)=>
             var info = pp.funcList[fn];
             if( info.kind!="class" && 
                 info.kind!="method" && 
-                info.kind!="procedure" && 
-                info.kind!="function")
+                !info.kind.startsWith("procedure") && 
+                !info.kind.startsWith("function"))
                 continue;
+            // workspace symbols takes statics too
             if(param.query.length>0 && 
             	info.name.toLowerCase().indexOf(src)==-1)
                 continue;
@@ -205,9 +205,16 @@ connection.onDefinition((params)=>
     if(!word) return [];
     word=word[0].toLowerCase();
     var dest = [];
+    var thisDone = false;
     for (var file in files) if (files.hasOwnProperty(file)) {
-        var pp = files[file];
-        for (var fn in pp.funcList) if (pp.funcList.hasOwnProperty(fn)) {
+            if(file==doc.uri)
+            {
+                files[file] = new provider.Provider
+                files[file].parseString(doc.getText());
+                thisDone = true;
+            }
+            var pp = files[file];
+            for (var fn in pp.funcList) if (pp.funcList.hasOwnProperty(fn)) {
             /** @type {provider.Info} */
             var info = pp.funcList[fn];
             if(info.name.toLowerCase() != word)
@@ -231,6 +238,32 @@ connection.onDefinition((params)=>
                 server.Range.create(info.startLine,info.startCol,
                                 info.endLine,info.endCol)));
         }
+    }
+    if(!thisDone)
+    {
+        var p = new provider.Provider
+        p.parseString(doc.getText());
+        for (var fn in p.funcList) {
+            if (p.funcList.hasOwnProperty(fn)) {
+            /** @type {provider.Info} */
+            var info = p.funcList[fn];
+            if(info.name.toLowerCase() != word) continue;
+            if(info.kind=='local' || info.kind=='param')
+            {
+                var parent = info.parent;
+                if(parent)
+                {
+                    if(parent.startLine>params.position.line)
+                        continue;
+                    if(parent.endLine<params.position.line)
+                        continue;
+                }            
+            }
+            dest.push(server.Location.create(doc.uri,
+                server.Range.create(info.startLine,info.startCol,
+                                info.endLine,info.endCol)));
+            }        
+        };    
     }
     return dest;
 })
@@ -364,8 +397,15 @@ function CountParameter(txt, position)
 function getWorkspaceSignatures(word, doc, className, nC)
 {
     var signatures = [];
+    var thisDone = false;
     for (var file in files) if (files.hasOwnProperty(file)) 
     {
+        if(file==doc.uri)
+        {
+            files[file] = new provider.Provider
+            files[file].parseString(doc.getText());
+            thisDone = true;
+        }
         var pp = files[file];
         for (var iSign=0;iSign<pp.funcList.length;iSign++)
         {
@@ -415,6 +455,58 @@ function getWorkspaceSignatures(word, doc, className, nC)
             if(subParams.length>nC)
                 signatures.push(s);
         }
+    }
+    if(!thisDone)
+    {
+        var pp = new provider.Provider
+        pp.parseString(doc.getText());
+        for (var iSign=0;iSign<pp.funcList.length;iSign++)
+        {
+            /** @type {provider.Info} */
+            var info = pp.funcList[iSign];
+            if(!info.kind.startsWith("method") && !info.kind.startsWith("procedure") && !info.kind.startsWith("function"))
+                continue;
+            if(info.name.toLowerCase() != word)
+                continue;
+            var s = {}                
+            if (info.kind.startsWith("method"))
+                if(info.parent)
+                {
+                    s["label"] = info.parent.name+":"+info.name;
+                    if(className && className!=info.parent.name.toLowerCase())
+                        continue;
+                }
+                else
+                {
+                    s["label"] = "??:"+info.name;
+                    if(className)
+                        continue;
+                }
+            else
+                s["label"] = info.name;
+            s["label"] += "("
+            var subParams = [];
+            for (var iParam=iSign+1;iParam<pp.funcList.length;iParam++)
+            {
+                /** @type {provider.Info} */
+                var subinfo = pp.funcList[iParam];
+                if(subinfo.parent==info && subinfo.kind=="param")
+                {
+                    subParams.push({"label":subinfo.name})
+                    if(!s.label.endsWith("("))
+                        s.label += ", "
+                    s.label+=subinfo.name
+                } else
+                    break;
+            }
+            s["label"] += ")"
+            s["parameters"]=subParams;
+            if(info.comment && info.comment.trim().length>0)
+                s["documentation"]=info.comment 
+            if(subParams.length>nC)
+                signatures.push(s);
+        }
+
     }
     return signatures;
 }
