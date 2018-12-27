@@ -622,8 +622,12 @@ harbourDebugSession.prototype.processCompletion = function()
 		line = line.substr(line.indexOf(":")+1);
 		var thisCompletion = new debugadapter.CompletionItem(line,0);
 		thisCompletion.type = type=="F"? 'function': 
-							  type=="M"? 'method' : 
-							  type=="D"? 'property' : 'variable';
+							  type=="M"? 'field' : 
+							  type=="D"? 'variable' : 'value';
+		// function/procedure -> function
+		// method -> field
+		// data -> variable
+		// local/public/etc -> value
 		this.completionsResponse.body.targets.push(thisCompletion);
 	}	
 }

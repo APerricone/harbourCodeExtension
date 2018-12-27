@@ -11,6 +11,8 @@
 ## Requirements
 See the [wiki](https://github.com/APerricone/harbourCodeExtension/wiki) for more information.
 
+Sometime is necessary to set `harbour.compilerExecutable` with complete path.
+
 ## Extension Settings
 This extension contributes the following settings:
 
