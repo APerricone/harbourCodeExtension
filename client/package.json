@@ -24,7 +24,7 @@
     "dependencies": {
         "vscode-debugadapter": "^1.33.0",
         "vscode-debugprotocol": "^1.33.0",
-        "vscode-languageclient": "^3.5.1",
+        "vscode-languageclient": "^5.2.1",
         "vscode-nls": "^4.0.0"
     },
     "contributes": {

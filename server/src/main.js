@@ -8,20 +8,28 @@ var connection = server.createConnection(
         new server.IPCMessageReader(process), 
         new server.IPCMessageWriter(process));
 
-/** @type {string} */
+/** @type {Array<string>} */
 var workspaceRoot;
 var files;
 /** @type {Array} */
 var docs;
 connection.onInitialize(params => 
 {
-    workspaceRoot = params.rootUri;
-    if(!workspaceRoot && params.rootPath)
-    {
-        if(path.sep=="\\") //window
-            workspaceRoot = "file://"+encodeURI(params.rootPath.replace(/\\/g,"/"));
-        else
-            workspaceRoot = "file://"+encodeURI(params.rootPath);
+    if(params.capabilities.workspace.workspaceFolders) {
+        workspaceRoot = [];
+        for(var i=0;i<params.workspaceFolders.length;i++)
+        {
+            workspaceRoot.push(params.workspaceFolders[i].uri)
+        }
+    } else {
+        workspaceRoot = [params.rootUri];
+        if(!workspaceRoot && params.rootPath)
+        {
+            if(path.sep=="\\") //window
+                workspaceRoot = ["file://"+encodeURI(params.rootPath.replace(/\\/g,"/"))];
+            else
+                workspaceRoot = ["file://"+encodeURI(params.rootPath)];
+        }
     }
     fs.readFile(path.resolve(__dirname, 'hbdocs.json'),(err,data) =>
     {
@@ -38,13 +46,19 @@ connection.onInitialize(params =>
                 triggerCharacters: ['(']
             },
 			// Tell the client that the server works in FULL text document sync mode
-            textDocumentSync: 1
+            textDocumentSync: 1,
+            workspace: {
+                supported: true
+            }
         }
 	}
 });
-
-connection.onDidChangeConfiguration(params=>{
+/*
+connection.workspace.onDidChangeWorkspaceFolders(params=>{
     var i=0;
+})
+*/
+connection.onDidChangeConfiguration(params=>{
     var searchExclude = params.settings.search.exclude;
     // minimatch
     var extraInclude = params.settings.harbour.extrasourcePaths;
@@ -88,11 +102,14 @@ function checkDir(dir)
 function ParseFiles() 
 {
     files = {};
-    // other scheme of uri unsupported
-    /** @type {vscode-uri.default} */
-    var uri = Uri.parse(workspaceRoot);
-    if(uri.scheme != "file") return;
-    ParseDir(uri.fsPath);
+    for(var i=0;i<workspaceRoot.length;i++)
+    {
+        // other scheme of uri unsupported
+        /** @type {vscode-uri.default} */
+        var uri = Uri.parse(workspaceRoot[i]);
+        if(uri.scheme != "file") return;
+        ParseDir(uri.fsPath);
+    }
 }
 
 var documents = new server.TextDocuments();
@@ -452,7 +469,7 @@ function getWorkspaceSignatures(word, doc, className, nC)
             s["parameters"]=subParams;
             if(info.comment && info.comment.trim().length>0)
                 s["documentation"]=info.comment 
-            if(subParams.length>nC)
+            if(subParams.length>=nC)
                 signatures.push(s);
         }
     }
