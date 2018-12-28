@@ -123,9 +123,44 @@
 				]
 			},
 			{
+				"begin": "(?i:^\\s*#x?(command|translate))",
+				"end": "(?<!;)\\s*[\\r\\n]{1,2}", 
+				"beginCaptures": {"0":{"name":"meta.preprocessor.command.harbour"}},
+				"endCaptures": {"0":{"name":"meta.preprocessor.end.command.harbour"}},
+				"patterns": [
+					{
+						"include": "#commandInfo"
+					},
+					{
+						"begin": "=>",
+						"end": "(?<!;)\\s*[\\r\\n]{1,2}",
+						"patterns": [
+							{"include": "#commandInfo"},
+							{"include": "source.harbour"}
+						]
+					}
+				]
+			},
+			{
 				"name": "meta.preprocessor.various.harbour",
 				"match": "(?i)(^\\s*#[a-zA-z]+)"
 			}]
+		},
+		"commandInfo": {
+			"patterns": [
+				{
+					"name": "variable.parameter.command.harbour",
+					"match": "<[^:>]+(:[^>]+)?>",
+					"captures": 
+					{
+						"1": {"name": "constant.values.command.harbour"}
+					}
+				},
+				{
+					"name": "variable.optional.parameter.command.harbour",
+					"match": "\\[|\\]"
+				}
+			]
 		},
 		"constants": {
 			"patterns": [
