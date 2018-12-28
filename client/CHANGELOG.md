@@ -5,6 +5,7 @@ All notable changes to the "harbour" extension will be documented in this file.
  - **Server**: [Added multi workspace support](https://github.com/APerricone/harbourCodeExtension/issues/9)
  - **Debugger**: Added completition support (beta)
  - **Server**: better support on no-workspace environment.
+ - **Server**: Fixed gotoDefinition for long names
  
 ## 0.7.8
  - **Server**: show comment before function declaration as help

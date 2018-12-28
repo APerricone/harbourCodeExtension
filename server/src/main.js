@@ -210,16 +210,24 @@ connection.onDefinition((params)=>
     var doc = documents.get(params.textDocument.uri);
     /** @type {string} */
     var pos = doc.offsetAt(params.position);
-    var text = doc.getText().substr(Math.max(pos-20,0),40);
-    var pos = pos<20? pos : 20;
+    var delta = 20;
     var word;
     var r = /\b[a-z_][a-z0-9_]*\b/gi
-    while(word = r.exec(text))
+    while(true)
     {
-        if(word.index<=pos && word.index+word[0].length>=pos)
-            break;
+        r.lastIndex = 0;
+        var rStart = Math.max(pos-delta,0);
+        var text = doc.getText(server.Range.create(doc.positionAt(rStart),doc.positionAt(rStart+delta+delta)));
+        var txtPos = pos<delta? pos : delta;
+        while(word = r.exec(text))
+        {
+            if(word.index<=txtPos && word.index+word[0].length>=txtPos)
+                break;
+        }
+        if(!word) return [];
+        if(word.index!=0 && (word.index+word[0].length)!=(delta+delta)) break;
+        delta+=10;
     }
-    if(!word) return [];
     word=word[0].toLowerCase();
     var dest = [];
     var thisDone = false;
