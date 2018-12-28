@@ -23,7 +23,7 @@ connection.onInitialize(params =>
         }
     } else {
         workspaceRoot = [params.rootUri];
-        if(!workspaceRoot && params.rootPath)
+        if(!workspaceRoot[0] && params.rootPath)
         {
             if(path.sep=="\\") //window
                 workspaceRoot = ["file://"+encodeURI(params.rootPath.replace(/\\/g,"/"))];

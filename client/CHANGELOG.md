@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to the "harbour" extension will be documented in this file.
 
+## 0.7.9
+ - **Server**: [Added multi workspace support](https://github.com/APerricone/harbourCodeExtension/issues/9)
+ - **Debugger**: Added completition support (beta)
+ - **Server**: better support on no-workspace environment.
+ 
 ## 0.7.8
  - **Server**: show comment before function declaration as help
  - **Debugger**: [Added support for copy expression, copy value and add to watch](https://github.com/APerricone/harbourCodeExtension/wiki/Debugger#copy-expression).
@@ -11,7 +16,7 @@ All notable changes to the "harbour" extension will be documented in this file.
  - **Debugger**: Fixed case when the module name contains colon
  - **Debugger**: Fixed Log message without carriage return
  - **syntax hightlight**: simplified datetime regex
- - **syntax hightlight**: better for support
+ - **syntax hightlight**: better 'for' support
  - **syntax hightlight**: added keywords
 
 ## 0.7.6
