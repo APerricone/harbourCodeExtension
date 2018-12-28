@@ -1,6 +1,6 @@
 {
     "name": "harbour",
-    "displayName": "harbour and xHarbour",
+    "displayName": "Harbour and xHarbour",
     "description": "Harbour and xHarbour languages support for visual studio code",
     "version": "0.7.9",
     "publisher": "aperricone",

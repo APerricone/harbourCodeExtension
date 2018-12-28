@@ -212,12 +212,12 @@ connection.onDefinition((params)=>
     var pos = doc.offsetAt(params.position);
     var delta = 20;
     var word;
+    var allText = doc.getText();
     var r = /\b[a-z_][a-z0-9_]*\b/gi
     while(true)
     {
         r.lastIndex = 0;
-        var rStart = Math.max(pos-delta,0);
-        var text = doc.getText(server.Range.create(doc.positionAt(rStart),doc.positionAt(rStart+delta+delta)));
+        var text = allText.substr(Math.max(pos-delta,0),delta+delta)
         var txtPos = pos<delta? pos : delta;
         while(word = r.exec(text))
         {
@@ -235,7 +235,7 @@ connection.onDefinition((params)=>
             if(file==doc.uri)
             {
                 files[file] = new provider.Provider
-                files[file].parseString(doc.getText());
+                files[file].parseString(allText);
                 thisDone = true;
             }
             var pp = files[file];
@@ -267,7 +267,7 @@ connection.onDefinition((params)=>
     if(!thisDone)
     {
         var p = new provider.Provider
-        p.parseString(doc.getText());
+        p.parseString(allText);
         for (var fn in p.funcList) {
             if (p.funcList.hasOwnProperty(fn)) {
             /** @type {provider.Info} */
