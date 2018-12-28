@@ -6,6 +6,7 @@ All notable changes to the "harbour" extension will be documented in this file.
  - **Debugger**: Added completition support (beta)
  - **Server**: better support on no-workspace environment.
  - **Server**: Fixed gotoDefinition for long names
+ - **Debugger**: fixed management of access/assign class data.
  
 ## 0.7.8
  - **Server**: show comment before function declaration as help

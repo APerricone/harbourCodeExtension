@@ -536,6 +536,9 @@ STATIC FUNCTION __dbgObjGetValue( nProcLevel, oObject, cVar )
 
    LOCAL xResult
    LOCAL oErr
+   LOCAL t_oDebugInfo := __DEBUGITEM()
+   LOCAL lOldRunning := t_oDebugInfo['lRunning']
+   t_oDebugInfo['lRunning'] := .T.
 
 #ifdef __XHARBOUR__
 	LOCAL i
@@ -553,19 +556,20 @@ STATIC FUNCTION __dbgObjGetValue( nProcLevel, oObject, cVar )
       xResult := oErr:description
    END
 #else
-   BEGIN SEQUENCE WITH {|| Break() }
-      xResult := __dbgSENDMSG( nProcLevel, oObject, cVar )
+   	BEGIN SEQUENCE WITH {|| Break() }
+    	xResult := __dbgSENDMSG( nProcLevel, oObject, cVar )
 
-   RECOVER
-      BEGIN SEQUENCE WITH {| oErr | Break( oErr ) }
-         /* Try to access variables using class code level */
-         xResult := __dbgSENDMSG( 0, oObject, cVar )
-      RECOVER USING oErr
-         xResult := oErr:description
-      END SEQUENCE
-   END SEQUENCE
+   	RECOVER
+    	BEGIN SEQUENCE WITH {| oErr | Break( oErr ) }
+        	/* Try to access variables using class code level */
+         	xResult := __dbgSENDMSG( 0, oObject, cVar )
+      	RECOVER USING oErr
+        	xResult := oErr:description
+      	END SEQUENCE
+   	END SEQUENCE
 #endif
-   RETURN xResult
+	t_oDebugInfo['lRunning'] := lOldRunning
+RETURN xResult
 
 static procedure sendCoumpoundVar(req, cParams ) 
 	local value := getValue(@req)
@@ -575,7 +579,6 @@ static procedure sendCoumpoundVar(req, cParams )
 	local iCount := aParams[3], nMax := len(value)
 	local i, idx,vSend, cLine, aData, idx2
 	LOCAL t_oDebugInfo := __DEBUGITEM()
-	//? "sendCoumpoundVar",req,cParams
 	if valtype(value) == "O"
 #ifdef __XHARBOUR__
 		aData := __objGetValueList(value) // , value:aExcept())
@@ -591,8 +594,8 @@ static procedure sendCoumpoundVar(req, cParams )
 	if iCount=0
 		iCount := nMax
 	endif
+
 	for i:=iStart to iStart+iCount
-	//for i:=1 to nVars
 		if i > nMax
 			loop
 		endif
@@ -621,9 +624,7 @@ static procedure sendCoumpoundVar(req, cParams )
 				#endif
 				exit
 		endswitch
-		cLine := req + idx + ":" +;
-			idx2 + ":" + valtype(vSend) + ":" + format(vSend)
-		//? cLine
+		cLine := req + idx + ":" + idx2 + ":" + valtype(vSend) + ":" + format(vSend)
 		hb_inetSend(t_oDebugInfo['socket'],cLine + CRLF )
 	next
 
@@ -1221,7 +1222,7 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			t_oDebugInfo['__dbgEntryLevel'] := __dbgProcLevel()
 			tmp := ErrorBlock()
 			#ifndef __XHARBOUR__ //temp
-				if empty(tmp) .or. empty(t_oDebugInfo['errorBlock']) .or. !(t_oDebugInfo['errorBlock']==tmp)
+				 if empty(tmp) .or. empty(t_oDebugInfo['errorBlock']) .or. !(t_oDebugInfo['errorBlock']==tmp)
 					//? "Error block changed " + procFile(1) + "("+alltrim(str(uParam1))+")"
 					//check if the new error block is an oldone
 					i:=aScan(t_oDebugInfo['errorBlockHistory'], {|x| x[1]==tmp })
