@@ -108,7 +108,7 @@
 				"match": "(?i)(\\.(T|F|and|or|not)\\.)"
 			},
 			{
-				"name": "meta.preprocessor.include.harbour",
+				"name": "keyword.preprocessor.include.harbour",
 				"begin": "(?i:^\\s*#include\\s)",
 				"end": "(?=//|&&|/\\*)|$",
 				"patterns": [
@@ -125,8 +125,8 @@
 			{
 				"begin": "(?i:^\\s*#x?(command|translate))",
 				"end": "(?<!;)\\s*[\\r\\n]{1,2}", 
-				"beginCaptures": {"0":{"name":"meta.preprocessor.command.harbour"}},
-				"endCaptures": {"0":{"name":"meta.preprocessor.end.command.harbour"}},
+				"beginCaptures": {"0":{"name":"keyword.preprocessor.$1.harbour"}},
+				"endCaptures": {"0":{"name":"keyword.preprocessor.end.command.harbour"}},
 				"patterns": [
 					{
 						"include": "#commandInfo"
@@ -142,7 +142,7 @@
 				]
 			},
 			{
-				"name": "meta.preprocessor.various.harbour",
+				"name": "keyword.preprocessor.various.harbour",
 				"match": "(?i)(^\\s*#[a-zA-z]+)"
 			}]
 		},
