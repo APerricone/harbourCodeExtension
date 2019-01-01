@@ -10,9 +10,18 @@ var connection = server.createConnection(
 
 /** @type {Array<string>} */
 var workspaceRoot;
+/** @type {Object.<string, Provider>} */
 var files;
 /** @type {Array} */
 var docs;
+/* @type {Array<{name:string,fields:} Database>} */
+/** @type {Object.<string, Array<{name:string,files:Array<string>}>>} */
+var databases;
+/*
+    every database contiens a name (the text before the ->)
+    and a list of field, objects with name (the text after the ->)
+    and a files, array of string with the file where found the db.name->field.name
+*/
 connection.onInitialize(params => 
 {
     if(params.capabilities.workspace.workspaceFolders) {
@@ -31,12 +40,12 @@ connection.onInitialize(params =>
                 workspaceRoot = ["file://"+encodeURI(params.rootPath)];
         }
     }
-    fs.readFile(path.resolve(__dirname, 'hbdocs.json'),(err,data) =>
+    fs.readFile(path.join(__dirname, 'hbdocs.json'),(err,data) =>
     {
         if(!err)
             docs = JSON.parse(data);
     });
-    ParseFiles()
+    ParseWorkspace()
 	return {
 		capabilities: {
             documentSymbolProvider: true,
@@ -44,6 +53,10 @@ connection.onInitialize(params =>
             definitionProvider: true,
             signatureHelpProvider: {
                 triggerCharacters: ['(']
+            },
+            completionProvider: {
+                resolveProvider: false,
+                triggerCharacters: ['>']
             },
 			// Tell the client that the server works in FULL text document sync mode
             textDocumentSync: 1,
@@ -77,30 +90,20 @@ function ParseDir(dir)
                 var fileUri = Uri.file(dir+"/"+fileName)
                 var pp = new provider.Provider();
                 pp.parseFile(dir+"/"+fileName,ext == ".c");
-                files[fileUri.toString()] = pp;    
-            }/* else
-            if(fileName.indexOf(".")<0)
-            {
-                checkDir(dir+"/"+fileName)
-            }*/
+                files[fileUri.toString()] = pp;
+                var dbs = Object.keys(pp.databases); 
+                if(dbs.length>0)
+                {
+                    d
+                }    
+            }
         }
     });
 }
 
-function checkDir(dir)
+function ParseWorkspace() 
 {
-    fs.stat(dir, function(err, stat)
-    {
-        if (stat && stat.isDirectory())
-        {
-          ParseDir(dir)
-        }
-    });
-
-}
-
-function ParseFiles() 
-{
+    databases = [];
     files = {};
     for(var i=0;i<workspaceRoot.length;i++)
     {
@@ -127,30 +130,34 @@ documents.onDidSave((e)=>
     }
 })
 
-function kindTOVS(kind)
+function kindTOVS(kind,sk)
 {
+    if(sk==undefined) sk=true;
     switch(kind)
     {
         case "class":
-            return server.SymbolKind.Class;
+            return sk? server.SymbolKind.Class : server.CompletionItemKind.Class;
         case "method":
-            return server.SymbolKind.Method;
+            return sk? server.SymbolKind.Method : server.CompletionItemKind.Method;
         case "data":
-            return server.SymbolKind.Property;
+            return sk? server.SymbolKind.Property : server.CompletionItemKind.Property;
         case "function":
         case "procedure":
         case "function*":
         case "procedure*":
         case "C-FUNC":
-            return server.SymbolKind.Function;
+            return sk? server.SymbolKind.Function : server.CompletionItemKind.Function;
         case "local":
         case "static":
         case "public":
         case "private":
         case "param":
-            return server.SymbolKind.Variable;
+        case "memvar":
+            return sk? server.SymbolKind.Variable : server.CompletionItemKind.Variable;
+        case "field":
+            return sk? server.SymbolKind.Field : server.CompletionItemKind.Field;
     }
-    return kind;
+    return 0;
 }
 
 connection.onDocumentSymbol((param)=>
@@ -178,6 +185,13 @@ connection.onWorkspaceSymbol((param)=>
 {
     var dest = [];
     var src = param.query.toLowerCase();
+    var parent = undefined;
+    var colon = src.indexOf(':');
+    if(colon>0)
+    {
+        parent = src.substring(0,colon);
+        src = src.substr(colon+1);
+    }
     for (var file in files) if (files.hasOwnProperty(file)) {
         var pp = files[file];
         for (var fn in pp.funcList) if (pp.funcList.hasOwnProperty(fn)) {
@@ -191,6 +205,8 @@ connection.onWorkspaceSymbol((param)=>
             // workspace symbols takes statics too
             if(param.query.length>0 && 
             	info.name.toLowerCase().indexOf(src)==-1)
+                continue;
+            if(parent && (!info.parent || info.parent.name.toLowerCase()!=parent))
                 continue;
             dest.push(server.SymbolInformation.create(
                 info.name,
@@ -560,6 +576,91 @@ function getStdHelp(word, nC)
     }
     return signatures;
 }
+
+connection.onCompletion((param)=> 
+{
+    var doc = documents.get(param.textDocument.uri);
+    var allText = doc.getText();
+    var completitions = [];
+    var thisDone = false;
+    var pos = doc.offsetAt(param.position)-1
+    // Get the word
+    var rge = /[0-9a-z_]/i;
+    var word = "", className = undefined;
+    while(rge.test(allText[pos]))
+    {
+        word = allText[pos]+word;
+        pos--;
+    }
+    if(word.length==0) return [];
+    var precLetter = allText[pos];
+    if(precLetter == '>' && allText[pos-1]=='-')
+    {
+        precLetter = '->';
+    }
+    word = word.toLowerCase();
+    function GetCompletitions(pp,file)
+    {
+        for (var iSign=0;iSign<pp.funcList.length;iSign++)
+        {
+            var info = pp.funcList[iSign];
+            if(info.name.toLowerCase().substr(0,word.length) != word)
+                continue;
+            if(precLetter == '->' && info.kind != "field")
+                continue;
+            if((info.kind == "method" || info.kind == "data") && (precLetter!=':'))
+                continue;
+            if(info.kind == "function*" || info.kind=="procedure*" || info.kind=="static")
+            {
+                if(info.kind.endsWith("*") && file!=doc.uri)
+                    continue;
+            }
+            //if(info.kind == "local" || info.kind == "param")
+            if(info.parent && (info.parent.kind.startsWith("func") || info.parent.kind.startsWith("proc")))
+            {
+                if(file!=doc.uri) continue;
+                if(info.parent.startLine<param.position.line || 
+                    info.parent.endLine>param.position.line)
+                        continue;
+            }
+
+            var c = server.CompletionItem.create(info.name);
+            c.kind = kindTOVS(info.kind,false);
+            completitions.push(c);   
+        }
+    }
+    for (var file in files) if (files.hasOwnProperty(file)) 
+    {
+        if(file==doc.uri)
+        {
+            files[file] = new provider.Provider
+            files[file].parseString(allText);
+            thisDone = true;
+        }
+        GetCompletitions(files[file],file);
+    }
+    if(!thisDone)
+    {
+        var pp = new provider.Provider();
+        pp.parseString(allText);
+        GetCompletitions(pp,doc.uri);
+    }
+    if(precLetter!=':' && precLetter!='->')
+    {
+        for (var i = 0; i < docs.length; i++)
+        {
+            if (docs[i].name.toLowerCase().substr(0,word.length) == word)
+            {
+                var c = server.CompletionItem.create(docs[i].name+"(");
+                c.kind = server.CompletionItemKind.Function;
+                c.documentation = docs[i].documentation;
+                completitions.push(c);
+            }
+        }
+    
+    }
+    return server.CompletionList.create(completitions,false);    
+})
 
 
 /*

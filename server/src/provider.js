@@ -16,13 +16,15 @@ Provider.prototype.Clear = function()
 	this.lineNr = -1;
 	this.startLine = 0;
 	this.lastCodeLine = 0;
-	//** @type{array} */
+	/** @type {array<Info>} */
 	this.funcList = [];
 	this.cMode = false;
 	this.currentDocument = "";
 	this.currentClass = undefined;
 	this.currentMethod = undefined;
 	this.currentComment = "";
+	/** @type {Object.<string, Array<string>>} */
+	this.databases={};
 }
 
 /**
@@ -59,6 +61,12 @@ function Info(name,kind,parent,document,startLine,startCol,endLine,endCol,commen
 		this.comment = comment.substr(2);
 }
 
+/**
+ * @param {string} name
+ * @param {string} kind 
+ * @param {Info} parent
+ * @param {boolean=} search
+ */
 Provider.prototype.addInfo = function(name,kind,parent, search)
 {
 	if(search!==true) search=false;
@@ -338,14 +346,19 @@ Provider.prototype.parseHarbour = function(words)
 		if(	words[0] == "local".substr(0,words[0].length) ||
 			words[0] == "public".substr(0,words[0].length) ||
 			words[0] == "private".substr(0,words[0].length) || 
-			words[0] == "static".substr(0,words[0].length))
+			words[0] == "static".substr(0,words[0].length) ||
+			words[0] == "memvar".substr(0,words[0].length) ||
+			words[0] == "field".substr(0,words[0].length))
 		{
-			if(this.currentMethod || words[0].startsWith("stat"))
+			if(this.currentMethod || words[0].startsWith("stat") ||
+				words[0].startsWith("memvar") || words[0].startsWith("field"))
 			{
 				var kind = "local";
 				if(words[0].startsWith("publ")) kind = "public";
 				if(words[0].startsWith("priv")) kind = "private";
 				if(words[0].startsWith("stat")) kind = "static";
+				if(words[0].startsWith("memv")) kind = "memvar";
+				if(words[0].startsWith("fiel")) kind = "field";
 				this.parseDeclareList(words.slice(1).join(" "),kind,this.currentMethod);
 			}
 		} //else
@@ -385,6 +398,7 @@ Provider.prototype.parse = function(line)
 	//console.log((this.cMode?"C":"H")+this.lineNr+">"+this.currLine);
 	if(!this.cMode)
 	{
+		this.findDBReferences();
 		this.parseHarbour(words)
 	} else
 	{
@@ -432,6 +446,28 @@ Provider.prototype.parseFile = function(file,cMode,encoding)
 		})
 	});
 }
+
+Provider.prototype.findDBReferences = function()
+{
+	var dbRegex = /([a-z0-9_]+|\((?:\([^\)]*\)|[^\)])+\))->([a-z0-9_]+)/gi
+	var dbRef;
+	while(dbRef = dbRegex.exec(this.currLine)) {
+		dbRef[1] = dbRef[1].toLowerCase();
+		dbRef[2] = dbRef[2].toLowerCase();
+		if(dbRef[1]=='field') {
+			this.addInfo(dbRef[2],"field",undefined,true);
+		} else {
+			if(!dbRef[1] in this.databases)	
+				this.databases[dbRef[1]]=[];
+			var i = this.databases[dbRef[1]].indexOf(dbRef[2]);
+			if(i==0)
+			{
+				this.databases[dbRef[1]].push(dbRef[2]);
+			}
+		}
+	}
+}
+
 
 Provider.prototype.GetLineAt = function(txt,pos)
 {

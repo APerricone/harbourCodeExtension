@@ -1,8 +1,10 @@
 var fs = require("fs");
 var readline = require("readline");
+var path = require("path")
 
-parseDocEn("/home/perry/harbour-src/doc/en/");
-parseHBX("/home/perry/harbour-src/include/harbour.hbx");
+var hbPath = "/home/perry/harbour-src"
+parseDocEn(path.join(hbPath,"doc","en"));
+parseHBX(path.join("include","harbour.hbx"));
 
 var nTodo = 0;
 var docs = [];
@@ -66,9 +68,9 @@ function createDoc()
 	{
 		switch(stdMethods[is].localeCompare(docs[id].name))
 		{
-			case  0: id++; is++; break;
-			case -1: unDoc.push(stdMethods[is]); is++; break;
-			case 1: extra.push(docs[id].label); id++; break;
+			case  0: id++; is++; break; //are the same, go ahead both
+			case -1: unDoc.push(stdMethods[is]); is++; break; // Cathed! undocumentated method. 
+			case 1: extra.push(docs[id].label); id++; break; // I don't write it anywhere, but extra contains documentated proc absent in hbx
 		}
 	}
 	var msg = "standard un documentated methods:\r\n"

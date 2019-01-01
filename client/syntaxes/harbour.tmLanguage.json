@@ -78,7 +78,7 @@
 			},
 			{
 				"name": "keyword.declarations.harbour",
-				"match": "\\b(?i:local|private|public|field|thread|memvar|parameter)\\b"
+				"match": "\\b(?i:loc(?:a(?:l)?)?|priv(?:a(?:t(?:e)?)?)?|publ(?:i(?:c)?)?|fiel(?:d)?|thread|memv(?:a(?:r)?)?|para(?:m(?:e(?:t(?:e(?:r)?)?)?)?)?)\\b"
 			},
 			{
 				"name": "storage.type.harbour",

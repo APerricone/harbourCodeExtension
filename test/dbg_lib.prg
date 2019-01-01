@@ -538,10 +538,12 @@ STATIC FUNCTION __dbgObjGetValue( nProcLevel, oObject, cVar )
    LOCAL oErr
    LOCAL t_oDebugInfo := __DEBUGITEM()
    LOCAL lOldRunning := t_oDebugInfo['lRunning']
-   t_oDebugInfo['lRunning'] := .T.
+#ifdef __XHARBOUR__
+   LOCAL i
+#endif
+  t_oDebugInfo['lRunning'] := .T.
 
 #ifdef __XHARBOUR__
-	LOCAL i
    TRY
 	  //xResult := __objSendMsg( oObject, cVar )
 	  xResult := __objGetValueList( oObject )

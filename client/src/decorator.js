@@ -48,14 +48,14 @@ function RemoveStringAndComments(txt)
 		var filter=undefined;
 		switch(i)
 		{
-			case 1: filter = /\/\/[^\n]*\n/g; break;	 // // comments
-			case 2: filter = /&&[^\n]*\n/g; break;	 // && comments
-			case 3: filter = /^\s*\*[^\n]*\n/mg; break;	 // * comments			
-			case 4: filter = /^\s*NOTE[^\n]*\n/mg; break;	 // NOTE comments			
-			case 5: filter = /\/\*((?!\*\/)[\s\S])*\*\//g; break; // /* */ comments
+			case 1: filter = /\/\/[^\r\n]*[\r\n]{1,2}/g; break;	 // // comments
+			case 2: filter = /&&[^\r\n]*[\r\n]{1,2}/g; break;	 // && comments
+			case 3: filter = /^\s*\*[^\r\n]*[\r\n]{1,2}/mg; break;	 // * comments			
+			case 4: filter = /^\s*NOTE[^\r\n]*[\r\n]{1,2}/mg; break;	 // NOTE comments			
+			case 5: filter = /\/\*(?!\*\/).*\*\//g; break; // /* */ comments
 			case 6: filter = /'[^'\r\n]*'/g; break; // ' string
 			case 7: filter = /"[^"\r\n]*"/g; break; // " string
-			case 8: filter = /\[[^\[\]\r\n]*\]/g; break;  // [] string
+			case 8: filter = /\[[^\]\r\n]*\]/g; break;  // [] string
 			case 9: filter = /#(if|else|endif)/g; break;  // precompiled if
 		}
 		if (filter == undefined)
