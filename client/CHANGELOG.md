@@ -2,12 +2,12 @@
 All notable changes to the "harbour" extension will be documented in this file.
 
 ## 0.8.0
+ - ***syntax hightlight**: management of command/translate directive
  - **syntax hightlight**: added abbreviations for local, public, private, etc
  - **server** Added field management
  - **server** Added completition support
  - **server** on workspace symbol you can search a object method adding colon.
  
-
 ## 0.7.9
  - **Server**: [Added multi workspace support](https://github.com/APerricone/harbourCodeExtension/issues/9)
  - **Debugger**: Added completition support (beta)

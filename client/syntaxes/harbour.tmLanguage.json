@@ -108,7 +108,7 @@
 				"match": "(?i)(\\.(T|F|and|or|not)\\.)"
 			},
 			{
-				"name": "meta.preprocessor.include.harbour",
+				"name": "keyword.preprocessor.include.harbour",
 				"begin": "(?i:^\\s*#include\\s)",
 				"end": "(?=//|&&|/\\*)|$",
 				"patterns": [
@@ -123,9 +123,44 @@
 				]
 			},
 			{
-				"name": "meta.preprocessor.various.harbour",
+				"begin": "(?i:^\\s*#x?(command|translate))",
+				"end": "(?<!;)\\s*[\\r\\n]{1,2}", 
+				"beginCaptures": {"0":{"name":"keyword.preprocessor.$1.harbour"}},
+				"endCaptures": {"0":{"name":"keyword.preprocessor.end.command.harbour"}},
+				"patterns": [
+					{
+						"include": "#commandInfo"
+					},
+					{
+						"begin": "=>",
+						"end": "(?<!;)\\s*[\\r\\n]{1,2}",
+						"patterns": [
+							{"include": "#commandInfo"},
+							{"include": "source.harbour"}
+						]
+					}
+				]
+			},
+			{
+				"name": "keyword.preprocessor.various.harbour",
 				"match": "(?i)(^\\s*#[a-zA-z]+)"
 			}]
+		},
+		"commandInfo": {
+			"patterns": [
+				{
+					"name": "variable.parameter.command.harbour",
+					"match": "<[^:>]+(:[^>]+)?>",
+					"captures": 
+					{
+						"1": {"name": "constant.values.command.harbour"}
+					}
+				},
+				{
+					"name": "variable.optional.parameter.command.harbour",
+					"match": "\\[|\\]"
+				}
+			]
 		},
 		"constants": {
 			"patterns": [
