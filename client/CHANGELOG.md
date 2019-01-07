@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to the "Harbour and xHarbour" extension will be documented in this file.
 
+## 0.8.1
+ - **server** Added missing file
+ 
 ## 0.8.0
  - **syntax hightlight**: [management of command/translate directive](https://github.com/APerricone/harbourCodeExtension/raw/master/images/command.png)
  - **syntax hightlight**: added abbreviations for local, public, private, etc

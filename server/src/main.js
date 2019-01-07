@@ -55,7 +55,7 @@ connection.onInitialize(params =>
         if(!err)
             docs = JSON.parse(data);
     });
-    fs.readFile(path.join(__dirname, '../hbdocs.missing'), "utf8",(err,data) =>
+    fs.readFile(path.join(__dirname, 'hbdocs.missing'), "utf8",(err,data) =>
     {
         if(!err)
             missing = data.split(/\r\n{1,2}/g)

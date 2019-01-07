@@ -77,7 +77,7 @@ function createDoc()
 	for(var i=0;i<unDoc.length;i++)
 		msg += unDoc[i]+"\r\n";
 	
-	fs.writeFile("hbdocs.missing",	msg, (err)=>{if(err) console.error(err);});
+	fs.writeFile("src/hbdocs.missing",	msg, (err)=>{if(err) console.error(err);});
 	fs.writeFile("src/hbdocs.json",	JSON.stringify(docs,undefined,1),(err)=>{if(err) console.error(err);});
 }
 /**
