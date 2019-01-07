@@ -706,14 +706,14 @@ connection.onCompletion((param)=>
                     continue;
             }
             //if(info.kind == "local" || info.kind == "param")
-            if(info.parent && ( info.parent.kind.startsWith("function")  || info.parent.kind.startsWith("procedure")))
+            if(info.parent && ( info.parent.kind.startsWith("function")  || info.parent.kind.startsWith("procedure") || info.parent.kind=='method'))
             {
                 if(file!=doc.uri) continue;
                 if(param.position.line<info.parent.startLine || 
                     param.position.line>info.parent.endLine)
                         continue;
             }
-            if(precLetter=='->' && completitions.find(v=> v.name == info.name))
+            if(completitions.find(v=> v.name == info.name))
                 continue;
             var c = server.CompletionItem.create(info.name);
             c.kind = kindTOVS(info.kind,false);
