@@ -19,10 +19,10 @@ Provider.prototype.Clear = function()
 	/** @type {array<Info>} */
 	this.funcList = [];
 	this.cMode = false;
-	this.currentDocument = "";
 	this.currentClass = undefined;
 	this.currentMethod = undefined;
 	this.currentComment = "";
+	this.currentDocument = "";
 	/* @type {Object.<string, {name: string, fields: Object.<string, string>}} */
 	/**
 	 * @typedef dbInfo
@@ -50,6 +50,8 @@ function Info(name,kind,parent,document,startLine,startCol,endLine,endCol,commen
 {
 	/** @type {string} */
 	this.name = name;
+	/** @type {string} */
+	this.nameCmp = name.toLowerCase();
 	/** @type {string} */
 	this.kind = kind;
 	/** @type {Info} */
@@ -237,13 +239,13 @@ Provider.prototype.parseDeclareList = function(list,kind,parent)
 		var filter=undefined;
 		switch(i)
 		{
-			case 0: filter = /:=(?:[^,]|$)*/g; break; 		// Assegnation
+			case 0: filter = /\([^\(\)]*\)/g; break;	// () couple
 			case 1: filter = /;\s*\r?\n/g; break;	//  New line
 			case 2: filter = /'[^']*'/g; break;		// '' string
 			case 3: filter = /"[^"]*"/g; break;		// "" string
 			case 4: filter = /\[[^\[\]]*\]/g; break;	// [] string or array index
 			case 5: filter = /{[^{}]*}/g; break;		// {} array declaration
-			case 6: filter = /\([^\(\)]*\)/g; break;	// () couple
+			case 6: filter = /:=(?:[^,]|$)*/g; break; 		// Assegnation
 		}
 		if (filter == undefined)
 			break;
@@ -254,14 +256,14 @@ Provider.prototype.parseDeclareList = function(list,kind,parent)
 		} while(old.length!=list.length)
 		//console.log(i+":"+list);
 	}
-	list=list.split(",");
+	list=list.replace(/\s+/g,"").split(",");
 	//return list.split(",");
 	if(list.length>1) this.currentComment = ""
 	for (var i = 0; i < list.length; i++) 
 	{
-		var m = list[i].split(/\s+/).filter((el) => el.length!=0);
+		var m = list[i]
 		if(m.length>0)
-			this.addInfo(m[0],kind,parent,true);
+			this.addInfo(m,kind,parent,true);
 	}
 }
 
@@ -312,13 +314,16 @@ Provider.prototype.parseHarbour = function(words)
 			var r = methodRegEx.exec(this.currLine);
 			if(r)
 			{
-				if(r[4] && r[4].length &&
-					(this.currentClass && this.currentClass.name!=r[4]) || (!this.currentClass))
-				{
-					this.currentClass = this.funcList.find((v)=> v.name == r[4]);
+				if(r[4] && r[4].length) {
+					r[4] = r[4].toLowerCase();
+					if((this.currentClass && this.currentClass.nameCmp!=r[4]) || (!this.currentClass))
+					{
+						this.currentClass = this.funcList.find((v)=> v.nameCmp == r[4]);
+					}
 				}
 				if(this.currentMethod) this.currentMethod.endLine = this.lastCodeLine;
 				this.currentMethod = this.addInfo(r[2],'method',this.currentClass);
+
 				if(r[3] && r[3].length)
 					this.parseDeclareList(r[3],"param",this.currentMethod);
 			}
@@ -366,6 +371,7 @@ Provider.prototype.parseHarbour = function(words)
 				if(words[0].startsWith("stat")) kind = "static";
 				if(words[0].startsWith("memv")) kind = "memvar";
 				if(words[0].startsWith("fiel")) kind = "field";
+				words[1] = words1;
 				this.parseDeclareList(words.slice(1).join(" "),kind,this.currentMethod);
 			}
 		} //else
@@ -399,7 +405,7 @@ Provider.prototype.parse = function(line)
 	this.linePrepare(line);
 	if(this.currLine.trim().length==0) return;
 	/** @type{string[]} */
-	var words = this.currLine.split(/\s/).filter((el) => el.length!=0);
+	var words = this.currLine.replace(/\s+/g," ").trim().split(" ");
 	if(words.length==0) return;
 	words[0] = words[0].toLowerCase();
 	//console.log((this.cMode?"C":"H")+this.lineNr+">"+this.currLine);
@@ -414,10 +420,17 @@ Provider.prototype.parse = function(line)
 	this.lastCodeLine = this.lineNr;
 }
 
-Provider.prototype.parseString = function(txt,cMode)
+/**
+ * Parse a string
+ * @param {string} txt the string to parse
+ * @param {string} docName the uri of the file of the incoming text 
+ * @param {[boolean=fakse]}  cMode if true it is considered a c file (not harbour)
+ */
+Provider.prototype.parseString = function(txt,docName,cMode)
 {
 	var providerThisContext = this;
 	this.Clear();
+	this.currentDocument=docName;
 	if(cMode != undefined)
 		this.cMode = cMode;
 	var lines = txt.split(/\r?\n/);
@@ -432,15 +445,21 @@ Provider.prototype.endParse = function()
 	if(this.currentMethod) this.currentMethod.endLine = this.lastCodeLine;
 }
 
-Provider.prototype.parseFile = function(file,cMode,encoding)
+/**
+ * Parse a file from disc. Async
+ * @param {string} file the file to parse, inside the filesystem
+ * @param {string} docName the uri of the file to parse
+ * @param {[boolean=false]} cMode if true it is considered a c file (not harbour)
+ * @param {string} encoding the encoding to use
+ */
+Provider.prototype.parseFile = function(file, docName,cMode,encoding)
 {
 	var providerThisContext = this;
 	this.Clear();
-	var startDoc = this.currentDocument;
-	this.currentDocument = file;
 	if(cMode != undefined)
 		this.cMode = cMode;
 	encoding = encoding || "utf8";
+	this.currentDocument = docName;
 	return new Promise((resolve,reject) =>
 	{
 		var reader = readline.createInterface({input:fs.createReadStream(file,encoding)});
@@ -448,8 +467,7 @@ Provider.prototype.parseFile = function(file,cMode,encoding)
 		reader.on("close",() => 
 		{
 			providerThisContext.endParse();
-			providerThisContext.currentDocument = startDoc;
-			resolve(providerThisContext.funcList);
+			resolve(providerThisContext);
 		})
 	});
 }

@@ -14,6 +14,8 @@ var workspaceRoot;
 var files;
 /** @type {Array} */
 var docs;
+/** @type {Array} */
+var missing
 /**
  * @typedef dbInfo
  * @property {string} dbInfo.name the name to show
@@ -48,10 +50,15 @@ connection.onInitialize(params =>
                 workspaceRoot = ["file://"+encodeURI(params.rootPath)];
         }
     }
-    fs.readFile(path.join(__dirname, 'hbdocs.json'),(err,data) =>
+    fs.readFile(path.join(__dirname, 'hbdocs.json'), "utf8",(err,data) =>
     {
         if(!err)
             docs = JSON.parse(data);
+    });
+    fs.readFile(path.join(__dirname, '../hbdocs.missing'), "utf8",(err,data) =>
+    {
+        if(!err)
+            missing = data.split(/\r\n{1,2}/g)
     });
     ParseWorkspace()
 	return {
@@ -93,12 +100,16 @@ function ParseDir(dir)
         for (var i = 0; i < ff.length; i++) {
             var fileName = ff[i];
 			var ext = path.extname(fileName).toLowerCase();
-			if(	ext == ".prg" || ext == ".c" )
+            var cMode = (ext.startsWith(".c") && ext!=".ch")
+            if(	ext == ".prg" || ext == ".ch" || cMode )
             {
                 var fileUri = Uri.file(dir+"/"+fileName)
                 var pp = new provider.Provider();
-                pp.parseFile(dir+"/"+fileName,ext == ".c");
-                UpdateFile(fileUri.toString(),pp)
+                pp.parseFile(dir+"/"+fileName,fileUri.toString(), cMode).then(
+                    prov => {
+                        UpdateFile(prov)
+                    }
+                )
             }
         }
     });
@@ -134,18 +145,18 @@ documents.onDidSave((e)=>
     if(	ext == ".prg" || ext == ".ch" || cMode )
     {
         var pp = new provider.Provider();
-        pp.parseString(e.document.getText(),ext == ".c");
-        UpdateFile(e.document.uri,pp);
+        pp.parseString(e.document.getText(),e.document.uri,cMode);
+        UpdateFile(pp);
     }
 })
 
 /**
- * 
- * @param {string} doc 
+ * Update a file in the workspace
  * @param {provider.Provider} pp 
  */
-function UpdateFile(doc,pp)
+function UpdateFile(pp)
 {
+    var doc = pp.currentDocument;
     if(doc in files)
         for(var db in databases)
         {
@@ -215,7 +226,7 @@ function kindTOVS(kind,sk)
 connection.onDocumentSymbol((param)=>
 {
     var p = new provider.Provider
-    p.parseString(documents.get(param.textDocument.uri).getText());
+    p.parseString(documents.get(param.textDocument.uri).getText(),param.textDocument.uri);
     var dest = [];
     for (var fn in p.funcList) {
         //if (p.funcList.hasOwnProperty(fn)) {
@@ -256,9 +267,9 @@ connection.onWorkspaceSymbol((param)=>
                 continue;
             // workspace symbols takes statics too
             if(param.query.length>0 && 
-            	info.name.toLowerCase().indexOf(src)==-1)
+            	info.nameCmp.indexOf(src)==-1)
                 continue;
-            if(parent && (!info.parent || info.parent.name.toLowerCase()!=parent))
+            if(parent && (!info.parent || info.parent.nameCmp!=parent))
                 continue;
             dest.push(server.SymbolInformation.create(
                 info.name,
@@ -302,15 +313,16 @@ connection.onDefinition((params)=>
     for (var file in files) { //if (files.hasOwnProperty(file)) {
             if(file==doc.uri)
             {
-                files[file] = new provider.Provider
-                files[file].parseString(allText);
+                var pp = new provider.Provider();
+                pp.parseString(allText,doc.uri)
+                UpdateFile(pp)
                 thisDone = true;
             }
             var pp = files[file];
             for (var fn in pp.funcList) { //if (pp.funcList.hasOwnProperty(fn)) {
             /** @type {provider.Info} */
             var info = pp.funcList[fn];
-            if(info.name.toLowerCase() != word)
+            if(info.nameCmp != word)
                 continue;
             if(info.kind.endsWith("*") && file!=doc.uri)
                 continue;
@@ -335,12 +347,12 @@ connection.onDefinition((params)=>
     if(!thisDone)
     {
         var p = new provider.Provider
-        p.parseString(allText);
+        p.parseString(allText,doc.uri);
         for (var fn in p.funcList) {
             //if (p.funcList.hasOwnProperty(fn)) {
             /** @type {provider.Info} */
             var info = p.funcList[fn];
-            if(info.name.toLowerCase() != word) continue;
+            if(info.nameCmp != word) continue;
             if(info.kind=='local' || info.kind=='param')
             {
                 var parent = info.parent;
@@ -495,8 +507,9 @@ function getWorkspaceSignatures(word, doc, className, nC)
     {
         if(file==doc.uri)
         {
-            files[file] = new provider.Provider
-            files[file].parseString(doc.getText());
+            var pp=new provider.Provider
+            pp.parseString(doc.getText(),file);
+            UpdateFile(pp)
             thisDone = true;
         }
         var pp = files[file];
@@ -506,7 +519,7 @@ function getWorkspaceSignatures(word, doc, className, nC)
             var info = pp.funcList[iSign];
             if(!info.kind.startsWith("method") && !info.kind.startsWith("procedure") && !info.kind.startsWith("function"))
                 continue;
-            if(info.name.toLowerCase() != word)
+            if(info.nameCmp != word)
                 continue;
             if(info.kind.endsWith("*") && file!=doc.uri)
                 continue;
@@ -515,7 +528,7 @@ function getWorkspaceSignatures(word, doc, className, nC)
                 if(info.parent)
                 {
                     s["label"] = info.parent.name+":"+info.name;
-                    if(className && className!=info.parent.name.toLowerCase())
+                    if(className && className!=info.parent.nameCmp)
                         continue;
                 }
                 else
@@ -552,21 +565,21 @@ function getWorkspaceSignatures(word, doc, className, nC)
     if(!thisDone)
     {
         var pp = new provider.Provider
-        pp.parseString(doc.getText());
+        pp.parseString(doc.getText(),doc.uri);
         for (var iSign=0;iSign<pp.funcList.length;iSign++)
         {
             /** @type {provider.Info} */
             var info = pp.funcList[iSign];
             if(!info.kind.startsWith("method") && !info.kind.startsWith("procedure") && !info.kind.startsWith("function"))
                 continue;
-            if(info.name.toLowerCase() != word)
+            if(info.nameCmp != word)
                 continue;
             var s = {}                
             if (info.kind.startsWith("method"))
                 if(info.parent)
                 {
                     s["label"] = info.parent.name+":"+info.name;
-                    if(className && className!=info.parent.name.toLowerCase())
+                    if(className && className!=info.parent.nameCmp)
                         continue;
                 }
                 else
@@ -639,10 +652,10 @@ connection.onCompletion((param)=>
     var rge = /[0-9a-z_]/i;
     var word = "", className = undefined;
     var pp = new provider.Provider
-    pp.parseString(allText);
+    pp.parseString(allText,doc.uri);
     if(doc.uri in files)
     {
-        UpdateFile(doc.uri,pp)
+        UpdateFile(pp)
         pp=undefined;
     }
     while(rge.test(allText[pos]))
@@ -681,7 +694,7 @@ connection.onCompletion((param)=>
         for (var iSign=0;iSign<pp.funcList.length;iSign++)
         {
             var info = pp.funcList[iSign];
-            if(info.name.toLowerCase().substr(0,word.length) != word)
+            if(info.nameCmp.substr(0,word.length) != word)
                 continue;
             if(precLetter == '->' && info.kind != "field")
                 continue;
@@ -704,7 +717,7 @@ connection.onCompletion((param)=>
                 continue;
             var c = server.CompletionItem.create(info.name);
             c.kind = kindTOVS(info.kind,false);
-            c.sortText = "AA"+info.name
+            c.sortText = "AAA"+info.nameCmp
             completitions.push(c);   
         }
     }
@@ -725,7 +738,17 @@ connection.onCompletion((param)=>
                 var c = server.CompletionItem.create(docs[i].name+"(");
                 c.kind = server.CompletionItemKind.Function;
                 c.documentation = docs[i].documentation;
-                c.sortText = "A"+docs[i].name
+                c.sortText = "AA"+docs[i].name
+                completitions.push(c);
+            }
+        }
+        for (var i = 1; i < missing.length; i++)
+        {
+            if(missing[i].toLowerCase().substr(0,word.length) == word)
+            {
+                var c = server.CompletionItem.create(missing[i]);
+                c.kind = server.CompletionItemKind.Function;
+                c.sortText = "A"+missing[i]
                 completitions.push(c);
             }
         }
