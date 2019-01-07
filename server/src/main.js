@@ -14,8 +14,7 @@ var workspaceRoot;
 var files;
 /** @type {Array} */
 var docs;
-/* @type {Array<{name:string,fields:} Database>} */
-/** @type {Object.<string, Array<{name:string,files:Array<string>}>>} */
+/** @type {Object.<string, {name:string, fields: Object.<string, {name:string, files:string[]}>}} */
 var databases;
 /*
     every database contiens a name (the text before the ->)
@@ -90,12 +89,7 @@ function ParseDir(dir)
                 var fileUri = Uri.file(dir+"/"+fileName)
                 var pp = new provider.Provider();
                 pp.parseFile(dir+"/"+fileName,ext == ".c");
-                files[fileUri.toString()] = pp;
-                var dbs = Object.keys(pp.databases); 
-                if(dbs.length>0)
-                {
-                    d
-                }    
+                UpdateFile(fileUri.toString(),pp)
             }
         }
     });
@@ -121,14 +115,63 @@ documents.onDidSave((e)=>
 {
     var uri = Uri.parse(e.document.uri);
     if(uri.scheme != "file") return;
+    var found = false;
+    for(var i=0;i<workspaceRoot.length;i++)
+        if(e.document.uri.startsWith(workspaceRoot[i]))
+            found = true;
+    if(!found) return; //not include file outside the current workspace
     var ext = path.extname(uri.fsPath).toLowerCase();
-    if(	ext == ".prg" || ext == ".c" )
+    var cMode = (ext.startsWith(".c") && ext!=".ch")
+    if(	ext == ".prg" || ext == ".ch" || cMode )
     {
         var pp = new provider.Provider();
-        files[e.document.uri] = pp;
         pp.parseString(e.document.getText(),ext == ".c");
+        UpdateFile(e.document.uri,pp);
     }
 })
+
+/**
+ * 
+ * @param {string} doc 
+ * @param {provider.Provider} pp 
+ */
+function UpdateFile(doc,pp)
+{
+    if(doc in files)
+        for(var db in databases)
+        {
+            for(var f in databases[db].fields)
+            {
+                var idx = databases[db].fields[f].files.indexOf(doc);
+                if(idx>0)
+                {
+                    databases[db].fields[f].files.splice(idx,1);
+                    if(databases[db].fields[f].files.length==0)
+                    {
+                        delete databases[db].fields[f];
+                    }
+                }
+            }
+            if(Object.keys(databases[db].fields).length==0)
+            {
+                delete databases[db];
+            }
+        }
+    files[doc] = pp;
+    for(var db in pp.databases)
+    {
+        var ppdb = pp.databases[db];
+        if(!db in databases) databases[db]={name:ppdb.name, fields: {}};
+        var gbdb = databases[db];
+        for(var f in ppdb.fields)
+        {
+            if(!f in gbdb.fields) 
+                gbdb.fields[f]={name: ppdb.fields[f].name, files: [doc]}; 
+            else
+                gbdb.fields[f].files.push(doc);
+        }
+    }
+}
 
 function kindTOVS(kind,sk)
 {
@@ -593,12 +636,12 @@ connection.onCompletion((param)=>
         pos--;
     }
     if(word.length==0) return [];
+    word = word.toLowerCase();
     var precLetter = allText[pos];
     if(precLetter == '>' && allText[pos-1]=='-')
     {
-        precLetter = '->';
+        completitions = CompletitionDBFields(word, allText,pos)        
     }
-    word = word.toLowerCase();
     function GetCompletitions(pp,file)
     {
         for (var iSign=0;iSign<pp.funcList.length;iSign++)
@@ -623,7 +666,8 @@ connection.onCompletion((param)=>
                     info.parent.endLine>param.position.line)
                         continue;
             }
-
+            if(precLetter=='->' && completitions.find(v=> v.name == info.name))
+                continue;
             var c = server.CompletionItem.create(info.name);
             c.kind = kindTOVS(info.kind,false);
             completitions.push(c);   
@@ -657,10 +701,40 @@ connection.onCompletion((param)=>
                 completitions.push(c);
             }
         }
-    
     }
-    return server.CompletionList.create(completitions,false);    
+    return server.CompletionList.create(completitions,true);    
 })
+
+function CompletitionDBFields(word, allText,pos)
+{
+    precLetter = '->';
+    var pdb = pos-2;
+    var dbName = "";
+    var nBracket = 0;
+    while(allText[pdb]!=' ' && allText[pdb]!='\t' && nBracket>0)
+    {
+        var c = allText[pdb];
+        pdb--;
+        if(c==')') nBracket++;
+        if(c=='(') nBracket--;
+        dbName = dbName+c;
+    }
+    dbName = dbName.toLowerCase();
+    if(!(dbName in databases))
+        return [];
+    var db = databases[dbName];
+    var completitions = [];
+    for(var f in db.fields)
+    {
+        if(word.length==0 || f.startsWith(word))
+        {
+            var c = server.CompletionItem.create(db.fields[f].name);
+            c.kind = server.CompletionItemKind.Field;
+            c.documentation = db.name;
+            completitions.push(c);
+        }
+    }
+}
 
 
 /*

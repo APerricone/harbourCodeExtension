@@ -23,7 +23,14 @@ Provider.prototype.Clear = function()
 	this.currentClass = undefined;
 	this.currentMethod = undefined;
 	this.currentComment = "";
-	/** @type {Object.<string, Array<string>>} */
+	/* @type {Object.<string, {name: string, fields: Object.<string, string>}} */
+	/**
+	 * @typedef dbInfo
+	 * @property {string} dbInfo.name the name to show
+	 * @property {Object.<string, string>} dbInfo.fields every key is the lowercase of the field name that is saved in the value
+	 */
+	/** @type {Object.<string, dbInfo>} every key is the lowercase name of db
+	*/
 	this.databases={};
 }
 
@@ -452,17 +459,16 @@ Provider.prototype.findDBReferences = function()
 	var dbRegex = /([a-z0-9_]+|\((?:\([^\)]*\)|[^\)])+\))->([a-z0-9_]+)/gi
 	var dbRef;
 	while(dbRef = dbRegex.exec(this.currLine)) {
-		dbRef[1] = dbRef[1].toLowerCase();
-		dbRef[2] = dbRef[2].toLowerCase();
-		if(dbRef[1]=='field') {
+		var dbName = dbRef[1].toLowerCase();
+		var fieldName = dbRef[2].toLowerCase();
+		if(dbName=='field') {
 			this.addInfo(dbRef[2],"field",undefined,true);
 		} else {
-			if(!dbRef[1] in this.databases)	
-				this.databases[dbRef[1]]=[];
-			var i = this.databases[dbRef[1]].indexOf(dbRef[2]);
-			if(i==0)
+			if(!(dbName in this.databases))	
+				this.databases[dbName]={name: dbRef[1], fields: {}};
+			if( !(fieldName in this.databases[dbName].fields) );
 			{
-				this.databases[dbRef[1]].push(dbRef[2]);
+				this.databases[dbRef[1]].fields[fieldName] = dbRef[2];
 			}
 		}
 	}
