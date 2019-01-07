@@ -706,11 +706,11 @@ connection.onCompletion((param)=>
                     continue;
             }
             //if(info.kind == "local" || info.kind == "param")
-            if(info.parent && (info.parent.kind.startsWith("func") || info.parent.kind.startsWith("proc")))
+            if(info.parent && ( info.parent.kind.startsWith("function")  || info.parent.kind.startsWith("procedure")))
             {
                 if(file!=doc.uri) continue;
-                if(info.parent.startLine>param.position.line && 
-                    info.parent.endLine<param.position.line)
+                if(param.position.line<info.parent.startLine || 
+                    param.position.line>info.parent.endLine)
                         continue;
             }
             if(precLetter=='->' && completitions.find(v=> v.name == info.name))
