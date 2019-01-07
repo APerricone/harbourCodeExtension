@@ -14,7 +14,16 @@ var workspaceRoot;
 var files;
 /** @type {Array} */
 var docs;
-/** @type {Object.<string, {name:string, fields: Object.<string, {name:string, files:string[]}>}} */
+/**
+ * @typedef dbInfo
+ * @property {string} dbInfo.name the name to show
+ * @property {fieldInfo[]} dbInfo.fields the fields found for the database
+ * 
+ * @typedef fieldInfo
+ * @property {string} fieldInfo.name the name to show
+ * @property {string[]} fieldInfo.files the list of files where the field is found
+ */
+/** @type {Object.<string, dbInfo>} every key is the lowercase name of db */
 var databases;
 /*
     every database contiens a name (the text before the ->)
@@ -97,7 +106,7 @@ function ParseDir(dir)
 
 function ParseWorkspace() 
 {
-    databases = [];
+    databases = {};
     files = {};
     for(var i=0;i<workspaceRoot.length;i++)
     {
@@ -161,12 +170,12 @@ function UpdateFile(doc,pp)
     for(var db in pp.databases)
     {
         var ppdb = pp.databases[db];
-        if(!db in databases) databases[db]={name:ppdb.name, fields: {}};
+        if(!(db in databases)) databases[db]={name:ppdb.name, fields: {}};
         var gbdb = databases[db];
         for(var f in ppdb.fields)
         {
-            if(!f in gbdb.fields) 
-                gbdb.fields[f]={name: ppdb.fields[f].name, files: [doc]}; 
+            if(!(f in gbdb.fields))
+                gbdb.fields[f]={name: ppdb.fields[f], files: [doc]}; 
             else
                 gbdb.fields[f].files.push(doc);
         }
@@ -209,7 +218,7 @@ connection.onDocumentSymbol((param)=>
     p.parseString(documents.get(param.textDocument.uri).getText());
     var dest = [];
     for (var fn in p.funcList) {
-        if (p.funcList.hasOwnProperty(fn)) {
+        //if (p.funcList.hasOwnProperty(fn)) {
             /** @type {provider.Info} */
             var info = p.funcList[fn];
             dest.push(server.SymbolInformation.create(
@@ -219,7 +228,7 @@ connection.onDocumentSymbol((param)=>
                                     info.endLine,info.endCol),
                 param.textDocument.uri, info.parent?info.parent.name:"")
             );
-        }        
+        //}        
     };
     return dest;
 });
@@ -235,9 +244,9 @@ connection.onWorkspaceSymbol((param)=>
         parent = src.substring(0,colon);
         src = src.substr(colon+1);
     }
-    for (var file in files) if (files.hasOwnProperty(file)) {
+    for (var file in files) { //if (files.hasOwnProperty(file)) {
         var pp = files[file];
-        for (var fn in pp.funcList) if (pp.funcList.hasOwnProperty(fn)) {
+        for (var fn in pp.funcList) { //if (pp.funcList.hasOwnProperty(fn)) {
             /** @type {provider.Info} */
             var info = pp.funcList[fn];
             if( info.kind!="class" && 
@@ -290,7 +299,7 @@ connection.onDefinition((params)=>
     word=word[0].toLowerCase();
     var dest = [];
     var thisDone = false;
-    for (var file in files) if (files.hasOwnProperty(file)) {
+    for (var file in files) { //if (files.hasOwnProperty(file)) {
             if(file==doc.uri)
             {
                 files[file] = new provider.Provider
@@ -298,7 +307,7 @@ connection.onDefinition((params)=>
                 thisDone = true;
             }
             var pp = files[file];
-            for (var fn in pp.funcList) if (pp.funcList.hasOwnProperty(fn)) {
+            for (var fn in pp.funcList) { //if (pp.funcList.hasOwnProperty(fn)) {
             /** @type {provider.Info} */
             var info = pp.funcList[fn];
             if(info.name.toLowerCase() != word)
@@ -328,7 +337,7 @@ connection.onDefinition((params)=>
         var p = new provider.Provider
         p.parseString(allText);
         for (var fn in p.funcList) {
-            if (p.funcList.hasOwnProperty(fn)) {
+            //if (p.funcList.hasOwnProperty(fn)) {
             /** @type {provider.Info} */
             var info = p.funcList[fn];
             if(info.name.toLowerCase() != word) continue;
@@ -347,7 +356,7 @@ connection.onDefinition((params)=>
                 server.Range.create(info.startLine,info.startCol,
                                 info.endLine,info.endCol)));
             }        
-        };    
+        //};    
     }
     return dest;
 })
@@ -482,7 +491,7 @@ function getWorkspaceSignatures(word, doc, className, nC)
 {
     var signatures = [];
     var thisDone = false;
-    for (var file in files) if (files.hasOwnProperty(file)) 
+    for (var file in files) //if (files.hasOwnProperty(file)) 
     {
         if(file==doc.uri)
         {
@@ -625,22 +634,47 @@ connection.onCompletion((param)=>
     var doc = documents.get(param.textDocument.uri);
     var allText = doc.getText();
     var completitions = [];
-    var thisDone = false;
     var pos = doc.offsetAt(param.position)-1
     // Get the word
     var rge = /[0-9a-z_]/i;
     var word = "", className = undefined;
+    var pp = new provider.Provider
+    pp.parseString(allText);
+    if(doc.uri in files)
+    {
+        UpdateFile(doc.uri,pp)
+        pp=undefined;
+    }
     while(rge.test(allText[pos]))
     {
         word = allText[pos]+word;
         pos--;
     }
-    if(word.length==0) return [];
     word = word.toLowerCase();
     var precLetter = allText[pos];
     if(precLetter == '>' && allText[pos-1]=='-')
     {
-        completitions = CompletitionDBFields(word, allText,pos)        
+        completitions = CompletitionDBFields(word, allText,pos, pp)        
+    }
+    if(word.length==0) return server.CompletionList.create(completitions,true);
+    for(var dbName in databases)
+        if(dbName.startsWith(word))
+        {
+            var c = server.CompletionItem.create(databases[dbName].name);
+            c.kind = server.CompletionItemKind.Struct
+            c.sortText = "AAAA" + databases[dbName].name
+            completitions.push(c);   
+        }
+    if(pp)
+    {
+        for(var dbName in pp.databases)
+            if(dbName.startsWith(word))
+            {
+                var c = server.CompletionItem.create(pp.databases[dbName].name);
+                c.kind = server.CompletionItemKind.Struct
+                c.sortText = "AAAA" + databases[dbName].name
+                completitions.push(c);   
+        }
     }
     function GetCompletitions(pp,file)
     {
@@ -662,31 +696,24 @@ connection.onCompletion((param)=>
             if(info.parent && (info.parent.kind.startsWith("func") || info.parent.kind.startsWith("proc")))
             {
                 if(file!=doc.uri) continue;
-                if(info.parent.startLine<param.position.line || 
-                    info.parent.endLine>param.position.line)
+                if(info.parent.startLine>param.position.line && 
+                    info.parent.endLine<param.position.line)
                         continue;
             }
             if(precLetter=='->' && completitions.find(v=> v.name == info.name))
                 continue;
             var c = server.CompletionItem.create(info.name);
             c.kind = kindTOVS(info.kind,false);
+            c.sortText = "AA"+info.name
             completitions.push(c);   
         }
     }
-    for (var file in files) if (files.hasOwnProperty(file)) 
+    for (var file in files) // if (files.hasOwnProperty(file)) it is unnecessary
     {
-        if(file==doc.uri)
-        {
-            files[file] = new provider.Provider
-            files[file].parseString(allText);
-            thisDone = true;
-        }
         GetCompletitions(files[file],file);
     }
-    if(!thisDone)
+    if(pp)
     {
-        var pp = new provider.Provider();
-        pp.parseString(allText);
         GetCompletitions(pp,doc.uri);
     }
     if(precLetter!=':' && precLetter!='->')
@@ -698,6 +725,7 @@ connection.onCompletion((param)=>
                 var c = server.CompletionItem.create(docs[i].name+"(");
                 c.kind = server.CompletionItemKind.Function;
                 c.documentation = docs[i].documentation;
+                c.sortText = "A"+docs[i].name
                 completitions.push(c);
             }
         }
@@ -705,35 +733,52 @@ connection.onCompletion((param)=>
     return server.CompletionList.create(completitions,true);    
 })
 
-function CompletitionDBFields(word, allText,pos)
+function CompletitionDBFields(word, allText,pos, pp)
 {
-    precLetter = '->';
+    //precLetter = '->';
     var pdb = pos-2;
     var dbName = "";
     var nBracket = 0;
-    while(allText[pdb]!=' ' && allText[pdb]!='\t' && nBracket>0)
+    while((allText[pdb]!=' ' && allText[pdb]!='\t') || nBracket>0)
     {
         var c = allText[pdb];
         pdb--;
         if(c==')') nBracket++;
         if(c=='(') nBracket--;
-        dbName = dbName+c;
+        dbName = c+dbName;
     }
-    dbName = dbName.toLowerCase();
-    if(!(dbName in databases))
-        return [];
-    var db = databases[dbName];
     var completitions = [];
-    for(var f in db.fields)
-    {
-        if(word.length==0 || f.startsWith(word))
+    dbName = dbName.toLowerCase();
+    if(dbName in databases) {
+        var db = databases[dbName];
+        for(var f in db.fields)
         {
-            var c = server.CompletionItem.create(db.fields[f].name);
-            c.kind = server.CompletionItemKind.Field;
-            c.documentation = db.name;
-            completitions.push(c);
+            if(word.length==0 || (f.startsWith(word) && f!=word))
+            {
+                var c = server.CompletionItem.create(db.fields[f].name);
+                c.kind = server.CompletionItemKind.Field;
+                c.documentation = db.name;
+                c.sortText = "AAAA" + db.fields[f].name
+                completitions.push(c);
+            }
         }
     }
+    if(pp && dbName in pp.databases)
+    {
+        var db = pp.databases[dbName];
+        for(var f in db.fields)
+        {
+            if(word.length==0 || (f.startsWith(word) && f!=word))
+            {
+                var c = server.CompletionItem.create(db.fields[f].name);
+                c.kind = server.CompletionItemKind.Field;
+                c.documentation = db.name;
+                c.sortText = "AAAA" + db.fields[f].name
+                completitions.push(c);
+            }
+        }
+    }
+    return completitions;
 }
 
 

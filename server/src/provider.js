@@ -466,9 +466,9 @@ Provider.prototype.findDBReferences = function()
 		} else {
 			if(!(dbName in this.databases))	
 				this.databases[dbName]={name: dbRef[1], fields: {}};
-			if( !(fieldName in this.databases[dbName].fields) );
+			if( !(fieldName in this.databases[dbName].fields) )
 			{
-				this.databases[dbRef[1]].fields[fieldName] = dbRef[2];
+				this.databases[dbName].fields[fieldName] = dbRef[2];
 			}
 		}
 	}
