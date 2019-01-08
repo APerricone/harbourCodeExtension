@@ -11,8 +11,8 @@ var diagnosticCollection;
 function activate(context) {
 	vscode.languages.setLanguageConfiguration('harbour', {
 		indentationRules: {
-			increaseIndentPattern: /^\s*(proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?|func(?:t(?:i(?:o(?:n)?)?)?)?|class|if|else|elseif|for|if|try|case|otherwise|while|switch)\b/i,
-			decreaseIndentPattern: /^\s*(end[a-z]*|next|else|elseif|next)\b/i
+			increaseIndentPattern: /^\s*((?:(?:static|init|exit)\s+)?(?:proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?|func(?:t(?:i(?:o(?:n)?)?)?)?)|class|method|if|else(?:if)?|for|if|try|case|otherwise|(?:do\s+)?while|switch|begin)\b/i,
+			decreaseIndentPattern: /^\s*(end[a-z]*|next|else|elseif)\b/i
 		}
 	});
 	validation.activate(context);

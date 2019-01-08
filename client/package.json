@@ -19,7 +19,8 @@
     "categories": [
         "Programming Languages",
         "Linters",
-        "Debuggers"
+        "Debuggers",
+        "Snippets"
     ],
     "dependencies": {
         "vscode-debugadapter": "^1.33.0",
@@ -203,6 +204,12 @@
                         }
                     }
                 }
+            }
+        ],
+        "snippets": [
+            {
+                "language": "harbour",
+                "path": "src/harbour.code-snippets"
             }
         ]
     }
