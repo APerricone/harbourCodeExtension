@@ -34,7 +34,7 @@ var databases;
 */
 connection.onInitialize(params => 
 {
-    if(params.capabilities.workspace.workspaceFolders) {
+    if(params.capabilities.workspace.workspaceFolders && params.workspaceFolders) {
         workspaceRoot = [];
         for(var i=0;i<params.workspaceFolders.length;i++)
         {
@@ -685,7 +685,7 @@ connection.onCompletion((param)=>
             {
                 var c = server.CompletionItem.create(pp.databases[dbName].name);
                 c.kind = server.CompletionItemKind.Struct
-                c.sortText = "AAAA" + databases[dbName].name
+                c.sortText = "AAAA" + pp.databases[dbName].name
                 completitions.push(c);   
         }
     }
@@ -793,10 +793,10 @@ function CompletitionDBFields(word, allText,pos, pp)
         {
             if(word.length==0 || (f.startsWith(word) && f!=word))
             {
-                var c = server.CompletionItem.create(db.fields[f].name);
+                var c = server.CompletionItem.create(db.fields[f]);
                 c.kind = server.CompletionItemKind.Field;
                 c.documentation = db.name;
-                c.sortText = "AAAA" + db.fields[f].name
+                c.sortText = "AAAA" + db.fields[f]
                 completitions.push(c);
             }
         }

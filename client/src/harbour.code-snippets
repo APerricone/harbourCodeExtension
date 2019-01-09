@@ -2,13 +2,13 @@
 	"cicle-for": {
 		"scope": "harbour",
 		"prefix": "for",
-		"body": ["for $1:=${2:0} to $3",
+		"body": ["for $1:=${2:1} to $3",
 			"\t$0",
 			"next"]
 	},
 	"cicle-foreach": {
 		"scope": "harbour",
-		"prefix": "fore",
+		"prefix": "for each",
 		"body": ["for each $1 in $2",
 			"\t$0",
 			"next"]
@@ -43,6 +43,15 @@
 			"\tcase $2",
 			"\t\t$0",
 			"endcase"]
+	},
+	"try-catch": {
+		"scope": "harbour",
+		"prefix": "try",
+		"body": ["try $1",
+				"\t$0",
+				"catch ${2:oErr}",
+				"\t",
+				"end"]
 	}
 }
 
