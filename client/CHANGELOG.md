@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to the "Harbour and xHarbour" extension will be documented in this file.
 
+## 0.8.3
+ - **Server** added completition and goto definition on include
+
 ## 0.8.2
  - **Code** added some snippets
  - **Icon** changed icon
