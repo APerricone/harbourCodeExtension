@@ -46,33 +46,34 @@ function RemoveStringAndComments(txt)
 	{
 		i++;
 		var filter=undefined;
+		var substutute = "X";
 		switch(i)
 		{
-			case 1: filter = /\/\/[^\r\n]*[\r\n]{1,2}/g; break;	 // // comments
-			case 2: filter = /&&[^\r\n]*[\r\n]{1,2}/g; break;	 // && comments
-			case 3: filter = /^\s*\*[^\r\n]*[\r\n]{1,2}/mg; break;	 // * comments			
-			case 4: filter = /^\s*NOTE[^\r\n]*[\r\n]{1,2}/mg; break;	 // NOTE comments			
-			case 5: filter = /\/\*(?!\*\/).*\*\//g; break; // /* */ comments
+			case 1: filter = /\/\/[^\r\n]*[\r\n]{1,2}/g; substutute = "C"; break;	 // // comments
+			case 2: filter = /&&[^\r\n]*[\r\n]{1,2}/g; substutute = "C"; break;	 // && comments
+			case 3: filter = /^\s*\*[^\r\n]*[\r\n]{1,2}/mg; substutute = "C"; break;	 // * comments			
+			case 4: filter = /^\s*NOTE[^\r\n]*[\r\n]{1,2}/mg; substutute = "C"; break;	 // NOTE comments			
+			case 5: filter = /\/\*(?!\*\/).*\*\//g; substutute = "C"; break; // /* */ comments
 			case 6: filter = /'[^'\r\n]*'/g; break; // ' string
 			case 7: filter = /"[^"\r\n]*"/g; break; // " string
 			case 8: filter = /\[[^\]\r\n]*\]/g; break;  // [] string
-			case 9: filter = /#(if|else|endif)/g; break;  // precompiled if
+			//case 9: filter = /#(if|else|endif)/g; break;  // precompiled if
 		}
 		if (filter == undefined)
 			break;
 		do
 		{
             var someChange = false
-            txt=txt.replace(filter,function(matchString)
+            txt=txt.replace(filter, matchString =>
             {
 				someChange = true;
 				if(matchString.endsWith("\r\n"))
-					return Array(matchString.length-1).join("X")+"\r\n";
+					return substutute.repeat(matchString.length-1)+"\r\n";
 				if(matchString.endsWith("\n"))
-					return Array(matchString.length).join("X")+"\n";				
+					return substutute.repeat(matchString.length)+"\n";				
 				if(matchString.endsWith("\r"))
-					return Array(matchString.length).join("X")+"\r";
-                return Array(matchString.length+1).join("X");
+					return substutute.repeat(matchString.length)+"\r";
+                return substutute.repeat(matchString.length+1);
             })
 		} while(someChange)
 	}
@@ -86,31 +87,32 @@ function RemoveStringAndComments(txt)
 		var precC,c="";
 		while(keepLooking)
 		{
-			precC=c
+			if(c!=' ' && c!='\t')
+				precC=c
 			c = txt.charAt(i)
 			switch(c)
 			{
 				case '\r':
 				case '\n':
-					if (precC==';')
-						c = ';'
+					if (precC==';') // continue line
+						c = ';' 
 					else
-						keepLooking = false;
+						keepLooking = false; //new line, exit
 					break;
 				case ')':
 					if(nPar==0)
-						keepLooking = false;
+						keepLooking = false; // end of backets, exit
 					else
-						nPar--;
+						nPar--; // closed a bracket
 					break;
 				case '(':
-					nPar++;
+					nPar++; // open a bracket, in the condition
 					break;
 				case ',':
-					if(nPar==0)
+					if(nPar==0) // found a comma inside the brackets
 					{
-						isInlineIf = true;
-						keepLooking = false;
+						isInlineIf = true; // it is an inline if
+						keepLooking = false; // can exit
 					}
 					break
 			}
