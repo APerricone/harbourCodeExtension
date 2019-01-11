@@ -67,7 +67,10 @@ function Info(name,kind,parent,document,startLine,startCol,endLine,endCol,commen
 	/** @type {number} */
 	this.endCol = endCol;
 	if(comment)
-		this.comment = comment.substr(2);
+	{
+		// remove the first newline and replace every character repeated more than 3 times that it is not a space, with 2 of them.
+		this.comment = comment.substr(2).replace(/(\S)\1{2,}/g,"$1$1")
+	}
 }
 
 /**

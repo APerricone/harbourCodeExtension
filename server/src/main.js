@@ -9,7 +9,9 @@ var connection = server.createConnection(
         new server.IPCMessageWriter(process));
 
 /** @type {Array<string>} */
-var workspaceRoot;
+var workspaceRoots;
+/** @type {Array<string>} */
+var includeDirs;
 /** @type {Object.<string, Provider>} */
 var files;
 /** @type {Array} */
@@ -34,20 +36,20 @@ var databases;
 */
 connection.onInitialize(params => 
 {
-    if(params.capabilities.workspace.workspaceFolders) {
-        workspaceRoot = [];
+    if(params.capabilities.workspace.workspaceFolders && params.workspaceFolders) {
+        workspaceRoots = [];
         for(var i=0;i<params.workspaceFolders.length;i++)
         {
-            workspaceRoot.push(params.workspaceFolders[i].uri)
+            workspaceRoots.push(params.workspaceFolders[i].uri)
         }
     } else {
-        workspaceRoot = [params.rootUri];
-        if(!workspaceRoot[0] && params.rootPath)
+        workspaceRoots = [params.rootUri];
+        if(!workspaceRoots[0] && params.rootPath)
         {
             if(path.sep=="\\") //window
-                workspaceRoot = ["file://"+encodeURI(params.rootPath.replace(/\\/g,"/"))];
+                workspaceRoots = ["file://"+encodeURI(params.rootPath.replace(/\\/g,"/"))];
             else
-                workspaceRoot = ["file://"+encodeURI(params.rootPath)];
+                workspaceRoots = ["file://"+encodeURI(params.rootPath)];
         }
     }
     fs.readFile(path.join(__dirname, 'hbdocs.json'), "utf8",(err,data) =>
@@ -60,7 +62,6 @@ connection.onInitialize(params =>
         if(!err)
             missing = data.split(/\r\n{1,2}/g)
     });
-    ParseWorkspace()
 	return {
 		capabilities: {
             documentSymbolProvider: true,
@@ -71,7 +72,7 @@ connection.onInitialize(params =>
             },
             completionProvider: {
                 resolveProvider: false,
-                triggerCharacters: ['>']
+                triggerCharacters: ['>', '<', '"']
             },
 			// Tell the client that the server works in FULL text document sync mode
             textDocumentSync: 1,
@@ -89,23 +90,29 @@ connection.workspace.onDidChangeWorkspaceFolders(params=>{
 connection.onDidChangeConfiguration(params=>{
     var searchExclude = params.settings.search.exclude;
     // minimatch
-    var extraInclude = params.settings.harbour.extrasourcePaths;
+    includeDirs = params.settings.harbour.extraIncludePaths;
+    ParseWorkspace();
+
 })
 
-function ParseDir(dir)
+function ParseDir(dir, onlyHeader)
 {
 	fs.readdir(dir,function(err,ff)
     {
         if(ff==undefined) return;
         for (var i = 0; i < ff.length; i++) {
             var fileName = ff[i];
-			var ext = path.extname(fileName).toLowerCase();
-            var cMode = (ext.startsWith(".c") && ext!=".ch")
+            var ext = path.extname(fileName).toLowerCase();
+            if (onlyHeader &&  ext!=".ch" && ext!=".h")
+            {
+                continue;
+            }
+            var cMode = (ext.startsWith(".c") && ext!=".ch") || ext == ".h"
             if(	ext == ".prg" || ext == ".ch" || cMode )
             {
-                var fileUri = Uri.file(dir+"/"+fileName)
+                var fileUri = Uri.file(path.join(dir,fileName));
                 var pp = new provider.Provider();
-                pp.parseFile(dir+"/"+fileName,fileUri.toString(), cMode).then(
+                pp.parseFile(path.join(dir,fileName),fileUri.toString(), cMode).then(
                     prov => {
                         UpdateFile(prov)
                     }
@@ -119,13 +126,21 @@ function ParseWorkspace()
 {
     databases = {};
     files = {};
-    for(var i=0;i<workspaceRoot.length;i++)
+    for(var i=0;i<workspaceRoots.length;i++)
     {
         // other scheme of uri unsupported
         /** @type {vscode-uri.default} */
-        var uri = Uri.parse(workspaceRoot[i]);
+        var uri = Uri.parse(workspaceRoots[i]);
         if(uri.scheme != "file") return;
         ParseDir(uri.fsPath);
+    }
+    for(var i=0;i<includeDirs.length;i++)
+    {
+        // other scheme of uri unsupported
+        /** @type {vscode-uri.default} */
+        //var uri = Uri.parse(includeDirs[i]);
+        //if(uri.scheme != "file") return;        
+        ParseDir(includeDirs[i], true);
     }
 }
 
@@ -136,8 +151,8 @@ documents.onDidSave((e)=>
     var uri = Uri.parse(e.document.uri);
     if(uri.scheme != "file") return;
     var found = false;
-    for(var i=0;i<workspaceRoot.length;i++)
-        if(e.document.uri.startsWith(workspaceRoot[i]))
+    for(var i=0;i<workspaceRoots.length;i++)
+        if(e.document.uri.startsWith(workspaceRoots[i]))
             found = true;
     if(!found) return; //not include file outside the current workspace
     var ext = path.extname(uri.fsPath).toLowerCase();
@@ -287,6 +302,17 @@ connection.onWorkspaceSymbol((param)=>
 connection.onDefinition((params)=>
 {
     var doc = documents.get(params.textDocument.uri);
+    var line = doc.getText(server.Range.create(params.position.line,0,params.position.line,100));
+    var include = /^\s*#include\s+[<"]([^>"]*)/.exec(line);
+    if(include!==null)
+    {
+        var startPath = undefined;
+        if(params.textDocument.uri && params.textDocument.uri.startsWith("file"))
+        {
+            startPath = path.dirname(Uri.parse(params.textDocument.uri).fsPath);
+        }
+        return definitionFiles(include[1],startPath);
+    }
     /** @type {string} */
     var pos = doc.offsetAt(params.position);
     var delta = 20;
@@ -645,6 +671,17 @@ function getStdHelp(word, nC)
 connection.onCompletion((param)=> 
 {
     var doc = documents.get(param.textDocument.uri);
+    var line = doc.getText(server.Range.create(param.position.line,0,param.position.line,100));
+    var include = line.match(/^\s*#include\s+[<"]([^>"]*)/);
+    if(include!==null)
+    {
+        var startPath = undefined;
+        if(param.textDocument.uri && param.textDocument.uri.startsWith("file"))
+        {
+            startPath = path.dirname(Uri.parse(param.textDocument.uri).fsPath)
+        }
+        return completitionFiles(include[1], startPath);
+    }
     var allText = doc.getText();
     var completitions = [];
     var pos = doc.offsetAt(param.position)-1
@@ -685,7 +722,7 @@ connection.onCompletion((param)=>
             {
                 var c = server.CompletionItem.create(pp.databases[dbName].name);
                 c.kind = server.CompletionItemKind.Struct
-                c.sortText = "AAAA" + databases[dbName].name
+                c.sortText = "AAAA" + pp.databases[dbName].name
                 completitions.push(c);   
         }
     }
@@ -756,6 +793,117 @@ connection.onCompletion((param)=>
     return server.CompletionList.create(completitions,true);    
 })
 
+function completitionFiles(word, startPath)
+{
+    var completitons = [];
+    word = word.replace("\r","").replace("\n","").toLowerCase()
+    var startDone = false;
+
+    for(var i=0;i<workspaceRoots.length;i++)
+    {
+        // other scheme of uri unsupported
+        /** @type {vscode-uri.default} */
+        var uri = Uri.parse(workspaceRoots[i]);
+        if(uri.scheme != "file") continue;
+        if(startPath && uri.fsPath.toLowerCase()==startPath.toLowerCase()) startDone=true;
+        var ff = fs.readdirSync(uri.fsPath)
+        for(var fi=0;fi<ff.length;fi++)
+        {
+            var ext = path.extname(ff[fi]).toLowerCase();
+            if(ext!=".h" && ext!=".ch")
+                continue;
+            if(word.length != 0 && ff[fi].substr(0,word.length).toLowerCase()!=word)
+                continue;
+            var c = server.CompletionItem.create(ff[fi]);
+            c.kind = server.CompletionItemKind.File;
+            completitons.push(c);
+        }
+    }
+    for(var i=0;i<includeDirs.length;i++)
+    {
+        if(startPath && includeDirs[i].toLowerCase()==startPath.toLowerCase()) startDone=true;
+        var ff = fs.readdirSync(includeDirs[i]);
+        for(var fi=0;fi<ff.length;fi++)
+        {
+            var ext = path.extname(ff[fi]).toLowerCase();
+            if(ext!=".h" && ext!=".ch")
+                continue;
+            if(word.length != 0 && ff[fi].substr(0,word.length).toLowerCase()!=word)
+                continue;
+            var c = server.CompletionItem.create(ff[fi]);
+            c.kind = server.CompletionItemKind.File;
+            completitons.push(c);
+        }
+    }
+    if(startPath && !startDone)
+    {
+        var ff = fs.readdirSync(startPath);
+        for(var i=0;i<ff.length;i++)
+        {
+            var ext = path.extname(ff[i]).toLowerCase();
+            if(ext!=".h" && ext!=".ch")
+                continue;
+            if(word.length != 0 && ff[i].substr(0,word.length).toLowerCase()!=word)
+                continue;
+            var c = server.CompletionItem.create(ff[i]);
+            c.kind = server.CompletionItemKind.File;
+            completitons.push(c);
+        }
+    }
+    return server.CompletionList.create(completitons,true);
+}
+
+function definitionFiles(fileName, startPath)
+{
+    var dest = [];
+    fileName = fileName.toLowerCase();
+    var startDone = false;
+    for(var i=0;i<workspaceRoots.length;i++)
+    {
+        // other scheme of uri unsupported
+        /** @type {vscode-uri.default} */
+        var uri = Uri.parse(workspaceRoots[i]);
+        if(uri.scheme != "file") continue;
+        if(startPath && uri.fsPath.toLowerCase()==startPath.toLowerCase()) startDone=true;
+        var ff = fs.readdirSync(uri.fsPath)
+        for(var fi=0;fi<ff.length;fi++)
+        {
+            if(ff[fi].toLowerCase() == fileName)
+            {
+                var fileUri = Uri.file(path.join(uri.fsPath,ff[fi])).toString();
+                dest.push(server.Location.create(fileUri, server.Range.create(0,0,0,0)));
+            }
+        }
+    }
+    for(var i=0;i<includeDirs.length;i++)
+    {
+        if(startPath && includeDirs[i].toLowerCase()==startPath.toLowerCase()) startDone=true;
+        var ff = fs.readdirSync(includeDirs[i]);
+        for(var fi=0;fi<ff.length;fi++)
+        {
+            if(ff[fi].toLowerCase() == fileName)
+            {
+                var fileUri =  Uri.file(path.join(includeDirs[i],ff[fi])).toString();
+                dest.push(server.Location.create(fileUri, server.Range.create(0,0,0,0)));
+            }
+        }
+    }
+    if(startPath && !startDone)
+    {
+        var ff = fs.readdirSync(startPath);
+        for(var fi=0;fi<ff.length;fi++)
+        {
+            if(ff[fi].toLowerCase() == fileName)
+            {
+                var fileUri =  Uri.file(path.join(startPath,ff[fi])).toString();
+                dest.push(server.Location.create(fileUri, server.Range.create(0,0,0,0)));
+            }
+        }
+    }
+    return dest;
+}
+
+
 function CompletitionDBFields(word, allText,pos, pp)
 {
     //precLetter = '->';
@@ -793,10 +941,10 @@ function CompletitionDBFields(word, allText,pos, pp)
         {
             if(word.length==0 || (f.startsWith(word) && f!=word))
             {
-                var c = server.CompletionItem.create(db.fields[f].name);
+                var c = server.CompletionItem.create(db.fields[f]);
                 c.kind = server.CompletionItemKind.Field;
                 c.documentation = db.name;
-                c.sortText = "AAAA" + db.fields[f].name
+                c.sortText = "AAAA" + db.fields[f]
                 completitions.push(c);
             }
         }

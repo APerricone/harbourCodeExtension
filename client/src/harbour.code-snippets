@@ -1,0 +1,57 @@
+{
+	"cicle-for": {
+		"scope": "harbour",
+		"prefix": "for",
+		"body": ["for $1:=${2:1} to $3",
+			"\t$0",
+			"next"]
+	},
+	"cicle-foreach": {
+		"scope": "harbour",
+		"prefix": "for each",
+		"body": ["for each $1 in $2",
+			"\t$0",
+			"next"]
+	},
+	"do while": {
+		"scope": "harbour",
+		"prefix": "do while",
+		"body": ["do while $1",
+			"\t$0",
+			"enddo"]
+	},
+	"if": {
+		"scope": "harbour",
+		"prefix": "if",
+		"body": ["if $1",
+			"\t$0",
+			"endif"]
+	},
+	"switch": {
+		"scope": "harbour",
+		"prefix": "switch",
+		"body": ["switch $1",
+			"\tcase $2",
+			"\t\t$0",
+			"\t\texit",
+			"endswitch"]
+	},
+	"do case": {
+		"scope": "harbour",
+		"prefix": "do case",
+		"body": ["do case",
+			"\tcase $2",
+			"\t\t$0",
+			"endcase"]
+	},
+	"try-catch": {
+		"scope": "harbour",
+		"prefix": "try",
+		"body": ["try $1",
+				"\t$0",
+				"catch ${2:oErr}",
+				"\t",
+				"end"]
+	}
+}
+
