@@ -315,12 +315,13 @@ connection.onDefinition((params)=>
     var pos = doc.offsetAt(params.position);
     var delta = 20;
     var word;
-    var allText = doc.getText();
+    //var allText = doc.getText();
     var r = /\b[a-z_][a-z0-9_]*\b/gi
     while(true)
     {
         r.lastIndex = 0;
-        var text = allText.substr(Math.max(pos-delta,0),delta+delta)
+        //var text = allText.substr(Math.max(pos-delta,0),delta+delta)
+        var text = doc.getText(server.Range.create(doc.positionAt(Math.max(pos-delta,0)),doc.positionAt(Math.min(pos+delta,doc.length))));
         var txtPos = pos<delta? pos : delta;
         while(word = r.exec(text))
         {
@@ -675,7 +676,7 @@ function parseDocument(doc,cMode)
 	if(cMode != undefined)
         pp.cMode = cMode;
     lineRange = server.Range.create(0,0,0,100)
-	for (var i = 0; i < lines.length; i++) {
+	for (var i = 0; i < doc.lineCount; i++) {
         lineRange.startLine = lineRange.endLine = i;
 		pp.parse(doc.getText(lineRange));
 	}
@@ -709,7 +710,7 @@ connection.onCompletion((param)=>
         UpdateFile(pp)
         pp=undefined;
     }
-    while(rge.test(allText[pos]))
+    while(pos>=0 && rge.test(allText[pos]))
     {
         word = allText[pos]+word;
         pos--;
