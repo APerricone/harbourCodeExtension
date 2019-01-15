@@ -321,7 +321,7 @@ connection.onDefinition((params)=>
     {
         r.lastIndex = 0;
         //var text = allText.substr(Math.max(pos-delta,0),delta+delta)
-        var text = doc.getText(server.Range.create(doc.positionAt(Math.max(pos-delta,0)),doc.positionAt(Math.min(pos+delta,doc.length))));
+        var text = doc.getText(server.Range.create(doc.positionAt(Math.max(pos-delta,0)),doc.positionAt(pos+delta)));
         var txtPos = pos<delta? pos : delta;
         while(word = r.exec(text))
         {
@@ -675,10 +675,8 @@ function parseDocument(doc,cMode)
     pp.currentDocument=doc.uri;
 	if(cMode != undefined)
         pp.cMode = cMode;
-    lineRange = server.Range.create(0,0,0,100)
 	for (var i = 0; i < doc.lineCount; i++) {
-        lineRange.startLine = lineRange.endLine = i;
-		pp.parse(doc.getText(lineRange));
+		pp.parse(doc.getText(server.Range.create(i,0,i,1000)));
 	}
 	pp.endParse();
     return pp;
