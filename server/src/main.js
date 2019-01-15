@@ -159,8 +159,7 @@ documents.onDidSave((e)=>
     var cMode = (ext.startsWith(".c") && ext!=".ch")
     if(	ext == ".prg" || ext == ".ch" || cMode )
     {
-        var pp = new provider.Provider();
-        pp.parseString(e.document.getText(),e.document.uri,cMode);
+        var pp = parseDocument(e.document, cMode)
         UpdateFile(pp);
     }
 })
@@ -240,8 +239,7 @@ function kindTOVS(kind,sk)
 
 connection.onDocumentSymbol((param)=>
 {
-    var p = new provider.Provider
-    p.parseString(documents.get(param.textDocument.uri).getText(),param.textDocument.uri);
+    var p = parseDocument(documents.get(param.textDocument.uri));
     var dest = [];
     for (var fn in p.funcList) {
         //if (p.funcList.hasOwnProperty(fn)) {
@@ -339,8 +337,7 @@ connection.onDefinition((params)=>
     for (var file in files) { //if (files.hasOwnProperty(file)) {
             if(file==doc.uri)
             {
-                var pp = new provider.Provider();
-                pp.parseString(allText,doc.uri)
+                var pp = parseDocument(doc);
                 UpdateFile(pp)
                 thisDone = true;
             }
@@ -372,8 +369,7 @@ connection.onDefinition((params)=>
     }
     if(!thisDone)
     {
-        var p = new provider.Provider
-        p.parseString(allText,doc.uri);
+        var p = parseDocument(doc);
         for (var fn in p.funcList) {
             //if (p.funcList.hasOwnProperty(fn)) {
             /** @type {provider.Info} */
@@ -533,8 +529,7 @@ function getWorkspaceSignatures(word, doc, className, nC)
     {
         if(file==doc.uri)
         {
-            var pp=new provider.Provider
-            pp.parseString(doc.getText(),file);
+            var pp=parseDocument(doc);
             UpdateFile(pp)
             thisDone = true;
         }
@@ -590,8 +585,7 @@ function getWorkspaceSignatures(word, doc, className, nC)
     }
     if(!thisDone)
     {
-        var pp = new provider.Provider
-        pp.parseString(doc.getText(),doc.uri);
+        var pp = parseDocument(doc);
         for (var iSign=0;iSign<pp.funcList.length;iSign++)
         {
             /** @type {provider.Info} */
@@ -668,6 +662,27 @@ function getStdHelp(word, nC)
     return signatures;
 }
 
+/**
+ * 
+ * @param {server.TextDocument} doc 
+ * @param {boolean} cMode
+ */
+function parseDocument(doc,cMode)
+{
+    var pp = new provider.Provider
+    pp.Clear();
+    pp.currentDocument=doc.uri;
+	if(cMode != undefined)
+        pp.cMode = cMode;
+    lineRange = server.Range.create(0,0,0,100)
+	for (var i = 0; i < lines.length; i++) {
+        lineRange.startLine = lineRange.endLine = i;
+		pp.parse(doc.getText(lineRange));
+	}
+	pp.endParse();
+    return pp;
+}
+
 connection.onCompletion((param)=> 
 {
     var doc = documents.get(param.textDocument.uri);
@@ -688,8 +703,7 @@ connection.onCompletion((param)=>
     // Get the word
     var rge = /[0-9a-z_]/i;
     var word = "", className = undefined;
-    var pp = new provider.Provider
-    pp.parseString(allText,doc.uri);
+    var pp = parseDocument(doc);
     if(doc.uri in files)
     {
         UpdateFile(pp)
