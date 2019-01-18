@@ -29,6 +29,8 @@ var missing
  */
 /** @type {Object.<string, dbInfo>} every key is the lowercase name of db */
 var databases;
+/** @type {boolean} */
+var canLocationLink;
 /*
     every database contiens a name (the text before the ->)
     and a list of field, objects with name (the text after the ->)
@@ -36,6 +38,7 @@ var databases;
 */
 connection.onInitialize(params => 
 {
+    canLocationLink = params.capabilities.textDocument.declaration.linkSupport;
     if(params.capabilities.workspace.workspaceFolders && params.workspaceFolders) {
         workspaceRoots = [];
         for(var i=0;i<params.workspaceFolders.length;i++)
@@ -309,7 +312,8 @@ connection.onDefinition((params)=>
         {
             startPath = path.dirname(Uri.parse(params.textDocument.uri).fsPath);
         }
-        return definitionFiles(include[1],startPath);
+        var pos = include[0].indexOf(include[1]);
+        return definitionFiles(include[1],startPath, server.Range.create(params.position.line,pos,params.position.line,pos+include[1].length));
     }
     /** @type {string} */
     var pos = doc.offsetAt(params.position);
@@ -720,24 +724,26 @@ connection.onCompletion((param)=>
         completitions = CompletitionDBFields(word, allText,pos, pp)        
     }
     if(word.length==0) return server.CompletionList.create(completitions,true);
-    for(var dbName in databases)
-        if(dbName.startsWith(word))
+    function CheckAdd(label,kind,sort)
+    {
+        if(!label.startsWith(word))
+            return undefined;
+        var c = completitions.find( (v) => v.label == label );
+        if(!c)
         {
-            var c = server.CompletionItem.create(databases[dbName].name);
-            c.kind = server.CompletionItemKind.Struct
-            c.sortText = "AAAA" + databases[dbName].name
-            completitions.push(c);   
+            c = server.CompletionItem.create(label);
+            c.kind = kind
+            c.sortText = sort + label
+            completitions.push(c);
         }
+        return c;
+    }
+    for(var dbName in databases)
+        CheckAdd(databases[dbName].name,server.CompletionItemKind.Struct,"AAAA")
     if(pp)
     {
         for(var dbName in pp.databases)
-            if(dbName.startsWith(word))
-            {
-                var c = server.CompletionItem.create(pp.databases[dbName].name);
-                c.kind = server.CompletionItemKind.Struct
-                c.sortText = "AAAA" + pp.databases[dbName].name
-                completitions.push(c);   
-        }
+            CheckAdd(pp.databases[dbName].name,server.CompletionItemKind.Struct,"AAAA")
     }
     function GetCompletitions(pp,file)
     {
@@ -752,7 +758,7 @@ connection.onCompletion((param)=>
                 continue;
             if(info.kind == "function*" || info.kind=="procedure*" || info.kind=="static")
             {
-                if(info.kind.endsWith("*") && file!=doc.uri)
+                if(file!=doc.uri)
                     continue;
             }
             //if(info.kind == "local" || info.kind == "param")
@@ -763,11 +769,7 @@ connection.onCompletion((param)=>
                     param.position.line>info.parent.endLine)
                         continue;
             }
-            if(completitions.find(v=> v.name == info.name))
-                continue;
-            var c = server.CompletionItem.create(info.name);
-            c.kind = kindTOVS(info.kind,false);
-            c.sortText = "AAA"+info.nameCmp
+            CheckAdd(info.name,kindTOVS(info.kind,false),"AAA")
             completitions.push(c);   
         }
     }
@@ -783,24 +785,13 @@ connection.onCompletion((param)=>
     {
         for (var i = 0; i < docs.length; i++)
         {
-            if (docs[i].name.toLowerCase().substr(0,word.length) == word)
-            {
-                var c = server.CompletionItem.create(docs[i].name+"(");
-                c.kind = server.CompletionItemKind.Function;
+            var c = CheckAdd(docs[i].name,server.CompletionItemKind.Function,"AA")
+            if(c)
                 c.documentation = docs[i].documentation;
-                c.sortText = "AA"+docs[i].name
-                completitions.push(c);
-            }
         }
         for (var i = 1; i < missing.length; i++)
         {
-            if(missing[i].toLowerCase().substr(0,word.length) == word)
-            {
-                var c = server.CompletionItem.create(missing[i]);
-                c.kind = server.CompletionItemKind.Function;
-                c.sortText = "A"+missing[i]
-                completitions.push(c);
-            }
+            CheckAdd(missing[i],server.CompletionItemKind.Function,"A")
         }
     }
     return server.CompletionList.create(completitions,true);    
@@ -866,7 +857,7 @@ function completitionFiles(word, startPath)
     return server.CompletionList.create(completitons,true);
 }
 
-function definitionFiles(fileName, startPath)
+function definitionFiles(fileName, startPath, origin)
 {
     var dest = [];
     fileName = fileName.toLowerCase();
@@ -884,7 +875,10 @@ function definitionFiles(fileName, startPath)
             if(ff[fi].toLowerCase() == fileName)
             {
                 var fileUri = Uri.file(path.join(uri.fsPath,ff[fi])).toString();
-                dest.push(server.Location.create(fileUri, server.Range.create(0,0,0,0)));
+                if(canLocationLink)
+                    dest.push(server.LocationLink.create(fileUri, server.Range.create(0,0,0,0), server.Range.create(0,0,0,0),origin));
+                else
+                    dest.push(server.Location.create(fileUri, server.Range.create(0,0,0,0)));
             }
         }
     }
@@ -897,7 +891,10 @@ function definitionFiles(fileName, startPath)
             if(ff[fi].toLowerCase() == fileName)
             {
                 var fileUri =  Uri.file(path.join(includeDirs[i],ff[fi])).toString();
-                dest.push(server.Location.create(fileUri, server.Range.create(0,0,0,0)));
+                if(canLocationLink)
+                    dest.push(server.LocationLink.create(fileUri, server.Range.create(0,0,0,0), server.Range.create(0,0,0,0),origin));
+                else
+                    dest.push(server.Location.create(fileUri, server.Range.create(0,0,0,0)));
             }
         }
     }
@@ -909,7 +906,10 @@ function definitionFiles(fileName, startPath)
             if(ff[fi].toLowerCase() == fileName)
             {
                 var fileUri =  Uri.file(path.join(startPath,ff[fi])).toString();
-                dest.push(server.Location.create(fileUri, server.Range.create(0,0,0,0)));
+                if(canLocationLink)
+                    dest.push(server.LocationLink.create(fileUri, server.Range.create(0,0,0,0), server.Range.create(0,0,0,0),origin));
+                else
+                    dest.push(server.Location.create(fileUri, server.Range.create(0,0,0,0)));
             }
         }
     }
@@ -937,7 +937,8 @@ function CompletitionDBFields(word, allText,pos, pp)
         var db = databases[dbName];
         for(var f in db.fields)
         {
-            if(word.length==0 || (f.startsWith(word) && f!=word))
+            if((word.length==0 || (f.startsWith(word) && f!=word)) 
+                && !completitions.find( (v) => v.label == db.fields[f].name ))
             {
                 var c = server.CompletionItem.create(db.fields[f].name);
                 c.kind = server.CompletionItemKind.Field;
@@ -952,7 +953,8 @@ function CompletitionDBFields(word, allText,pos, pp)
         var db = pp.databases[dbName];
         for(var f in db.fields)
         {
-            if(word.length==0 || (f.startsWith(word) && f!=word))
+            if((word.length==0 || (f.startsWith(word) && f!=word))
+                && completitions.findIndex( (v) => v.label == db.fields[f] )<0)
             {
                 var c = server.CompletionItem.create(db.fields[f]);
                 c.kind = server.CompletionItemKind.Field;

@@ -3,6 +3,10 @@ All notable changes to the "Harbour and xHarbour" extension will be documented i
 
 ## 0.8.3
  - **Server** added completition and goto definition on include
+ - **Server** fixed crash on completition on beginning of file
+ - **Server** removed duplicated completitionItem
+ - **Server** fixed static management on completition
+ - **Server** fixed link show on onDefinition for files
 
 ## 0.8.2
  - **Code** added some snippets
