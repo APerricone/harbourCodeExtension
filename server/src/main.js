@@ -726,9 +726,9 @@ connection.onCompletion((param)=>
     if(word.length==0) return server.CompletionList.create(completitions,true);
     function CheckAdd(label,kind,sort)
     {
-        if(!label.startsWith(word))
+        if(!label.toLowerCase().startsWith(word))
             return undefined;
-        var c = completitions.find( (v) => v.label == label );
+        var c =completitions.find( (v) => v.label == label );
         if(!c)
         {
             c = server.CompletionItem.create(label);
@@ -770,7 +770,6 @@ connection.onCompletion((param)=>
                         continue;
             }
             CheckAdd(info.name,kindTOVS(info.kind,false),"AAA")
-            completitions.push(c);   
         }
     }
     for (var file in files) // if (files.hasOwnProperty(file)) it is unnecessary
