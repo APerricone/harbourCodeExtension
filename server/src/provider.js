@@ -272,7 +272,7 @@ Provider.prototype.parseDeclareList = function(list,kind,parent)
 
 Provider.prototype.parseHarbour = function(words)
 {
-	if(this.currLine.indexOf("pragma")>=0 && this.currLine.indexOf("BEGINDUMP")>=0)
+	if(this.currLine.indexOf("#pragma")>=0 && this.currLine.indexOf("BEGINDUMP")>=0)
 	// && /\^s*#pragma\s+BEGINDUMP\s*$/.test(this.currLine)
 	{
 		this.cMode = true;

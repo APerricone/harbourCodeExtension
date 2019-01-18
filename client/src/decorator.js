@@ -128,6 +128,7 @@ function RemoveStringAndComments(txt)
 
 function setDecorator(editor)
 {
+	groups = [];
 	if(!editor) return;
 	if(!editor.document) return;
 	if(editor.document.languageId!="harbour") return;
@@ -142,7 +143,6 @@ function setDecorator(editor)
 	var text = RemoveStringAndComments(editor.document.getText());
 	var places = [];
 	var match;
-	groups = [];
 	for (var i = 0; i < regExs.length; i++) {
 		var stack = [];
 		var currGroup = undefined;
