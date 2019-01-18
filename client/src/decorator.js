@@ -68,12 +68,12 @@ function RemoveStringAndComments(txt)
             {
 				someChange = true;
 				if(matchString.endsWith("\r\n"))
-					return substutute.repeat(matchString.length-1)+"\r\n";
+					return substutute.repeat(matchString.length-2)+"\r\n";
 				if(matchString.endsWith("\n"))
-					return substutute.repeat(matchString.length)+"\n";				
+					return substutute.repeat(matchString.length-1)+"\n";				
 				if(matchString.endsWith("\r"))
-					return substutute.repeat(matchString.length)+"\r";
-                return substutute.repeat(matchString.length+1);
+					return substutute.repeat(matchString.length-1)+"\r";
+                return substutute.repeat(matchString.length);
             })
 		} while(someChange)
 	}

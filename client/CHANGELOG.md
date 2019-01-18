@@ -1,8 +1,17 @@
 # Change Log
 All notable changes to the "Harbour and xHarbour" extension will be documented in this file.
 
+## 0.8.5
+  - **decorator**  restored correct behaviour
+## 0.8.4
+  - **Server** fixed crash on completition
+
 ## 0.8.3
  - **Server** added completition and goto definition on include
+ - **Server** fixed crash on completition on beginning of file
+ - **Server** removed duplicated completitionItem
+ - **Server** fixed static management on completition
+ - **Server** fixed link show on onDefinition for files
 
 ## 0.8.2
  - **Code** added some snippets
