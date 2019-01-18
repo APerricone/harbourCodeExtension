@@ -1,6 +1,8 @@
 # Change Log
 All notable changes to the "Harbour and xHarbour" extension will be documented in this file.
 
+## 0.8.5
+  - **decorator**  restored correct behaviour
 ## 0.8.4
   - **Server** fixed crash on completition
 
