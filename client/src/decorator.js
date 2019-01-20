@@ -3,7 +3,7 @@ var vscode = require('vscode');
 // reuse the bracket-match style
 
 var decoration;
-var groups;
+var editorGroups;
 function activate(context)
 {
 	decoration = vscode.window.createTextEditorDecorationType({
@@ -46,14 +46,14 @@ function RemoveStringAndComments(txt)
 	{
 		i++;
 		var filter=undefined;
-		var substutute = "X";
+		var substitute = "X";
 		switch(i)
 		{
-			case 1: filter = /\/\/[^\r\n]*[\r\n]{1,2}/g; substutute = "C"; break;	 // // comments
-			case 2: filter = /&&[^\r\n]*[\r\n]{1,2}/g; substutute = "C"; break;	 // && comments
-			case 3: filter = /^\s*\*[^\r\n]*[\r\n]{1,2}/mg; substutute = "C"; break;	 // * comments			
-			case 4: filter = /^\s*NOTE[^\r\n]*[\r\n]{1,2}/mg; substutute = "C"; break;	 // NOTE comments			
-			case 5: filter = /\/\*(?!\*\/).*\*\//g; substutute = "C"; break; // /* */ comments
+			case 1: filter = /\/\/[^\r\n]*[\r\n]{1,2}/g; substitute = "C"; break;	 // // comments
+			case 2: filter = /&&[^\r\n]*[\r\n]{1,2}/g; substitute = "C"; break;	 // && comments
+			case 3: filter = /^\s*\*[^\r\n]*[\r\n]{1,2}/mg; substitute = "C"; break;	 // * comments			
+			case 4: filter = /^\s*NOTE[^\r\n]*[\r\n]{1,2}/mg; substitute = "C"; break;	 // NOTE comments			
+			case 5: filter = /\/\*(?!\*\/).*\*\//g; substitute = "C"; break; // /* */ comments
 			case 6: filter = /'[^'\r\n]*'/g; break; // ' string
 			case 7: filter = /"[^"\r\n]*"/g; break; // " string
 			case 8: filter = /\[[^\]\r\n]*\]/g; break;  // [] string
@@ -68,12 +68,12 @@ function RemoveStringAndComments(txt)
             {
 				someChange = true;
 				if(matchString.endsWith("\r\n"))
-					return substutute.repeat(matchString.length-2)+"\r\n";
+					return substitute.repeat(matchString.length-2)+"\r\n";
 				if(matchString.endsWith("\n"))
-					return substutute.repeat(matchString.length-1)+"\n";				
+					return substitute.repeat(matchString.length-1)+"\n";				
 				if(matchString.endsWith("\r"))
-					return substutute.repeat(matchString.length-1)+"\r";
-                return substutute.repeat(matchString.length);
+					return substitute.repeat(matchString.length-1)+"\r";
+                return substitute.repeat(matchString.length);
             })
 		} while(someChange)
 	}
@@ -128,20 +128,27 @@ function RemoveStringAndComments(txt)
 
 function setDecorator(editor)
 {
-	groups = [];
+	editorGroups = [];
 	if(!editor) return;
 	if(!editor.document) return;
 	if(editor.document.languageId!="harbour") return;
 	var section = vscode.workspace.getConfiguration('harbour');
 	if(!section.decorator)
 		return;
-			
-	var regExs = [	/\b((if)|else(?:if)?|(end\s?if))\b/ig,
+	editorGroups = GetGroups(editor.document);
+}
+
+function GetGroups(document)
+{
+	var groups=[];
+	var regExs = [	/(?:\b|#)((if(?:n?def)?)|else(?:if)?|(end\s?if))\b/ig,
 					/\b((for(?:\s+each)?)|loop|exit|(next))\b/ig,
-					/\b((switch|do\s+case)|case|otherwise|default|exit|(end\s?switch|end\s?case))\b/ig,
-					/\b(((?:do\s+)?while)|loop|exit|(end\s?do))\b/ig];
-	var text = RemoveStringAndComments(editor.document.getText());
-	var places = [];
+					/\b((switch|do\s+case)|case|otherwise|default|exit|(end\s*switch|end\s*case))\b/ig,
+					/\b(((?:do\s*)?while)|loop|exit|(end\s*do))\b/ig,
+					/\b((try)|catch|(end(?:\s+try)?))\b/ig,
+					/\b((begin\s+sequence(?:\s+with)?)|recover|(end\s+sequence))\b/ig
+				];
+	var text = RemoveStringAndComments(document.getText());
 	var match;
 	for (var i = 0; i < regExs.length; i++) {
 		var stack = [];
@@ -149,14 +156,15 @@ function setDecorator(editor)
 		var regEx = regExs[i];
 		while (match = regEx.exec(text)) 
 		{
-			const startPos = editor.document.positionAt(match.index);
 			if(match[2])
 			{
 				if(currGroup)
 					stack.push(currGroup)
 				currGroup=[];
+				currGroup.name = match[2];
 			}
-			const endPos = editor.document.positionAt(match.index + match[0].length);
+			const startPos = document.positionAt(match.index);
+			const endPos = document.positionAt(match.index + match[0].length);
 			if(currGroup)
 				currGroup.push(new vscode.Range(startPos, endPos));
 			if(match[3]) 
@@ -172,6 +180,7 @@ function setDecorator(editor)
 		if(currGroup)
 			groups.push(currGroup)
 	}
+	return groups;
 }
 
 function showGroups(evt)
@@ -188,22 +197,57 @@ function showGroups(evt)
 		return;
 	}
 	var sel = evt.selections[0];
-	for (var j = 0; j < groups.length; j++) {
-		var gr = groups[j];
-		for (var k = 0; k < groups[j].length; k++) {
-			var rr = groups[j][k];
+	for (var j = 0; j < editorGroups.length; j++) {
+		var gr = editorGroups[j];
+		for (var k = 0; k < editorGroups[j].length; k++) {
+			var rr = editorGroups[j][k];
 			if(rr.intersection(sel))
 			{
 				var places = [];
-				for (k = 0; k < groups[j].length; k++)
-					places.push({ range: groups[j][k] });
+				for (k = 0; k < editorGroups[j].length; k++)
+					places.push({ range: editorGroups[j][k] });
 				evt.textEditor.setDecorations(decoration, places);
 				return;
 			}
 		}
 	}
 
-	evt.textEditor.setDecorations(decoration, []);
+		evt.textEditor.setDecorations(decoration, []);
+}
+/*
+function HBProvider() {}
+
+//document: TextDocument, context: FoldingContext, token: CancellationToken): ProviderResult<FoldingRange[]>
+/**
+ * @param {TextDocument} document
+ * @param {FoldingContext} context 
+ * @param {CancellationToken} token
+ * @returns {ProviderResult<FoldingRange[]>}
+ *//*
+HBProvider.prototype.provideFoldingRanges = function(document, context, token)
+{
+	return new Promise(resolve => {
+		var groups = GetGroups(document);
+		if(token.isCancellationRequested) return resolve([]);
+		var ranges = [];
+		for (var j = 0; j < editorGroups.length; j++) {
+			if(editorGroups[j].name.contains("if")) {
+				for (var k = 1; k < editorGroups[j].length; k++) {
+					var sf = editorGroups[j][k-1];
+					var ef = editorGroups[j][k];
+					ranges.push(new vscode.FoldingRange(sf.start.line,ef.start.line-1));
+					if(token.isCancellationRequested) return resolve(ranges);
+				}
+			} else {
+				var sf = editorGroups[j][0];
+				var ef = editorGroups[j][editorGroups[j].length-1];
+				ranges.push(new vscode.FoldingRange(sf.start.line,ef.start.line-1));
+				if(token.isCancellationRequested) return resolve(ranges);
+			}
+		}
+		resolve(ranges);
+	});
 }
 
+exports.HBProvider = HBProvider;*/
 exports.activate = activate;

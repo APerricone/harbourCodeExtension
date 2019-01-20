@@ -34,6 +34,7 @@ function activate(context) {
 	var cl = new client.LanguageClient('HarbourServer', 'Harbour Server', serverOptions, clientOptions);
 	context.subscriptions.push(cl.start());
 	vscode.commands.registerCommand('harbour.getdbgcode', GetDbgCode);
+	//vscode.languages.registerFoldingRangeProvider(['harbour'], new decorator.HBProvider());
 }	
 
 function GetDbgCode() {
