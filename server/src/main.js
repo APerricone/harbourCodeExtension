@@ -38,8 +38,12 @@ var canLocationLink;
 */
 connection.onInitialize(params => 
 {
-    canLocationLink = params.capabilities.textDocument.declaration.linkSupport;
-    if(params.capabilities.workspace.workspaceFolders && params.workspaceFolders) {
+    canLocationLink = false;
+    if( params.capabilities.textDocument &&
+        params.capabilities.textDocument.declaration &&
+        params.capabilities.textDocument.declaration.linkSupport )
+            canLocationLink = true;
+    if(params.capabilities.workspace && params.capabilities.workspace.workspaceFolders && params.workspaceFolders) {
         workspaceRoots = [];
         for(var i=0;i<params.workspaceFolders.length;i++)
         {
@@ -243,18 +247,43 @@ function kindTOVS(kind,sk)
 connection.onDocumentSymbol((param)=>
 {
     var p = parseDocument(documents.get(param.textDocument.uri));
+    /** @type {server.DocumentSymbol[]} */
     var dest = [];
     for (var fn in p.funcList) {
         //if (p.funcList.hasOwnProperty(fn)) {
             /** @type {provider.Info} */
             var info = p.funcList[fn];
-            dest.push(server.SymbolInformation.create(
-                info.name,
-                kindTOVS(info.kind),
-                server.Range.create(info.startLine,info.startCol,
-                                    info.endLine,info.endCol),
-                param.textDocument.uri, info.parent?info.parent.name:"")
-            );
+            var selRange =server.Range.create(info.startLine,info.startCol, info.endLine,info.endCol);
+            if(info.endLine!=info.startLine)
+                selRange.end = server.Position.create(info.startLine,1000);
+            var docSym = server.DocumentSymbol.create(info.name,info.name,
+                    kindTOVS(info.kind),
+                    server.Range.create(info.startLine,info.startCol,
+                        info.endLine,info.endCol), selRange,undefined);
+            var parent = dest;
+            if(info.parent)
+            {
+                var pp = info.parent;
+                var names = [];
+                while(pp)
+                {
+                    names.push(pp.name);
+                    pp=pp.parent;
+                }
+                while(names.length>0)
+                {
+                    var n = names.pop();
+                    var i = parent.findIndex((v)=> (v.name == n) );
+                    if(i>=0)
+                    {
+                        parent=parent[i];
+                        if(!parent.children )
+                            parent.children=[];
+                        parent = parent.children;
+                    }
+                }
+            }
+            parent.push(docSym);
         //}        
     };
     return dest;
@@ -721,9 +750,9 @@ connection.onCompletion((param)=>
     var precLetter = allText[pos];
     if(precLetter == '>' && allText[pos-1]=='-')
     {
+        precLetter='->';
         completitions = CompletitionDBFields(word, allText,pos, pp)        
     }
-    if(word.length==0) return server.CompletionList.create(completitions,true);
     function CheckAdd(label,kind,sort)
     {
         if(!label.toLowerCase().startsWith(word))
@@ -738,23 +767,30 @@ connection.onCompletion((param)=>
         }
         return c;
     }
-    for(var dbName in databases)
-        CheckAdd(databases[dbName].name,server.CompletionItemKind.Struct,"AAAA")
-    if(pp)
+    if(precLetter != '->' && precLetter!=':') precLetter = undefined;
+    if(word.length==0 && precLetter==undefined) return server.CompletionList.create(completitions,true);
+    if(!precLetter)
     {
-        for(var dbName in pp.databases)
-            CheckAdd(pp.databases[dbName].name,server.CompletionItemKind.Struct,"AAAA")
+        for(var dbName in databases)
+            CheckAdd(databases[dbName].name,server.CompletionItemKind.Struct,"AAAA")
+        if(pp)
+        {
+            for(var dbName in pp.databases)
+                CheckAdd(pp.databases[dbName].name,server.CompletionItemKind.Struct,"AAAA")
+        }
     }
     function GetCompletitions(pp,file)
     {
         for (var iSign=0;iSign<pp.funcList.length;iSign++)
         {
             var info = pp.funcList[iSign];
-            if(info.nameCmp.substr(0,word.length) != word)
+            if(word.length>0 && info.nameCmp.substr(0,word.length) != word)
+                continue;
+            if(info.endCol == param.position.character && info.endLine == param.position.line && file==doc.uri)
                 continue;
             if(precLetter == '->' && info.kind != "field")
                 continue;
-            if((info.kind == "method" || info.kind == "data") && (precLetter!=':'))
+            if(precLetter == ':' && info.kind != "method" && info.kind != "data")
                 continue;
             if(info.kind == "function*" || info.kind=="procedure*" || info.kind=="static")
             {

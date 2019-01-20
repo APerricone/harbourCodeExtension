@@ -2,7 +2,7 @@ var fs = require("fs");
 var readline = require("readline");
 
 var procRegEx = /\s*((?:proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?)|func(?:t(?:i(?:o(?:n)?)?)?)?)\s+([a-z_][a-z0-9_]*)\s*(?:\(([^\)]*)\))?/i;
-var methodRegEx = /\s*(meth(?:o(?:d)?)?)\s+(?:(?:(?:proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?)|func(?:t(?:i(?:o(?:n)?)?)?)?)\s+)?([a-z_][a-z0-9_]*)\s*(?:\(([^\)]*)\))?(?:\s*class\s+([a-z_][a-z0-9_]*))?/i
+var methodRegEx = /\s*(meth(?:o(?:d)?)?)\s+(?:(?:(?:proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?)|func(?:t(?:i(?:o(?:n)?)?)?)?)\s+)?([a-z_][a-z0-9_]*)\s*(?:\(([^\)]*)\))?(?:\s*class\s+([a-z_][a-z0-9_]*))?(\s+inline)?/i
 var hb_funcRegEx = /HB_FUNC\s*\(\s*([A-Z0-9_]+)\s*\)/
 function Provider()
 {
@@ -11,19 +11,30 @@ function Provider()
 
 Provider.prototype.Clear = function()
 {
+	// data used during the parsing
+	/** @type {boolean} is for multi line comments */
 	this.comment=false;
+	/** @type {string} current line parsing, without comments */
 	this.currLine = "";
+	/** @type {number} current line number */
 	this.lineNr = -1;
+	/** @type {number} for statemente that continues on next line, it indicates the first */
 	this.startLine = 0;
+	/** @type {number} last line number not empty after removing all comments */
 	this.lastCodeLine = 0;
+	/** @type {boolean} is true if parsing a c file or inside the pragma dump */
+	this.cMode = false;
+	/** @type {Info?} has value inside class declaration  */
+	this.currentClass = undefined;
+	/** @type {Info?} has value inside a procedure, function or method  */
+	this.currentMethod = undefined;
+	/** @type {string} removed comment*/
+	this.currentComment = "";
+	/** @type {string} file name on the disk (program.prg)*/
+	this.currentDocument = "";
+	// **** OUTPUTS
 	/** @type {array<Info>} */
 	this.funcList = [];
-	this.cMode = false;
-	this.currentClass = undefined;
-	this.currentMethod = undefined;
-	this.currentComment = "";
-	this.currentDocument = "";
-	/* @type {Object.<string, {name: string, fields: Object.<string, string>}} */
 	/**
 	 * @typedef dbInfo
 	 * @property {string} dbInfo.name the name to show
@@ -37,7 +48,8 @@ Provider.prototype.Clear = function()
 /**
  * @constructor
  * @param {string} name 
- * @param {string} kind 
+ * @param {string} kind like "class","procedure","function"
+ * @param {string} foundLike can be "definition","declaration" or "reference"
  * @param {Info} parent 
  * @param {string} document 
  * @param {number} startLine 
@@ -46,7 +58,7 @@ Provider.prototype.Clear = function()
  * @param {number} endCol
  * @param {string} [comment] 
  */
-function Info(name,kind,parent,document,startLine,startCol,endLine,endCol,comment)
+function Info(name,kind,foundLike,parent,document,startLine,startCol,endLine,endCol,comment)
 {
 	/** @type {string} */
 	this.name = name;
@@ -54,6 +66,8 @@ function Info(name,kind,parent,document,startLine,startCol,endLine,endCol,commen
 	this.nameCmp = name.toLowerCase();
 	/** @type {string} */
 	this.kind = kind;
+	/** @type {string} */
+	this.foundLike = foundLike;
 	/** @type {Info} */
 	this.parent = parent;
 	/** @type {string} */
@@ -79,7 +93,7 @@ function Info(name,kind,parent,document,startLine,startCol,endLine,endCol,commen
  * @param {Info} parent
  * @param {boolean=} search
  */
-Provider.prototype.addInfo = function(name,kind,parent, search)
+Provider.prototype.addInfo = function(name,kind,like,parent, search)
 {
 	if(search!==true) search=false;
 	if(search)
@@ -91,7 +105,7 @@ Provider.prototype.addInfo = function(name,kind,parent, search)
 			var m=rr.exec(line)
 			if(m)
 			{
-				var ii = new Info(name,kind,parent,this.currentDocument,
+				var ii = new Info(name,kind,like,parent,this.currentDocument,
 					this.startLine+i,m.index,this.startLine+i,m.index+name.length, this.currentComment);
 				this.currentComment=""
 				this.funcList.push(ii);
@@ -99,7 +113,7 @@ Provider.prototype.addInfo = function(name,kind,parent, search)
 			}			
 		}
 	}
-	var ii = new Info(name,kind,parent,this.currentDocument,
+	var ii = new Info(name,kind,like,parent,this.currentDocument,
 		this.startLine,0,this.lineNr,1000, this.currentComment);
 	this.currentComment=""
 	this.funcList.push(ii);
@@ -259,14 +273,15 @@ Provider.prototype.parseDeclareList = function(list,kind,parent)
 		} while(old.length!=list.length)
 		//console.log(i+":"+list);
 	}
-	list=list.replace(/\s+/g,"").split(",");
+	//list=list.replace(/\s+/g,"").split(",");
+	list=list.split(",");
 	//return list.split(",");
 	if(list.length>1) this.currentComment = ""
 	for (var i = 0; i < list.length; i++) 
 	{
-		var m = list[i]
+		var m = list[i].trim().split(/\s+/g)[0];
 		if(m.length>0)
-			this.addInfo(m,kind,parent,true);
+			this.addInfo(m,kind,"definition",parent,true);
 	}
 }
 
@@ -293,9 +308,9 @@ Provider.prototype.parseHarbour = function(words)
 		{
 			if(this.currentMethod) this.currentMethod.endLine = this.lastCodeLine;
 			if(words[0]=="create")
-				this.currentClass = this.addInfo(words[2],'class')
+				this.currentClass = this.addInfo(words[2],'class',"definition")
 			else
-				this.currentClass = this.addInfo(words1,'class')
+				this.currentClass = this.addInfo(words1,'class',"definition")
 		} else
 		if(words[0] == "endclass")
 		{
@@ -317,15 +332,19 @@ Provider.prototype.parseHarbour = function(words)
 			var r = methodRegEx.exec(this.currLine);
 			if(r)
 			{
+				var t = "definition"
+				if(this.currentClass) t="declaration";
 				if(r[4] && r[4].length) {
 					r[4] = r[4].toLowerCase();
+					t="definition";
 					if((this.currentClass && this.currentClass.nameCmp!=r[4]) || (!this.currentClass))
 					{
 						this.currentClass = this.funcList.find((v)=> v.nameCmp == r[4]);
 					}
 				}
+				if(r[5] && r[5].length) t="definition";
 				if(this.currentMethod) this.currentMethod.endLine = this.lastCodeLine;
-				this.currentMethod = this.addInfo(r[2],'method',this.currentClass);
+				this.currentMethod = this.addInfo(r[2],'method',t,this.currentClass);
 
 				if(r[3] && r[3].length)
 					this.parseDeclareList(r[3],"param",this.currentMethod);
@@ -352,7 +371,7 @@ Provider.prototype.parseHarbour = function(words)
 				var kind = r[1].startsWith('p')? "procedure" : "function";
 				if(words[0].startsWith("stat")) kind+="*"; 
 				if(this.currentMethod) this.currentMethod.endLine = this.lastCodeLine;
-				this.currentMethod = this.addInfo(r[2],kind);
+				this.currentMethod = this.addInfo(r[2],kind,"definition");
 				if(r[3] && r[3].length)
 					this.parseDeclareList(r[3],"param",this.currentMethod);
 
@@ -394,7 +413,7 @@ Provider.prototype.parseC = function(words)
 		var r = hb_funcRegEx.exec(this.currLine);
 		if(r)
 		{
-			this.addInfo(r[1],'C-FUNC');
+			this.addInfo(r[1],'C-FUNC',"definition");
 		}
 	}
 }
@@ -483,7 +502,7 @@ Provider.prototype.findDBReferences = function()
 		var dbName = dbRef[1].toLowerCase();
 		var fieldName = dbRef[2].toLowerCase();
 		if(dbName=='field') {
-			this.addInfo(dbRef[2],"field",undefined,true);
+			this.addInfo(dbRef[2],"field","reference",undefined,true);
 		} else {
 			if(!(dbName in this.databases))	
 				this.databases[dbName]={name: dbRef[1], fields: {}};

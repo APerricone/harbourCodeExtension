@@ -6,7 +6,7 @@ p.parseFile("../test/db1.prg").then(()=>
     for (var fn in p.funcList) {
         if (p.funcList.hasOwnProperty(fn)) {
             var info = p.funcList[fn];
-            var msg = `${info.kind}: ${info.name}`;
+            var msg = `${info.kind}: ${info.name} (${info.foundLike})`;
             if(info.parent)
             {
                 msg+= ` of ${info.parent.name}`

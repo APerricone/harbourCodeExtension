@@ -3,6 +3,9 @@ All notable changes to the "Harbour and xHarbour" extension will be documented i
 
 ## 0.8.5
   - **decorator**  restored correct behaviour
+  - **server** use of DocumentSymbol
+  - **server** removed current word from completition
+
 ## 0.8.4
   - **Server** fixed crash on completition
 
