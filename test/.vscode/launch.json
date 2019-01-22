@@ -27,7 +27,8 @@
 			"program": "${workspaceRoot}/${fileBasenameNoExtension}",
 			"workspaceRoot": "${workspaceRoot}",
 			"workingDir": "${workspaceRoot}/",
-			"stopOnEntry": true
+			"stopOnEntry": true,
+			"preLaunchTask": "build"
 		}
 	]
 }
