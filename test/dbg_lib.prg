@@ -496,27 +496,32 @@ static function getValue(req)
 			v := __mvDbgInfo(HB_MV_PUBLIC,val(aInfos[3]), @cName)
 			ENDTYPE
 		TYPE "EXP"
-			// TODO: aInfos[3] can include a : 
+			aEval(aInfos,{|x| iif(!empty(x),aInfos[3]+=":"+x,) },4)
+			aInfos[4]=""
 			v := evalExpression( aInfos[3], val(aInfos[2]))
 		END_T
 #undef BEGIN_T
 #undef TYPE
 #undef END_T
 	// some variable changes its type during execution. mha
-	if at(valtype(v),"AHO") == 0
-		return {}
-	endif
 	req := aInfos[1]+":"+aInfos[2]+":"+aInfos[3]+":"+aInfos[4]
-	if len(aInfos[4])>0
+	if !empty(aInfos[4])
 		aIndices := hb_aTokens(aInfos[4],",")
 		for i:=1 to len(aIndices)
+			if at(valtype(v),"AHO") == 0
+				return {}
+			endif
 			switch(valtype(v))
 				case "A"
-					v:=v[val(aIndices[i])]
+					if val(aIndices[i])>len(v)
+						v := {}
+					else
+						v:=v[val(aIndices[i])]
+					endif
 					exit
 				case "H"
-					if i>len(v)
-						v := nil
+					if val(aIndices[i])>len(v)
+						v := {}
 					else
 						#ifdef __XHARBOUR__
 							v := HGetValueAt(v,val(aIndices[i]))
@@ -924,13 +929,13 @@ static function evalExpression( xExpr, level )
 	BEGIN SEQUENCE WITH {|oErr| BREAK( oErr ) }
 		xResult := Eval(&("{|__dbg| "+xExpr+"}"),__dbg)
 	RECOVER USING oErr
-		xResult := oErr
+		xResult := oErr:Description //oErr
 	END SEQUENCE
 #else
 	TRY
 		xResult := Eval(&("{|__dbg| "+xExpr+"}"),__dbg)
 	CATCH oErr
-		xResult := oErr
+		xResult := oErr:Description //oErr
 	END
 #endif	
 	t_oDebugInfo['lRunning'] := lOldRunning
@@ -979,7 +984,7 @@ static func classSymbols(cLine,level)
 	if valtype(oClass)<>"O"
 		return ""
 	endif
-	cLine := substr(cLine, iDots+1)
+	cLine := upper(substr(cLine, iDots+1))
 	iLen := len(cLine)
 	aData :=  __objGetMsgList( oClass )
 	aMethods :=  __objGetMethodList( oClass )
