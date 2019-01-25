@@ -5,6 +5,7 @@ All notable changes to the "Harbour and xHarbour" extension will be documented i
   - **decorator**  restored correct behaviour
   - **server** use of DocumentSymbol
   - **server** removed current word from completition
+  - **debugger** fixed crash on expression with colon
 
 ## 0.8.4
   - **Server** fixed crash on completition

@@ -496,8 +496,6 @@ static function getValue(req)
 			v := __mvDbgInfo(HB_MV_PUBLIC,val(aInfos[3]), @cName)
 			ENDTYPE
 		TYPE "EXP"
-			aEval(aInfos,{|x| iif(!empty(x),aInfos[3]+=":"+x,) },4)
-			aInfos[4]=""
 			v := evalExpression( aInfos[3], val(aInfos[2]))
 		END_T
 #undef BEGIN_T
@@ -535,6 +533,9 @@ static function getValue(req)
 			endswitch
 		next
 	endif	
+	if at(valtype(v),"AHO") == 0
+		return {}
+	endif
 return v
 
 STATIC FUNCTION __dbgObjGetValue( nProcLevel, oObject, cVar )
