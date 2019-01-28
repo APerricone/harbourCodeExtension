@@ -5,8 +5,8 @@
 - [simple and complete syntax hightlight](https://github.com/APerricone/harbourCodeExtension/wiki/Syntax-hightlight)
 - [Debug support](https://github.com/APerricone/harbourCodeExtension/wiki/Debugger)
 - [Diagnostic infos](https://github.com/APerricone/harbourCodeExtension/wiki/Diagnostics-Lint)
-- Symbol Definitions Within a Document provider (access it by pressing <kbd>CTRL</kbd>+<kbd>P</kbd> then <kbd>@</kbd>)
-- Symbol Definitions in folder provider (access it by pressing <kbd>CTRL</kbd>+<kbd>P</kbd> then <kbd>#</kbd>)
+- Symbol Definitions Within a Document provider (access it by pressing <kbd>CTRL</kbd>+<kbd>SHIFT</kbd>+<kbd>O</kbd> or <kbd>CTRL</kbd>+<kbd>P</kbd> then <kbd>@</kbd>)
+- Symbol Definitions in workspace provider (access it by pressing <kbd>CTRL</kbd>+<kbd>T</kbd> or <kbd>CTRL</kbd>+<kbd>P</kbd> then <kbd>#</kbd>)
 
 ## Requirements
 See the [wiki](https://github.com/APerricone/harbourCodeExtension/wiki) for more information.
