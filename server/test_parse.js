@@ -25,5 +25,13 @@ p.parseFile("../test/db1.prg").then(()=>
         for(var f in p.databases[db].fields) if (p.databases[db].fields.hasOwnProperty(f)) {
         console.log(`   field ${p.databases[db].fields[f]}`); 
     } }
+    for(var i=0;i<p.groups.length;i++)
+    {
+        console.log(`group ${p.groups[i].type}`);
+        for(j=0;j<p.groups[i].positions.length;j++)
+        {
+            console.log(`  line ${p.groups[i].positions[j].line} from ${p.groups[i].positions[j].startCol} to ${p.groups[i].positions[j].endCol}`);
+        }
+    } 
     process.exit();
 });

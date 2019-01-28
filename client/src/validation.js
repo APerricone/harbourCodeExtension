@@ -1,6 +1,5 @@
 var vscode = require('vscode');
 var cp = require("child_process");
-var nls = require("vscode-nls");
 var localize = require("./myLocalize.js").localize;
 
 var diagnosticCollection;

@@ -74,6 +74,7 @@ connection.onInitialize(params =>
             documentSymbolProvider: true,
             workspaceSymbolProvider: true,
             definitionProvider: true,
+           // declarationProvider: true,
             signatureHelpProvider: {
                 triggerCharacters: ['(']
             },
@@ -261,7 +262,7 @@ connection.onDocumentSymbol((param)=>
                     server.Range.create(info.startLine,info.startCol,
                         info.endLine,info.endCol), selRange,undefined);
             var parent = dest;
-            if(info.parent)
+            if(info.parent && info.startLine<info.parent.endLine)
             {
                 var pp = info.parent;
                 var names = [];
@@ -379,6 +380,8 @@ connection.onDefinition((params)=>
             for (var fn in pp.funcList) { //if (pp.funcList.hasOwnProperty(fn)) {
             /** @type {provider.Info} */
             var info = pp.funcList[fn];
+            if(info.foundLike!="definition")
+                continue;
             if(info.nameCmp != word)
                 continue;
             if(info.kind.endsWith("*") && file!=doc.uri)

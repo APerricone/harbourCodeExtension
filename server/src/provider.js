@@ -32,8 +32,10 @@ Provider.prototype.Clear = function()
 	this.currentComment = "";
 	/** @type {string} file name on the disk (program.prg)*/
 	this.currentDocument = "";
+	/** @type {Array<Group>} An array of current groups*/
+	this.groupStack = [];
 	// **** OUTPUTS
-	/** @type {array<Info>} */
+	/** @type {Array<Info>} */
 	this.funcList = [];
 	/**
 	 * @typedef dbInfo
@@ -43,6 +45,8 @@ Provider.prototype.Clear = function()
 	/** @type {Object.<string, dbInfo>} every key is the lowercase name of db
 	*/
 	this.databases={};
+	/** @type {Array<Group>} An array of groups found*/
+	this.groups=[];
 }
 
 /**
@@ -120,6 +124,39 @@ Provider.prototype.addInfo = function(name,kind,like,parent, search)
 	return ii;
 }
 
+/**
+ * @constructor
+ * @param {number} line 
+ * @param {number} startCol 
+ * @param {number} endCol 
+ */
+function KeywordPos(line,startCol,endCol)
+{
+	/** @type {number} */
+	this.line = line;
+	/** @type {number} */
+	this.startCol = startCol;
+	/** @type {number} */
+	this.endCol = endCol;
+}
+
+/**
+ * @constructor
+ * @param {string} type Possible values are: for, while, procedure
+ */
+function Group(type)
+{
+	this.type = type;
+	/**  @type {KeywordPos[]} */
+	this.positions = [];
+}
+
+
+Group.prototype.addRange = function(line,startCol,endCol)
+{
+	this.positions.push(new KeywordPos(line,startCol,endCol));
+}
+
 Provider.prototype.linePP = function(line)
 {
 	this.lineNr++;
@@ -142,7 +179,7 @@ Provider.prototype.linePP = function(line)
 		this.startLine = this.lineNr;
 		this.currLine = line;
 	}
-	this.cont = line.endsWith(";") && !this.cMode;
+	this.cont = line.trim().endsWith(";") && !this.cMode;
 }
 
 Provider.prototype.linePrepare = function(line)
@@ -220,6 +257,7 @@ Provider.prototype.linePrepare = function(line)
 				this.currentComment=""
 			this.currentComment+="\r\n"+this.currLine.substr(i+1)
 			this.currLine = this.currLine.substr(0,i-1)
+			this.cont = this.currLine.trim().endsWith(";");
 			return;
 		}
 		if(c=='"')
@@ -280,7 +318,7 @@ Provider.prototype.parseDeclareList = function(list,kind,parent)
 	for (var i = 0; i < list.length; i++) 
 	{
 		var m = list[i].trim().split(/\s+/g)[0];
-		if(m.length>0)
+		if(m.length>0 && m.match(/[a-z0-9_]+/i))
 			this.addInfo(m,kind,"definition",parent,true);
 	}
 }
@@ -332,19 +370,19 @@ Provider.prototype.parseHarbour = function(words)
 			var r = methodRegEx.exec(this.currLine);
 			if(r)
 			{
-				var t = "definition"
-				if(this.currentClass) t="declaration";
+				var fLike = "definition"
+				if(this.currentClass) fLike="declaration";
 				if(r[4] && r[4].length) {
 					r[4] = r[4].toLowerCase();
-					t="definition";
+					fLike="definition";
 					if((this.currentClass && this.currentClass.nameCmp!=r[4]) || (!this.currentClass))
 					{
 						this.currentClass = this.funcList.find((v)=> v.nameCmp == r[4]);
 					}
 				}
-				if(r[5] && r[5].length) t="definition";
+				if(r[5] && r[5].length) fLike="definition";
 				if(this.currentMethod) this.currentMethod.endLine = this.lastCodeLine;
-				this.currentMethod = this.addInfo(r[2],'method',t,this.currentClass);
+				this.currentMethod = this.addInfo(r[2],'method',fLike,this.currentClass);
 
 				if(r[3] && r[3].length)
 					this.parseDeclareList(r[3],"param",this.currentMethod);
@@ -385,7 +423,7 @@ Provider.prototype.parseHarbour = function(words)
 			words[0] == "field".substr(0,words[0].length))
 		{
 			if(this.currentMethod || words[0].startsWith("stat") ||
-				words[0].startsWith("memvar") || words[0].startsWith("field"))
+				words[0].startsWith("memv") || words[0].startsWith("fiel"))
 			{
 				var kind = "local";
 				if(words[0].startsWith("publ")) kind = "public";
@@ -425,7 +463,7 @@ Provider.prototype.parse = function(line)
 	this.linePP(line);
 	if(this.comment || this.cont) return;
 	this.linePrepare(line);
-	if(this.currLine.trim().length==0) return;
+	if(this.currLine.trim().length==0 || this.cont) return;
 	/** @type{string[]} */
 	var words = this.currLine.replace(/\s+/g," ").trim().split(" ");
 	if(words.length==0) return;
@@ -434,10 +472,11 @@ Provider.prototype.parse = function(line)
 	if(!this.cMode)
 	{
 		this.findDBReferences();
-		this.parseHarbour(words)
+		this.parseHarbour(words);
+		this.updateGroups();
 	} else
 	{
-		this.parseC(words)
+		this.parseC(words);
 	}
 	this.lastCodeLine = this.lineNr;
 }
@@ -446,20 +485,19 @@ Provider.prototype.parse = function(line)
  * Parse a string
  * @param {string} txt the string to parse
  * @param {string} docName the uri of the file of the incoming text 
- * @param {[boolean=fakse]}  cMode if true it is considered a c file (not harbour)
+ * @param {[boolean=false]}  cMode if true it is considered a c file (not harbour)
  */
 Provider.prototype.parseString = function(txt,docName,cMode)
 {
-	var providerThisContext = this;
 	this.Clear();
 	this.currentDocument=docName;
 	if(cMode != undefined)
 		this.cMode = cMode;
 	var lines = txt.split(/\r?\n/);
 	for (var i = 0; i < lines.length; i++) {
-		providerThisContext.parse(lines[i])
+		this.parse(lines[i])
 	}
-	providerThisContext.endParse();
+	this.endParse();
 }
 
 Provider.prototype.endParse = function()
@@ -514,6 +552,64 @@ Provider.prototype.findDBReferences = function()
 	}
 }
 
+var group_firstWord = /(^|;)\s*([a-z]+(?:\s+(?:[a-z]+))?)/ig;
+var group_keywords = [
+	["if",/#?if(?:n?def)?/,/else(?:if)?/,/end\s*if/],
+	["for",/for(?:\s+each)?/,"loop","exit","next"],
+	["case",/(switch|do\s+case)/,"case","otherwise","default","exit",/end\s*(switch|case)/],
+	["while",/(?:do\s*)?while/,"loop","exit",/end\s*do/],
+	["try","try","catch",/end\s*do/],
+	["sequence",/begin\s*sequence/,"recover",/end\s*sequence/]
+]; 
+
+Provider.prototype.updateGroups = function()
+{
+	var member;
+	var currKeywords;
+	var currGroup;
+	if(this.groupStack.length>0)
+	{
+		currGroup = this.groupStack[this.groupStack.length-1];
+		currKeywords = group_keywords.find(v=> v[0]==currGroup.type);
+	}
+
+	while(member=group_firstWord.exec(this.currLine))  {
+		var keyword = member[2].toLowerCase();
+		var pos = this.currLine.indexOf(member[2],member.index);
+		// look for new groups
+		for(var i=0;i<group_keywords.length;i++)
+		{
+			var m;
+			if((m=keyword.match(group_keywords[i][1])) && m.index==0)
+			{
+				currGroup = new Group(group_keywords[i][0]);
+				this.groupStack.push(currGroup);	
+				currGroup.addRange(this.lineNr,pos,pos+m[0].length);
+				currKeywords=group_keywords[i];
+				break;
+			}
+		}
+		if(currKeywords) for(var i=2;i<currKeywords.length;i++)
+		{
+			var m;
+			if((m=keyword.match(currKeywords[i])) && m.index==0)
+			{
+				currGroup.addRange(this.lineNr,pos,pos+m[0].length);
+				if(i==currKeywords.length-1)
+				{
+					this.groups.push(this.groupStack.pop());
+					if(this.groupStack.length>0)
+					{
+						currGroup = this.groupStack[this.groupStack.length-1];
+						currKeywords = group_keywords.find(v=> v[0]==currGroup.type);
+					}
+				}
+				break;
+			}
+		}
+	}
+}
+
 
 Provider.prototype.GetLineAt = function(txt,pos)
 {
@@ -559,5 +655,6 @@ Provider.prototype.GetLineAt = function(txt,pos)
 	return this.currLine
 }
 
+exports.Info = Info;
 exports.Provider = Provider;
 
