@@ -290,6 +290,27 @@ connection.onDocumentSymbol((param)=>
     return dest;
 });
 
+function IsInside(word1, word2)
+{
+	var ret = "";
+	var i1 = 0;
+	for(var i2=0;i2<word2.length;i2++)
+	{
+		if(word1[i1]==word2[i2])
+		{
+			ret+=word1[i1];
+			i1++;
+			if(i1==word1.length)
+				return ret;
+		} else
+		{
+			ret+="Z";
+		}
+	}
+	return undefined;
+}
+
+
 connection.onWorkspaceSymbol((param)=>
 {
     var dest = [];
@@ -312,8 +333,7 @@ connection.onWorkspaceSymbol((param)=>
                 !info.kind.startsWith("function"))
                 continue;
             // workspace symbols takes statics too
-            if(param.query.length>0 && 
-            	info.nameCmp.indexOf(src)==-1)
+            if(src>0 && IsInside(src,info.nameCmp))
                 continue;
             if(parent && (!info.parent || info.parent.nameCmp!=parent))
                 continue;
@@ -323,8 +343,8 @@ connection.onWorkspaceSymbol((param)=>
                 server.Range.create(info.startLine,info.startCol,
                                     info.endLine,info.endCol),
                 file, info.parent?info.parent.name:""));
-            if(dest.length>100)
-                return [];
+            //if(dest.length>100)
+            //    return [];
         }
     }
     return dest;
@@ -758,14 +778,15 @@ connection.onCompletion((param)=>
     }
     function CheckAdd(label,kind,sort)
     {
-        if(!label.toLowerCase().startsWith(word))
+        var sortLabel = IsInside(word,label);
+        if(sortLabel===undefined)
             return undefined;
         var c =completitions.find( (v) => v.label == label );
         if(!c)
         {
             c = server.CompletionItem.create(label);
             c.kind = kind
-            c.sortText = sort + label
+            c.sortText = sort + sortLabel
             completitions.push(c);
         }
         return c;
@@ -787,8 +808,10 @@ connection.onCompletion((param)=>
         for (var iSign=0;iSign<pp.funcList.length;iSign++)
         {
             var info = pp.funcList[iSign];
-            if(word.length>0 && info.nameCmp.substr(0,word.length) != word)
+            if(word.length>0 && !IsInside(word,info.nameCmp))
                 continue;
+            //if(word.length>0 && info.nameCmp.substr(0,word.length) != word)
+            //    continue;
             if(info.endCol == param.position.character && info.endLine == param.position.line && file==doc.uri)
                 continue;
             if(precLetter == '->' && info.kind != "field")
@@ -808,7 +831,7 @@ connection.onCompletion((param)=>
                     param.position.line>info.parent.endLine)
                         continue;
             }
-            CheckAdd(info.name,kindTOVS(info.kind,false),"AAA")
+            CheckAdd(info.nameCmp,kindTOVS(info.kind,false),"AAA")
         }
     }
     for (var file in files) // if (files.hasOwnProperty(file)) it is unnecessary
@@ -851,13 +874,20 @@ function completitionFiles(word, startPath)
         var ff = fs.readdirSync(uri.fsPath)
         for(var fi=0;fi<ff.length;fi++)
         {
-            var ext = path.extname(ff[fi]).toLowerCase();
+            var fileName = ff[fi].toLowerCase();
+            var ext = path.extname(fileName);
             if(ext!=".h" && ext!=".ch")
                 continue;
-            if(word.length != 0 && ff[fi].substr(0,word.length).toLowerCase()!=word)
-                continue;
+            var sortText = undefined;
+            if(word.length != 0)
+            {
+                sortText = IsInside(word, fileName);
+                if(!sortText)
+                    continue;
+            }
             var c = server.CompletionItem.create(ff[fi]);
             c.kind = server.CompletionItemKind.File;
+            c.sortText = sortText? sortText : ff[fi];
             completitons.push(c);
         }
     }
