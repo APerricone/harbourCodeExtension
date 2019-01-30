@@ -36,94 +36,28 @@ function activate(context)
 }
 
 /**
- * Removes all strings an comments an replace them with XXXX of same length
- * @param {String} txt Text to parse
+ * 
+ * @param {String} txt 
  */
-function RemoveStringAndComments(txt)
+function removeMultilineComments(txt)
 {
-    var  i=0;
-	while(true)
+	var out = "";
+	while(out.length!=txt.length)
 	{
-		i++;
-		var filter=undefined;
-		var substitute = "X";
-		switch(i)
+		var nextStart = txt.indexOf("/*",out.length);
+		if(nextStart>0)
 		{
-			case 1: filter = /\/\/[^\r\n]*[\r\n]{1,2}/g; substitute = "C"; break;	 // // comments
-			case 2: filter = /&&[^\r\n]*[\r\n]{1,2}/g; substitute = "C"; break;	 // && comments
-			case 3: filter = /^\s*\*[^\r\n]*[\r\n]{1,2}/mg; substitute = "C"; break;	 // * comments			
-			case 4: filter = /^\s*NOTE[^\r\n]*[\r\n]{1,2}/mg; substitute = "C"; break;	 // NOTE comments			
-			case 5: filter = /\/\*(?!\*\/).*\*\//g; substitute = "C"; break; // /* */ comments
-			case 6: filter = /'[^'\r\n]*'/g; break; // ' string
-			case 7: filter = /"[^"\r\n]*"/g; break; // " string
-			case 8: filter = /\[[^\]\r\n]*\]/g; break;  // [] string
-			//case 9: filter = /#(if|else|endif)/g; break;  // precompiled if
-		}
-		if (filter == undefined)
-			break;
-		do
-		{
-            var someChange = false
-            txt=txt.replace(filter, matchString =>
-            {
-				someChange = true;
-				if(matchString.endsWith("\r\n"))
-					return substitute.repeat(matchString.length-2)+"\r\n";
-				if(matchString.endsWith("\n"))
-					return substitute.repeat(matchString.length-1)+"\n";				
-				if(matchString.endsWith("\r"))
-					return substitute.repeat(matchString.length-1)+"\r";
-                return substitute.repeat(matchString.length);
-            })
-		} while(someChange)
-	}
-	// Special cases, inline if in this form if(condition,truePart,falseParte)
-	var inlineIf = /\bif\s*\(/gi;
-	/** @type {RegExpMatchArray|undefined} */
-	var mm;
-	while(mm=inlineIf.exec(txt))
-	{
-		var i=mm.index + mm[0].length, nPar = 0, keepLooking = true, isInlineIf = false
-		var precC,c="";
-		while(keepLooking)
-		{
-			if(c!=' ' && c!='\t')
-				precC=c
-			c = txt.charAt(i)
-			switch(c)
+			out += txt.substring(out.length,nextStart);
+			var nextEnd = txt.indexOf("*/",out.length);
+			if(nextEnd>0)
 			{
-				case '\r':
-				case '\n':
-					if (precC==';') // continue line
-						c = ';' 
-					else
-						keepLooking = false; //new line, exit
-					break;
-				case ')':
-					if(nPar==0)
-						keepLooking = false; // end of backets, exit
-					else
-						nPar--; // closed a bracket
-					break;
-				case '(':
-					nPar++; // open a bracket, in the condition
-					break;
-				case ',':
-					if(nPar==0) // found a comma inside the brackets
-					{
-						isInlineIf = true; // it is an inline if
-						keepLooking = false; // can exit
-					}
-					break
-			}
-			i++;
-		}
-		if(isInlineIf)
-		{
-			txt = txt.substring(0,mm.index) + "XX" + txt.substring(mm.index+2)
-		}
+				out+=txt.substring(out.length,nextEnd+2).replace(/[^\r\n]/g," ");
+			} else
+				break;
+		} else break;
 	}
-	return txt	
+	out+=txt.substring(out.length);
+	return out;
 }
 
 function setDecorator(editor)
@@ -141,14 +75,15 @@ function setDecorator(editor)
 function GetGroups(document)
 {
 	var groups=[];
-	var regExs = [	/(?:\b|#)((if(?:n?def)?)|else(?:if)?|(end\s?if))\b/ig,
-					/\b((for(?:\s+each)?)|loop|exit|(next))\b/ig,
-					/\b((switch|do\s+case)|case|otherwise|default|exit|(end\s*switch|end\s*case))\b/ig,
-					/\b(((?:do\s*)?while)|loop|exit|(end\s*do))\b/ig,
-					/\b((try)|catch|(end(?:\s+try)?))\b/ig,
-					/\b((begin\s+sequence(?:\s+with)?)|recover|(end\s+sequence))\b/ig
+	var regExs = [	/(?:^|;)\s*(#?(?:(if(?:n?def)?)|else(?:if)?|(end\s*if)))\b/igm,
+					/(?:^|;)\s*((for(?:\s+each)?)|loop|exit|(next))\b/igm,
+					/(?:^|;)\s*((switch|do\s+case)|case|otherwise|default|exit|(end\s*switch|end\s*case))\b/igm,
+					/(?:^|;)\s*(((?:do\s*)?while)|loop|exit|(end\s*do))\b/igm,
+					/(?:^|;)\s*((try)|catch|(end(?:\s+try)?))\b/igm,
+					/(?:^|;)\s*((begin\s+sequence(?:\s+with)?)|recover|(end\s+sequence))\b/igm
 				];
-	var text = RemoveStringAndComments(document.getText());
+	//var text = RemoveStringAndComments(document.getText());
+	var text = removeMultilineComments(document.getText());
 	var match;
 	for (var i = 0; i < regExs.length; i++) {
 		var stack = [];
@@ -163,7 +98,7 @@ function GetGroups(document)
 				currGroup=[];
 				currGroup.name = match[2];
 			}
-			const startPos = document.positionAt(match.index);
+			const startPos = document.positionAt(match.index + match[0].length-match[1].length);
 			const endPos = document.positionAt(match.index + match[0].length);
 			if(currGroup)
 				currGroup.push(new vscode.Range(startPos, endPos));
