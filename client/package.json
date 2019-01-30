@@ -88,11 +88,11 @@
                     "default": true,
                     "description": "%harbour.decorator%"
                 },
-                "harbour.lookSubDir": {
+                "harbour.workspaceDepth": {
                     "type": "number",
                     "default": 0,
                     "minimum": 0,
-                    "description": "%harbour.lookSubDir%"
+                    "description": "%harbour.workspaceDepth%"
                 }
             }
         },

@@ -12,6 +12,8 @@ var connection = server.createConnection(
 var workspaceRoots;
 /** @type {Array<string>} */
 var includeDirs;
+/** @type {number} */
+var workspaceDepth;
 /** @type {Object.<string, Provider>} */
 var files;
 /** @type {Array} */
@@ -99,19 +101,22 @@ connection.onDidChangeConfiguration(params=>{
     var searchExclude = params.settings.search.exclude;
     // minimatch
     includeDirs = params.settings.harbour.extraIncludePaths;
-    lookSubDir = params.settings.harbour.lookSubDir;
+    workspaceDepth = params.settings.harbour.workspaceDepth;
     ParseWorkspace();
 
 })
 
-function ParseDir(dir, onlyHeader)
+function ParseDir(dir, onlyHeader, depth)
 {
-	fs.readdir(dir,{withFileTypes:true},function(err,ff)
+    //fs.readdir(dir,{withFileTypes:true},function(err,ff)
+    fs.readdir(dir,function(err,ff)
     {
         if(ff==undefined) return;
         for (var i = 0; i < ff.length; i++) {
-            var fileName = ff[i].name;
-            if(ff[i].isFile())
+            var fileName = ff[i];
+            var completePath = path.join(dir,fileName);
+            var info = fs.statSync(completePath);
+            if(info.isFile())
             {
                 var ext = path.extname(fileName).toLowerCase();
                 if (onlyHeader &&  ext!=".ch" && ext!=".h")
@@ -121,7 +126,7 @@ function ParseDir(dir, onlyHeader)
                 var cMode = (ext.startsWith(".c") && ext!=".ch") || ext == ".h"
                 if(	ext == ".prg" || ext == ".ch" || cMode )
                 {
-                    var fileUri = Uri.file(path.join(dir,fileName));
+                    var fileUri = Uri.file(completePath);
                     var pp = new provider.Provider();
                     pp.parseFile(path.join(dir,fileName),fileUri.toString(), cMode).then(
                         prov => {
@@ -129,9 +134,9 @@ function ParseDir(dir, onlyHeader)
                         }
                     )
                 }
-            } else if(ff[i].isDirectory() && lookSubDir)
+            } else if(info.isDirectory() && depth>0)
             {
-                ParseDir(path.join(dir,fileName),onlyHeader);
+                ParseDir(path.join(dir,fileName),onlyHeader,depth-1);
             }
         }
     });
@@ -147,7 +152,7 @@ function ParseWorkspace()
         /** @type {vscode-uri.default} */
         var uri = Uri.parse(workspaceRoots[i]);
         if(uri.scheme != "file") return;
-        ParseDir(uri.fsPath);
+        ParseDir(uri.fsPath,false,workspaceDepth);
     }
     for(var i=0;i<includeDirs.length;i++)
     {
@@ -155,7 +160,7 @@ function ParseWorkspace()
         /** @type {vscode-uri.default} */
         //var uri = Uri.parse(includeDirs[i]);
         //if(uri.scheme != "file") return;        
-        ParseDir(includeDirs[i], true);
+        ParseDir(includeDirs[i], true,workspaceDepth);
     }
 }
 

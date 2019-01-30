@@ -5,7 +5,7 @@
     "harbour.extraIncludePaths": "Altre percorsi da includere durante la compilazione (per include).",
     "harbour.warningLevel": "livello degli avvisi.",
     "harbour.decorator": "Abilita l'evidenziazione dei corrispettivi if/endif, for/next, while/endwhile, ecc ecc",
-    "harbour.lookSubDir": "Profondita delle sottocartelle del workspace dove cercare i sorgenti.",
+    "harbour.workspaceDepth": "Profondita delle sottocartelle del workspace dove cercare i sorgenti.",
     "harbour.initialConfigurations": "Avvia il programma",
     "harbour.configurationSnippetsDesc": "Debugga un programma harbour con i simboli di debug",
     "harbour.configurationSnippets": "Avvia ${2:programma}",
