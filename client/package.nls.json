@@ -5,6 +5,7 @@
     "harbour.extraIncludePaths": "Extra include paths to use during the compilation (for include).",
     "harbour.warningLevel": "Warning level.",
     "harbour.decorator": "Enables the decoration of correspondents if/endif, for/next, while/endwhile, etc etc",
+    "harbour.lookSubDir": "Depth of sub-folder of workspace where looking for sources",
     "harbour.initialConfigurations": "Launch Program",
     "harbour.configurationSnippetsDesc": "Debug a harbour program with debug symbols",
     "harbour.configurationSnippets": "Launch ${2:Program}",

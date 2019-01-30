@@ -5,6 +5,7 @@
     "harbour.extraIncludePaths": "Otras rutas para incluir durante la compilación (para incluir)",
     "harbour.warningLevel": "Nivel de alertas.",
     "harbour.decorator": "Active el resaltado de los correspondientes if / endif, for / next, while / endwhile, etc. etc.",
+    "harbour.lookSubDir": "Profundidad de la subcarpeta del espacio de trabajo donde se buscan código fuente.",
     "harbour.initialConfigurations": "Iniciar el programa",
     "harbour.configurationSnippetsDesc": "Depurar un programa Harbour con símbolos de depuración",
     "harbour.configurationSnippets": "Iniciar  ${2:programa}",
