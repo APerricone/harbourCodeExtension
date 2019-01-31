@@ -305,23 +305,36 @@ connection.onDocumentSymbol((param)=>
 function IsInside(word1, word2)
 {
 	var ret = "";
-	var i1 = 0;
+    var i1 = 0;
+    var lenMatch =0, maxLenMatch = 0, minLenMatch = word1.length;
 	for(var i2=0;i2<word2.length;i2++)
 	{
 		if(word1[i1]==word2[i2])
 		{
+            lenMatch++;
+            if(lenMatch>maxLenMatch) maxLenMatch = lenMatch;
 			ret+=word1[i1];
 			i1++;
-			if(i1==word1.length)
-				return ret;
+            if(i1==word1.length)
+            {
+                if(lenMatch<minLenMatch) minLenMatch = lenMatch;
+                // Trying to filter like VSCode does.
+                if(word1.length>=2  && minLenMatch<2)
+                    return undefined;
+                if(maxLenMatch<word1.length/2)
+                    return undefined;
+                return ret;
+            }
 		} else
 		{
-			ret+="Z";
+            ret+="Z";
+            if(lenMatch>0 && lenMatch<minLenMatch)
+                minLenMatch = lenMatch;
+            lenMatch=0;
 		}
 	}
 	return undefined;
 }
-
 
 connection.onWorkspaceSymbol((param)=>
 {
@@ -345,7 +358,7 @@ connection.onWorkspaceSymbol((param)=>
                 !info.kind.startsWith("function"))
                 continue;
             // workspace symbols takes statics too
-            if(src>0 && !IsInside(src,info.nameCmp))
+            if(src.length>0 && !IsInside(src,info.nameCmp))
                 continue;
             if(parent && (!info.parent || info.parent.nameCmp!=parent))
                 continue;
@@ -355,8 +368,8 @@ connection.onWorkspaceSymbol((param)=>
                 server.Range.create(info.startLine,info.startCol,
                                     info.endLine,info.endCol),
                 file, info.parent?info.parent.name:""));
-            //if(dest.length>100)
-            //    return [];
+            if(dest.length>100)
+                return null;
         }
     }
     return dest;
@@ -786,7 +799,9 @@ connection.onCompletion((param)=>
     if(precLetter == '>' && allText[pos-1]=='-')
     {
         precLetter='->';
-        completitions = CompletitionDBFields(word, allText,pos, pp)        
+        completitions = CompletitionDBFields(word, allText,pos, pp)
+        if(completitions.length>0)
+            return server.CompletionList.create(completitions,true);     
     }
     function CheckAdd(label,kind,sort)
     {
@@ -826,7 +841,11 @@ connection.onCompletion((param)=>
                 continue;
             if(precLetter == '->' && info.kind != "field")
                 continue;
+            if(precLetter != '->' && info.kind == "field")
+                continue;
             if(precLetter == ':' && info.kind != "method" && info.kind != "data")
+                continue;
+            if(precLetter != ':' && (info.kind == "method" || info.kind == "data"))
                 continue;
             if(info.kind == "function*" || info.kind=="procedure*" || info.kind=="static")
             {
@@ -974,38 +993,48 @@ function CompletitionDBFields(word, allText,pos, pp)
         if(c=='(') nBracket--;
         dbName = c+dbName;
     }
+    dbName = dbName.toLowerCase().replace(" ","").replace("\t","");
     var completitions = [];
-    dbName = dbName.toLowerCase();
-    if(dbName in databases) {
-        var db = databases[dbName];
-        for(var f in db.fields)
+    function CheckDB(databases)
+    {
+        if(!(dbName in databases))
         {
-            if((word.length==0 || (f.startsWith(word) && f!=word)) 
-                && !completitions.find( (v) => v.label == db.fields[f].name ))
+            // check if pick too much text
+            for(db in databases)
             {
-                var c = server.CompletionItem.create(db.fields[f].name);
-                c.kind = server.CompletionItemKind.Field;
-                c.documentation = db.name;
-                c.sortText = "AAAA" + db.fields[f].name
-                completitions.push(c);
+                if(dbName.endsWith(db))
+                {
+                    dbName = db;
+                    break
+                }
             }
         }
+        if(dbName in databases) {
+            var db = databases[dbName];
+            for(var f in db.fields)
+            {
+                var sortText = db.fields[f].name;
+                if(word.length>0)
+                {
+                    sortText = IsInside(word,f);
+                }
+                if(!sortText) continue;
+
+                if(!completitions.find( (v) => v.label == db.fields[f].name ))
+                {
+                    var c = server.CompletionItem.create(db.fields[f].name);
+                    c.kind = server.CompletionItemKind.Field;
+                    c.documentation = db.name;
+                    c.sortText = "AAAA" + sortText;
+                    completitions.push(c);
+                }
+            }
+        }    
     }
+    CheckDB(databases);
     if(pp && dbName in pp.databases)
     {
-        var db = pp.databases[dbName];
-        for(var f in db.fields)
-        {
-            if((word.length==0 || (f.startsWith(word) && f!=word))
-                && completitions.findIndex( (v) => v.label == db.fields[f] )<0)
-            {
-                var c = server.CompletionItem.create(db.fields[f]);
-                c.kind = server.CompletionItemKind.Field;
-                c.documentation = db.name;
-                c.sortText = "AAAA" + db.fields[f]
-                completitions.push(c);
-            }
-        }
+        CheckDB(pp.databases);
     }
     return completitions;
 }

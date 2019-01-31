@@ -362,6 +362,7 @@ Provider.prototype.parseHarbour = function(words)
 		{
 			if(this.currentClass)
 			{	
+				words[1] = words1;
 				this.parseDeclareList(words.slice(1).join(" "),'data',this.currentClass)
 			}
 		} else
@@ -534,10 +535,10 @@ Provider.prototype.parseFile = function(file, docName,cMode,encoding)
 
 Provider.prototype.findDBReferences = function()
 {
-	var dbRegex = /([a-z0-9_]+|\((?:\([^\)]*\)|[^\)])+\))->([a-z0-9_]+)/gi
+	var dbRegex = /([a-z0-9_]+|\([^\(\)]+\))->([a-z0-9_]+)/gi
 	var dbRef;
 	while(dbRef = dbRegex.exec(this.currLine)) {
-		var dbName = dbRef[1].toLowerCase();
+		var dbName = dbRef[1].toLowerCase().replace(" ","").replace("\t","");
 		var fieldName = dbRef[2].toLowerCase();
 		if(dbName=='field') {
 			this.addInfo(dbRef[2],"field","reference",undefined,true);

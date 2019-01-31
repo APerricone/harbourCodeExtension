@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to the "Harbour and xHarbour" extension will be documented in this file.
 
+# 0.8.6
+ - **server** added workspaceDepth to fix [#11](https://github.com/APerricone/harbourCodeExtension/issues/11)
+ - **server** changed behaviour of search inside symbols, to match VSCode behaviour.
+ - **server** fix name of member all lowercase
+ - **server** better field management on completition
+ - **server** better word match
+ - **server** better database management 
+
 ## 0.8.5
   - **decorator**  restored correct behaviour
   - **server** use of DocumentSymbol
