@@ -302,6 +302,27 @@ connection.onDocumentSymbol((param)=>
     return dest;
 });
 
+function IsInside(word1, word2)
+{
+	var ret = "";
+	var i1 = 0;
+	for(var i2=0;i2<word2.length;i2++)
+	{
+		if(word1[i1]==word2[i2])
+		{
+			ret+=word1[i1];
+			i1++;
+			if(i1==word1.length)
+				return ret;
+		} else
+		{
+			ret+="Z";
+		}
+	}
+	return undefined;
+}
+
+
 connection.onWorkspaceSymbol((param)=>
 {
     var dest = [];
@@ -324,8 +345,7 @@ connection.onWorkspaceSymbol((param)=>
                 !info.kind.startsWith("function"))
                 continue;
             // workspace symbols takes statics too
-            if(param.query.length>0 && 
-            	info.nameCmp.indexOf(src)==-1)
+            if(src>0 && !IsInside(src,info.nameCmp))
                 continue;
             if(parent && (!info.parent || info.parent.nameCmp!=parent))
                 continue;
@@ -335,8 +355,8 @@ connection.onWorkspaceSymbol((param)=>
                 server.Range.create(info.startLine,info.startCol,
                                     info.endLine,info.endCol),
                 file, info.parent?info.parent.name:""));
-            if(dest.length>100)
-                return [];
+            //if(dest.length>100)
+            //    return [];
         }
     }
     return dest;
@@ -770,14 +790,15 @@ connection.onCompletion((param)=>
     }
     function CheckAdd(label,kind,sort)
     {
-        if(!label.toLowerCase().startsWith(word))
+        var sortLabel = IsInside(word,label.toLowerCase());
+        if(sortLabel===undefined)
             return undefined;
         var c =completitions.find( (v) => v.label == label );
         if(!c)
         {
             c = server.CompletionItem.create(label);
             c.kind = kind
-            c.sortText = sort + label
+            c.sortText = sort + sortLabel
             completitions.push(c);
         }
         return c;
@@ -799,7 +820,7 @@ connection.onCompletion((param)=>
         for (var iSign=0;iSign<pp.funcList.length;iSign++)
         {
             var info = pp.funcList[iSign];
-            if(word.length>0 && info.nameCmp.substr(0,word.length) != word)
+            if(word.length>0 && !IsInside(word,info.nameCmp))
                 continue;
             if(info.endCol == param.position.character && info.endLine == param.position.line && file==doc.uri)
                 continue;
@@ -852,6 +873,30 @@ function completitionFiles(word, startPath)
     var completitons = [];
     word = word.replace("\r","").replace("\n","").toLowerCase()
     var startDone = false;
+    if(startPath) startPath = startPath.toLowerCase();
+    function CheckDir(dir)
+    {
+        if(startPath && dir.toLowerCase()==startPath) startDone=true;
+        var ff = fs.readdirSync(dir)
+        for(var fi=0;fi<ff.length;fi++)
+        {
+            var fileName = ff[fi].toLowerCase();
+            var ext = path.extname(fileName);
+            if(ext!=".h" && ext!=".ch")
+                continue;
+            var sortText = undefined;
+            if(word.length != 0)
+            {
+                sortText = IsInside(word, fileName);
+                if(!sortText)
+                    continue;
+            }
+            var c = server.CompletionItem.create(ff[fi]);
+            c.kind = server.CompletionItemKind.File;
+            c.sortText = sortText? sortText : fileName;
+            completitons.push(c);
+        }
+    }
 
     for(var i=0;i<workspaceRoots.length;i++)
     {
@@ -859,50 +904,15 @@ function completitionFiles(word, startPath)
         /** @type {vscode-uri.default} */
         var uri = Uri.parse(workspaceRoots[i]);
         if(uri.scheme != "file") continue;
-        if(startPath && uri.fsPath.toLowerCase()==startPath.toLowerCase()) startDone=true;
-        var ff = fs.readdirSync(uri.fsPath)
-        for(var fi=0;fi<ff.length;fi++)
-        {
-            var ext = path.extname(ff[fi]).toLowerCase();
-            if(ext!=".h" && ext!=".ch")
-                continue;
-            if(word.length != 0 && ff[fi].substr(0,word.length).toLowerCase()!=word)
-                continue;
-            var c = server.CompletionItem.create(ff[fi]);
-            c.kind = server.CompletionItemKind.File;
-            completitons.push(c);
-        }
+        CheckDir(uri.fsPath);
     }
     for(var i=0;i<includeDirs.length;i++)
     {
-        if(startPath && includeDirs[i].toLowerCase()==startPath.toLowerCase()) startDone=true;
-        var ff = fs.readdirSync(includeDirs[i]);
-        for(var fi=0;fi<ff.length;fi++)
-        {
-            var ext = path.extname(ff[fi]).toLowerCase();
-            if(ext!=".h" && ext!=".ch")
-                continue;
-            if(word.length != 0 && ff[fi].substr(0,word.length).toLowerCase()!=word)
-                continue;
-            var c = server.CompletionItem.create(ff[fi]);
-            c.kind = server.CompletionItemKind.File;
-            completitons.push(c);
-        }
+        CheckDir(includeDirs[i]);
     }
     if(startPath && !startDone)
     {
-        var ff = fs.readdirSync(startPath);
-        for(var i=0;i<ff.length;i++)
-        {
-            var ext = path.extname(ff[i]).toLowerCase();
-            if(ext!=".h" && ext!=".ch")
-                continue;
-            if(word.length != 0 && ff[i].substr(0,word.length).toLowerCase()!=word)
-                continue;
-            var c = server.CompletionItem.create(ff[i]);
-            c.kind = server.CompletionItemKind.File;
-            completitons.push(c);
-        }
+        CheckDir(startPath);
     }
     return server.CompletionList.create(completitons,true);
 }
@@ -912,56 +922,39 @@ function definitionFiles(fileName, startPath, origin)
     var dest = [];
     fileName = fileName.toLowerCase();
     var startDone = false;
+    if(startPath) startPath = startPath.toLowerCase();
+    function DefDir(dir)
+    {
+        if(startPath && dir.toLowerCase()==startPath) startDone=true;
+        var ff = fs.readdirSync(dir)
+        for(var fi=0;fi<ff.length;fi++)
+        {
+            if(ff[fi].toLowerCase() == fileName)
+            {
+                var fileUri = Uri.file(path.join(dir,ff[fi])).toString();
+                if(canLocationLink)
+                    dest.push(server.LocationLink.create(fileUri, server.Range.create(0,0,0,0), server.Range.create(0,0,0,0),origin));
+                else
+                    dest.push(server.Location.create(fileUri, server.Range.create(0,0,0,0)));
+            }
+        }
+    }
     for(var i=0;i<workspaceRoots.length;i++)
     {
         // other scheme of uri unsupported
         /** @type {vscode-uri.default} */
         var uri = Uri.parse(workspaceRoots[i]);
         if(uri.scheme != "file") continue;
-        if(startPath && uri.fsPath.toLowerCase()==startPath.toLowerCase()) startDone=true;
-        var ff = fs.readdirSync(uri.fsPath)
-        for(var fi=0;fi<ff.length;fi++)
-        {
-            if(ff[fi].toLowerCase() == fileName)
-            {
-                var fileUri = Uri.file(path.join(uri.fsPath,ff[fi])).toString();
-                if(canLocationLink)
-                    dest.push(server.LocationLink.create(fileUri, server.Range.create(0,0,0,0), server.Range.create(0,0,0,0),origin));
-                else
-                    dest.push(server.Location.create(fileUri, server.Range.create(0,0,0,0)));
-            }
-        }
+        DefDir(uri.fsPath);
     }
     for(var i=0;i<includeDirs.length;i++)
     {
         if(startPath && includeDirs[i].toLowerCase()==startPath.toLowerCase()) startDone=true;
-        var ff = fs.readdirSync(includeDirs[i]);
-        for(var fi=0;fi<ff.length;fi++)
-        {
-            if(ff[fi].toLowerCase() == fileName)
-            {
-                var fileUri =  Uri.file(path.join(includeDirs[i],ff[fi])).toString();
-                if(canLocationLink)
-                    dest.push(server.LocationLink.create(fileUri, server.Range.create(0,0,0,0), server.Range.create(0,0,0,0),origin));
-                else
-                    dest.push(server.Location.create(fileUri, server.Range.create(0,0,0,0)));
-            }
-        }
+        DefDir(includeDirs[i]);
     }
     if(startPath && !startDone)
     {
-        var ff = fs.readdirSync(startPath);
-        for(var fi=0;fi<ff.length;fi++)
-        {
-            if(ff[fi].toLowerCase() == fileName)
-            {
-                var fileUri =  Uri.file(path.join(startPath,ff[fi])).toString();
-                if(canLocationLink)
-                    dest.push(server.LocationLink.create(fileUri, server.Range.create(0,0,0,0), server.Range.create(0,0,0,0),origin));
-                else
-                    dest.push(server.Location.create(fileUri, server.Range.create(0,0,0,0)));
-            }
-        }
+        DefDir(startPath);
     }
     return dest;
 }
