@@ -99,32 +99,39 @@ connection.onDidChangeConfiguration(params=>{
     var searchExclude = params.settings.search.exclude;
     // minimatch
     includeDirs = params.settings.harbour.extraIncludePaths;
+    lookSubDir = params.settings.harbour.lookSubDir;
     ParseWorkspace();
 
 })
 
 function ParseDir(dir, onlyHeader)
 {
-	fs.readdir(dir,function(err,ff)
+	fs.readdir(dir,{withFileTypes:true},function(err,ff)
     {
         if(ff==undefined) return;
         for (var i = 0; i < ff.length; i++) {
-            var fileName = ff[i];
-            var ext = path.extname(fileName).toLowerCase();
-            if (onlyHeader &&  ext!=".ch" && ext!=".h")
+            var fileName = ff[i].name;
+            if(ff[i].isFile())
             {
-                continue;
-            }
-            var cMode = (ext.startsWith(".c") && ext!=".ch") || ext == ".h"
-            if(	ext == ".prg" || ext == ".ch" || cMode )
+                var ext = path.extname(fileName).toLowerCase();
+                if (onlyHeader &&  ext!=".ch" && ext!=".h")
+                {
+                    continue;
+                }
+                var cMode = (ext.startsWith(".c") && ext!=".ch") || ext == ".h"
+                if(	ext == ".prg" || ext == ".ch" || cMode )
+                {
+                    var fileUri = Uri.file(path.join(dir,fileName));
+                    var pp = new provider.Provider();
+                    pp.parseFile(path.join(dir,fileName),fileUri.toString(), cMode).then(
+                        prov => {
+                            UpdateFile(prov)
+                        }
+                    )
+                }
+            } else if(ff[i].isDirectory() && lookSubDir)
             {
-                var fileUri = Uri.file(path.join(dir,fileName));
-                var pp = new provider.Provider();
-                pp.parseFile(path.join(dir,fileName),fileUri.toString(), cMode).then(
-                    prov => {
-                        UpdateFile(prov)
-                    }
-                )
+                ParseDir(path.join(dir,fileName),onlyHeader);
             }
         }
     });

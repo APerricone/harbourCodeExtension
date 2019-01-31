@@ -87,6 +87,12 @@
                     "type": "boolean",
                     "default": true,
                     "description": "%harbour.decorator%"
+                },
+                "harbour.lookSubDir": {
+                    "type": "number",
+                    "default": 0,
+                    "minimum": 0,
+                    "description": "%harbour.lookSubDir%"
                 }
             }
         },
