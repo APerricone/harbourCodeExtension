@@ -801,7 +801,7 @@ connection.onCompletion((param)=>
         precLetter='->';
         completitions = CompletitionDBFields(word, allText,pos, pp)
         if(completitions.length>0)
-            return server.CompletionList.create(completitions,true);     
+            return server.CompletionList.create(completitions,true); // put true because added all known field of this db
     }
     function CheckAdd(label,kind,sort)
     {
@@ -819,7 +819,7 @@ connection.onCompletion((param)=>
         return c;
     }
     if(precLetter != '->' && precLetter!=':') precLetter = undefined;
-    if(word.length==0 && precLetter==undefined) return server.CompletionList.create(completitions,true);
+    if(word.length==0 && precLetter==undefined) return server.CompletionList.create(completitions,false);
     if(!precLetter)
     {
         for(var dbName in databases)
@@ -884,7 +884,7 @@ connection.onCompletion((param)=>
             CheckAdd(missing[i],server.CompletionItemKind.Function,"A")
         }
     }
-    return server.CompletionList.create(completitions,true);    
+    return server.CompletionList.create(completitions,false);
 })
 
 function completitionFiles(word, startPath)
@@ -933,7 +933,7 @@ function completitionFiles(word, startPath)
     {
         CheckDir(startPath);
     }
-    return server.CompletionList.create(completitons,true);
+    return server.CompletionList.create(completitons,false);
 }
 
 function definitionFiles(fileName, startPath, origin)
