@@ -317,12 +317,6 @@ function IsInside(word1, word2)
 			i1++;
             if(i1==word1.length)
             {
-                if(lenMatch<minLenMatch) minLenMatch = lenMatch;
-                // Trying to filter like VSCode does.
-                if(word1.length>=2  && minLenMatch<2)
-                    return undefined;
-                if(maxLenMatch<word1.length/2)
-                    return undefined;
                 return ret;
             }
 		} else
