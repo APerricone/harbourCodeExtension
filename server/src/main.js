@@ -895,6 +895,10 @@ function completitionFiles(word, startPath)
     if(startPath) startPath = startPath.toLowerCase();
     function CheckDir(dir)
     {
+        if(dir.startsWith("."))
+            dir = path.join(startPath,dir);
+        if(!fs.existsSync(dir)) return;
+        
         if(startPath && dir.toLowerCase()==startPath) startDone=true;
         var ff = fs.readdirSync(dir)
         for(var fi=0;fi<ff.length;fi++)
@@ -944,6 +948,9 @@ function definitionFiles(fileName, startPath, origin)
     if(startPath) startPath = startPath.toLowerCase();
     function DefDir(dir)
     {
+        if(dir.startsWith("."))
+            dir = path.join(startPath,dir);
+        if(!fs.existsSync(dir)) return;
         if(startPath && dir.toLowerCase()==startPath) startDone=true;
         var ff = fs.readdirSync(dir)
         for(var fi=0;fi<ff.length;fi++)
@@ -968,7 +975,6 @@ function definitionFiles(fileName, startPath, origin)
     }
     for(var i=0;i<includeDirs.length;i++)
     {
-        if(startPath && includeDirs[i].toLowerCase()==startPath.toLowerCase()) startDone=true;
         DefDir(includeDirs[i]);
     }
     if(startPath && !startDone)

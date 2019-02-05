@@ -1,5 +1,6 @@
 var vscode = require('vscode');
 var cp = require("child_process");
+var path = require("path");
 var localize = require("./myLocalize.js").localize;
 
 var diagnosticCollection;
@@ -32,11 +33,10 @@ function validate(textDocument)
 	var args = ["-s", "-q0", "-m", "-n0", "-w"+section.warningLevel, textDocument.fileName ];
 	for (var i = 0; i < section.extraIncludePaths.length; i++) 
 	{
-		var path = section.extraIncludePaths[i];
-		args.push("-i"+path);
+		args.push("-i"+section.extraIncludePaths[i]);
 	}
 	args = args.concat(section.extraOptions.split(" ").filter(function(el) {return el.length != 0}));
-	var process = cp.spawn(section.compilerExecutable,args, { cwd: vscode.workspace.path });
+	var process = cp.spawn(section.compilerExecutable,args, { cwd: path.dirname(textDocument.fileName) });
 	process.on("error", e=>
 	{
 		vscode.window.showWarningMessage(localize("harbour.validation.NoExe",section.compilerExecutable));

@@ -8,6 +8,7 @@ All notable changes to the "Harbour and xHarbour" extension will be documented i
  - **server** better field management on completition
  - **server** better word match
  - **server** better database management 
+ - **validation** Better support for relative include path
 
 ## 0.8.5
   - **decorator**  restored correct behaviour
