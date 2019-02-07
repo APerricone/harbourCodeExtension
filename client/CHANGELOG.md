@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to the "Harbour and xHarbour" extension will be documented in this file.
 
+# 0.8.7
+ - **server** Added check for C file is a compiled prg  [#12](https://github.com/APerricone/harbourCodeExtension/issues/12)
+
 # 0.8.6
  - **server** added workspaceDepth to fix [#11](https://github.com/APerricone/harbourCodeExtension/issues/11)
  - **server** changed behaviour of search inside symbols, to match VSCode behaviour.

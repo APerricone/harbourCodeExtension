@@ -106,8 +106,9 @@ connection.onDidChangeConfiguration(params=>{
 
 })
 
-function ParseDir(dir, onlyHeader, depth)
+function ParseDir(dir, onlyHeader, depth, subirPaths)
 {
+    if(!subirPaths) subirPaths = [];
     //fs.readdir(dir,{withFileTypes:true},function(err,ff)
     fs.readdir(dir,function(err,ff)
     {
@@ -124,8 +125,17 @@ function ParseDir(dir, onlyHeader, depth)
                     continue;
                 }
                 var cMode = (ext.startsWith(".c") && ext!=".ch") || ext == ".h"
+                if(cMode)
+                {
+                    var harbourFile = path.basename(fileName)
+                    var pos = harbourFile.lastIndexOf(".");
+                    harbourFile = harbourFile.substr(0, pos < 0 ? file.length : pos) + ".prg";
+                    if(subirPaths.findIndex((v) => v.indexOf(harbourFile)>=0)>=0)
+                        continue;                    
+                }
                 if(	ext == ".prg" || ext == ".ch" || cMode )
                 {
+                    subirPaths.push(completePath);
                     var fileUri = Uri.file(completePath);
                     var pp = new provider.Provider();
                     pp.parseFile(path.join(dir,fileName),fileUri.toString(), cMode).then(
@@ -136,7 +146,7 @@ function ParseDir(dir, onlyHeader, depth)
                 }
             } else if(info.isDirectory() && depth>0)
             {
-                ParseDir(path.join(dir,fileName),onlyHeader,depth-1);
+                ParseDir(path.join(dir,fileName),onlyHeader,depth-1,subirPaths);
             }
         }
     });
@@ -160,7 +170,7 @@ function ParseWorkspace()
         /** @type {vscode-uri.default} */
         //var uri = Uri.parse(includeDirs[i]);
         //if(uri.scheme != "file") return;        
-        ParseDir(includeDirs[i], true,workspaceDepth);
+        ParseDir(includeDirs[i], true,0);
     }
 }
 
@@ -362,8 +372,8 @@ connection.onWorkspaceSymbol((param)=>
                 server.Range.create(info.startLine,info.startCol,
                                     info.endLine,info.endCol),
                 file, info.parent?info.parent.name:""));
-            if(dest.length>100)
-                return null;
+            if(dest.length==100)
+                return dest;
         }
     }
     return dest;
