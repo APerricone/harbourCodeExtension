@@ -2,7 +2,7 @@
     "name": "harbour",
     "displayName": "Harbour and xHarbour",
     "description": "Harbour and xHarbour languages support for visual studio code",
-    "version": "0.8.6",
+    "version": "0.8.7",
     "publisher": "aperricone",
     "icon": "harbourIcon.png",
     "main": "./src/extension",
@@ -11,7 +11,8 @@
     },
     "activationEvents": [
         "onLanguage:harbour",
-        "onCommand:harbour.getdbgcode"
+        "onCommand:harbour.getdbgcode",
+        "workspaceContains:**/*.prg"
     ],
     "engines": {
         "vscode": "^1.11.0"
