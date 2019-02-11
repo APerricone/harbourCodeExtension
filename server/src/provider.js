@@ -11,7 +11,9 @@ function Provider()
 
 Provider.prototype.Clear = function()
 {
-	// data used during the parsing
+	// *********** options
+	this.doGroups = false;
+	// *********** data used during the parsing
 	/** @type {boolean} is for multi line comments */
 	this.comment=false;
 	/** @type {string} current line parsing, without comments */
@@ -474,7 +476,8 @@ Provider.prototype.parse = function(line)
 	{
 		this.findDBReferences();
 		this.parseHarbour(words);
-		this.updateGroups();
+		if(this.doGroups)
+			this.updateGroups();
 	} else
 	{
 		this.parseC(words);

@@ -36,7 +36,12 @@ function validate(textDocument)
 		args.push("-i"+section.extraIncludePaths[i]);
 	}
 	args = args.concat(section.extraOptions.split(" ").filter(function(el) {return el.length != 0}));
-	var process = cp.spawn(section.compilerExecutable,args, { cwd: path.dirname(textDocument.fileName) });
+	var file_cwd = vscode.workspace.rootPath;
+	if(!file_cwd)
+	{
+		file_cwd=path.dirname(textDocument.fileName);
+	}
+	var process = cp.spawn(section.compilerExecutable,args, { cwd: file_cwd });
 	process.on("error", e=>
 	{
 		vscode.window.showWarningMessage(localize("harbour.validation.NoExe",section.compilerExecutable));
