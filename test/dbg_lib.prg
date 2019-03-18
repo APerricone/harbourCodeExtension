@@ -14,7 +14,7 @@
 #define __dbgVMVarSGet hb_dbg_vmVarSGet
 #endif
 
-//#define _DEBUGDEBUG
+#define _DEBUGDEBUG
 #ifdef _DEBUGDEBUG
 #command ? [<explist,...>] => dbgQOut( <explist> )
 #else
@@ -53,11 +53,29 @@ static procedure CheckSocket(lStopSent)
 	LOCAL t_oDebugInfo := __DEBUGITEM()
 	lStopSent := iif(empty(lStopSent),.F.,lStopSent)
 	// if no server then start it.
-	if(empty(t_oDebugInfo['socket']))
+	do while (empty(t_oDebugInfo['socket']) .and. t_oDebugInfo['timeCheckForDebug']<30)
+		QOut("try to connect to debug server",t_oDebugInfo['timeCheckForDebug'])
 		hb_inetInit()
 		t_oDebugInfo['socket'] := hb_inetCreate(1000)
 		hb_inetConnect("127.0.0.1",DBG_PORT,t_oDebugInfo['socket'])
-	endif
+		if hb_inetErrorCode(t_oDebugInfo['socket']) <> 0
+			QOut("failed")
+			tmp="NO"
+		else
+			QOut("connected")
+			hb_inetSend(t_oDebugInfo['socket'],HB_ARGV(0)+CRLF+str(__PIDNum())+CRLF)
+			do while hb_inetDataReady(t_oDebugInfo['socket']) != 1
+				hb_idleSleep(1)
+			end do	
+			tmp := hb_inetRecvLine(t_oDebugInfo['socket'])
+			QOut("returned ",tmp)
+		endif
+		if tmp="NO"
+			t_oDebugInfo['socket'] := nil			
+			hb_idleSleep(1)
+			t_oDebugInfo['timeCheckForDebug']+=1
+		endif
+	end do
 	do while .T.
 		if hb_inetErrorCode(t_oDebugInfo['socket']) <> 0
 			//? "socket error",hb_inetErrorDesc( t_oDebugInfo['socket'] )
@@ -1134,7 +1152,8 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 					'errorBlockHistory' => {}, ;
 					'error' => nil, ;
 					'inError' => .F., ;
-					'__dbgEntryLevel' => 0 ;
+					'__dbgEntryLevel' => 0, ;
+					'timeCheckForDebug' => 0 ;
 				}
 				__DEBUGITEM(t_oDebugInfo)
 				#ifdef SAVEMODULES
@@ -1278,6 +1297,16 @@ RETURN
 #include <hbapiitm.h>
 #include <stdio.h>
 
+#if defined( HB_OS_UNIX ) || defined( __DJGPP__ )
+#  include <sys/types.h>
+#  include <unistd.h>
+#elif defined( HB_OS_WIN )
+#  include <windows.h>
+#elif defined( HB_OS_OS2 ) || defined( HB_OS_DOS )
+#  include <process.h>
+#endif
+
+
 HB_FUNC( __GETLASTRETURN )
 {
 	PHB_ITEM pItem = hb_stackItemFromTop( -1-hb_parni(1) );
@@ -1296,6 +1325,19 @@ HB_FUNC( __DEBUGITEM )
 		hb_itemCopy(sDebugInfo, hb_param(1,HB_IT_ANY));
 	}
 	hb_itemReturn(sDebugInfo);
+}
+
+HB_FUNC( __PIDNUM )
+{
+#if defined( HB_OS_WIN_CE )
+   hb_retni( 0 );
+#elif defined( HB_OS_WIN )
+   hb_retnint( GetCurrentProcessId() );
+#elif ( defined( HB_OS_OS2 ) && defined( __GNUC__ ) )
+   hb_retnint( _getpid() );
+#else
+   hb_retnint( getpid() );
+#endif
 }
 
 #pragma ENDDUMP

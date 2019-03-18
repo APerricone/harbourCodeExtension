@@ -18,3 +18,4 @@ bin
 *.obj
 obj
 *.ilk
+settings.json
