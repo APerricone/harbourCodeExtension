@@ -5,6 +5,7 @@ var path = require("path");
 var fs = require("fs");
 var cp = require("child_process");
 var localize = require("./myLocalize.js").localize;
+var process = require("process")
 
 /** @requires vscode-debugadapter   */
 /// CLASS DEFINITION
@@ -15,8 +16,6 @@ var localize = require("./myLocalize.js").localize;
  */
 var harbourDebugSession = function()
 {
-	/** @type{child_process.child_process} */
-	this.process = null;
 	/** @type{net.socket} */
 	this.socket = null;
 	/** @type{boolean} */
@@ -132,6 +131,7 @@ harbourDebugSession.prototype.initializeRequest = function (response, args)
 	response.body.supportsHitConditionalBreakpoints = true;
 	response.body.supportsLogPoint = true;
 	response.body.supportsCompletionsRequest = true;
+	response.body.supportsTerminateRequest = true;
 	//response.body.supportsEvaluateForHovers = true; too risky
 	this.sendResponse(response);
 };
@@ -164,41 +164,106 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
 	this.startGo = args.stopOnEntry===false || args.noDebug===true;	
 	// starts the server
 	var server = net.createServer(socket => {
+		tc.evaluateClient(socket, server, args)
+	}).listen(port);
+	// starts the program
+	//console.log("start the program");
+	switch(args.terminalType)
+	{
+		case 'none':
+		case undefined:
+			var process;
+			if(args.arguments)
+				process=cp.spawn(args.program, args.arguments, { cwd:args.workingDir });
+			else
+				process=cp.spawn(args.program, { cwd:args.workingDir });
+			process.on("error", e =>
+			{
+				tc.sendEvent(new debugadapter.OutputEvent(localize("harobur.dbgError1",args.program,args.workingDir),"stderr"))
+				tc.sendEvent(new debugadapter.TerminatedEvent());
+				return
+			})
+			process.stderr.on('data', data => 
+				tc.sendEvent(new debugadapter.OutputEvent(data.toString(),"stderr"))
+			);
+			process.stdout.on('data', data => 
+				tc.sendEvent(new debugadapter.OutputEvent(data.toString(),"stdout"))
+			);
+			break;
+		case 'external':
+		case 'integrated':
+			this.runInTerminalRequest({
+				"kind": args.terminalType,
+				"cwd": args.workingDir,
+				"args":  [args.program].concat(args.arguments? args.arguments : [])
+			})
+	}
+	this.sendResponse(response);
+}
+
+harbourDebugSession.prototype.SetProcess = function(pid)
+{
+	var tc=this
+	this.processId = pid;
+	var interval = setInterval( ()=> {
+		try
+		{
+			process.kill(pid,0);			
+		} catch(error)
+		{
+			tc.sendEvent(new debugadapter.TerminatedEvent());
+			clearInterval(interval);	
+		}
+	},1000)
+}
+
+harbourDebugSession.prototype.terminateRequest = function(response, args)
+{
+	process.kill(this.processId,'SIGKILL');
+	this.sendResponse(response);
+}
+
+harbourDebugSession.prototype.evaluateClient = function(socket, server, args)
+{
+	var nData=0;
+	var tc =this;
+	var exeTarget = path.basename(args.program,path.extname(args.program)).toLowerCase();
+	socket.on("data", data=> {
+		if(tc.socket && nData>0)
+		{
+			tc.processInput(data.toString())
+			return;
+		}
+		if(nData>0)
+		{
+			return
+		}
+		nData++;
+		// the client sended exe name and process ID		
+		var lines = data.toString().split("\r\n");
+		if(lines.length<2)
+			return;
+		var clPath = path.basename(lines[0],path.extname(lines[0])).toLowerCase();
+		if(clPath!=exeTarget)
+		{
+			socket.write("NO\r\n")
+			socket.end();
+			return;
+		}
+		socket.write("HELLO\r\n")
+		tc.SetProcess(parseInt(lines[1]));
 		//connected!
 		tc.sendEvent(new debugadapter.InitializedEvent());
 		server.close();
 		tc.socket = socket;
+		socket.removeAllListeners("data");
 		socket.on("data", data=> {
 			tc.processInput(data.toString())
 		});
 		socket.write(tc.queue);
 		this.justStart = false;
 		tc.queue = "";
-	}).listen(port);
-	// starts the program
-	//console.log("start the program");
-	if(args.arguments)
-		this.process = cp.spawn(args.program, args.arguments, { cwd:args.workingDir });
-	else
-		this.process = cp.spawn(args.program, { cwd:args.workingDir });
-	this.process.on("error", e =>
-	{
-		tc.sendEvent(new debugadapter.OutputEvent(localize("harobur.dbgError1",args.program,args.workingDir),"stderr"))
-		tc.sendEvent(new debugadapter.TerminatedEvent());
-		return
-	})
-	this.process.on("exit",function(code)
-	{
-		//tc.sendEvent(new debugadapter.Event("exited",{"exitCode":code}));
-		tc.sendEvent(new debugadapter.TerminatedEvent());
 	});
-	this.process.stderr.on('data', data => 
-		tc.sendEvent(new debugadapter.OutputEvent(data.toString(),"stderr"))
-	);
-	this.process.stdout.on('data', data => 
-		tc.sendEvent(new debugadapter.OutputEvent(data.toString(),"stdout"))
-	);
-	this.sendResponse(response);
 }
 
 harbourDebugSession.prototype.command = function(cmd)
@@ -584,7 +649,9 @@ harbourDebugSession.prototype.processExpression = function(line)
 	{ //the value can contains : , we need to rejoin it.
 		infos[3] = infos.splice(3).join(":");
 	}
-	var resp = this.evaluateResponses.shift();
+	var idx = this.evaluateResponses.findIndex(v=>v.body.result.toUpperCase() ==infos[2] );
+	if(idx<0) return;
+	var resp = this.evaluateResponses.splice(idx,1)[0];
 	var line = "EXP:" + infos[1] + ":" + resp.body.result.replace(/:/g,";") + ":";
 	resp.body.name = resp.body.result
 	resp.body = this.getVariableFormat(resp.body,infos[2],infos[3],"result",line);

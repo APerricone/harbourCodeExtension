@@ -207,6 +207,12 @@
                                 "default": [
                                     "${workspaceFolder}"
                                 ]
+                            },
+                            "terminalType":{
+                                "type": "string",
+                                "description": "%harbour.launch.terminalType%",
+                                "default": "none",
+                                "enum": ["none", "external", "integrated"]
                             }
                         }
                     }

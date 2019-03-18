@@ -6,7 +6,10 @@ var localize = nls.loadMessageBundle();
 var messages;
 function Init()
 {
-    reInit(JSON.parse(process.env.VSCODE_NLS_CONFIG));
+    if(process.env.VSCODE_NLS_CONFIG)
+        reInit(JSON.parse(process.env.VSCODE_NLS_CONFIG));
+    else
+        reInit("");
 }
 Init();
 function reInit(config)

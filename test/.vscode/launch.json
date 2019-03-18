@@ -28,7 +28,9 @@
 			"workspaceRoot": "${workspaceRoot}",
 			"workingDir": "${workspaceRoot}/",
 			"stopOnEntry": true,
-			"preLaunchTask": "build"
+			"preLaunchTask": "build",
+			"debugServer": 4711,
+			"terminalType": "external"
 		}
 	]
 }

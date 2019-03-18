@@ -54,7 +54,9 @@ proc main( )
 	STAT TestStatic, TestStatic2
 	//memvar i,j
 	//ErrorBlock({|e| MyErrorBlock(e) })
-	TestStatic_File := {1,1,2,3,5,8,13,21,34,55,89,144}
+	TestStatic_File := oggetto():New() //{1,1,2,3,5,8,13,21,34,55,89,144}
+	TestStatic_File:ioo := {"prova"=>{"val1"=>"val","val2"=>"valval"}}
+	c:ioo := {"prova"=>{"val1"=>"val","val2"=>"valval"}}
 	TestStatic2 := {1,1,2,3,5,8,13,21,34,55,89,144}
 	? "S",valtype(TestStatic),valtype(TestStatic2)
 	c:newData := {1,2,3,4,5}
