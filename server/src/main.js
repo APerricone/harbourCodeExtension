@@ -33,6 +33,17 @@ var missing
 var databases;
 /** @type {boolean} */
 var canLocationLink;
+
+var keywords = [
+    "function","procedure","return",
+    "if","else","elseif","end if",
+    "end while","end case","end do","end switch","end class","end sequence",
+    "do while","case","switch","endcase","otherwise","default",
+    "for","for each","to","in","next",
+    "exit","loop","try","catch","finally",
+    "begin sequence","begin sequence with",
+    "recover","recover using"]
+
 /*
     every database contiens a name (the text before the ->)
     and a list of field, objects with name (the text after the ->)
@@ -883,9 +894,19 @@ connection.onCompletion((param)=>
             if(c)
                 c.documentation = docs[i].documentation;
         }
+        for (var i = 1; i < keywords.length; i++)
+        {
+            CheckAdd(keywords[i],server.CompletionItemKind.Keyword,"AAA")
+        }
         for (var i = 1; i < missing.length; i++)
         {
             CheckAdd(missing[i],server.CompletionItemKind.Function,"A")
+        }
+        var wordRE = /\b[a-z_][a-z0-9_]*\b/gi
+        var foundWord;
+        while(foundWord = wordRE.exec(allText))
+        {
+            CheckAdd(foundWord[0],server.CompletionItemKind.Text,"")
         }
     }
     return server.CompletionList.create(completitions,false);
@@ -1003,8 +1024,28 @@ function CompletitionDBFields(word, allText,pos, pp)
         if(c=='(') nBracket--;
         dbName = c+dbName;
     }
-    dbName = dbName.toLowerCase().replace(" ","").replace("\t","");
     var completitions = [];
+    function AddDB(db)
+    {
+        for(var f in db.fields)
+        {
+            var sortText = db.fields[f].name;
+            if(word.length>0)
+            {
+                sortText = IsInside(word,f);
+            }
+            if(!sortText) continue;
+            
+            if(!completitions.find( (v) => v.label.toLowerCase() == db.fields[f].name.toLowerCase() ))
+            {
+                var c = server.CompletionItem.create(db.fields[f].name);
+                c.kind = server.CompletionItemKind.Field;
+                c.documentation = db.name;
+                c.sortText = "AAAA" + sortText;
+                completitions.push(c);
+            }
+        }
+    }
     function CheckDB(databases)
     {
         if(!(dbName in databases))
@@ -1020,31 +1061,21 @@ function CompletitionDBFields(word, allText,pos, pp)
             }
         }
         if(dbName in databases) {
-            var db = databases[dbName];
-            for(var f in db.fields)
-            {
-                var sortText = db.fields[f].name;
-                if(word.length>0)
-                {
-                    sortText = IsInside(word,f);
-                }
-                if(!sortText) continue;
-
-                if(!completitions.find( (v) => v.label == db.fields[f].name ))
-                {
-                    var c = server.CompletionItem.create(db.fields[f].name);
-                    c.kind = server.CompletionItemKind.Field;
-                    c.documentation = db.name;
-                    c.sortText = "AAAA" + sortText;
-                    completitions.push(c);
-                }
-            }
+            AddDB(databases[dbName]);
         }    
     }
-    CheckDB(databases);
-    if(pp && dbName in pp.databases)
+    dbName = dbName.toLowerCase().replace(" ","").replace("\t","");
+    if(dbName.toLowerCase() == "field")
     {
-        CheckDB(pp.databases);
+        for(db in databases) AddDB(databases[db]);
+        if(pp) for(db in pp.databases) AddDB(pp.databases[db]);
+    } else
+    {
+        CheckDB(databases);
+        if(pp && dbName in pp.databases)
+        {
+            CheckDB(pp.databases);
+        }
     }
     return completitions;
 }
