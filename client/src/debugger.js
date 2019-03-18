@@ -170,8 +170,16 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
 	//console.log("start the program");
 	switch(args.terminalType)
 	{
+		case 'external':
+		case 'integrated':
+			this.runInTerminalRequest({
+				"kind": args.terminalType,
+				"cwd": args.workingDir,
+				"args":  [args.program].concat(args.arguments? args.arguments : [])
+			})
+			break;
 		case 'none':
-		case undefined:
+		default:
 			var process;
 			if(args.arguments)
 				process=cp.spawn(args.program, args.arguments, { cwd:args.workingDir });
@@ -190,13 +198,6 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
 				tc.sendEvent(new debugadapter.OutputEvent(data.toString(),"stdout"))
 			);
 			break;
-		case 'external':
-		case 'integrated':
-			this.runInTerminalRequest({
-				"kind": args.terminalType,
-				"cwd": args.workingDir,
-				"args":  [args.program].concat(args.arguments? args.arguments : [])
-			})
 	}
 	this.sendResponse(response);
 }

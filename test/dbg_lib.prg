@@ -14,7 +14,7 @@
 #define __dbgVMVarSGet hb_dbg_vmVarSGet
 #endif
 
-#define _DEBUGDEBUG
+//#define _DEBUGDEBUG
 #ifdef _DEBUGDEBUG
 #command ? [<explist,...>] => dbgQOut( <explist> )
 #else
@@ -54,15 +54,15 @@ static procedure CheckSocket(lStopSent)
 	lStopSent := iif(empty(lStopSent),.F.,lStopSent)
 	// if no server then start it.
 	do while (empty(t_oDebugInfo['socket']) .and. t_oDebugInfo['timeCheckForDebug']<30)
-		QOut("try to connect to debug server",t_oDebugInfo['timeCheckForDebug'])
+		//QOut("try to connect to debug server",t_oDebugInfo['timeCheckForDebug'])
 		hb_inetInit()
 		t_oDebugInfo['socket'] := hb_inetCreate(1000)
 		hb_inetConnect("127.0.0.1",DBG_PORT,t_oDebugInfo['socket'])
 		if hb_inetErrorCode(t_oDebugInfo['socket']) <> 0
-			QOut("failed")
-			tmp="NO"
+			//QOut("failed")
+			tmp := "NO"
 		else
-			QOut("connected")
+			//QOut("connected")
 			hb_inetSend(t_oDebugInfo['socket'],HB_ARGV(0)+CRLF+str(__PIDNum())+CRLF)
 			do while hb_inetDataReady(t_oDebugInfo['socket']) != 1
 				hb_idleSleep(1)
@@ -1114,13 +1114,16 @@ STATIC PROCEDURE ErrorBlockCode( e )
 	if t_oDebugInfo["inError"] 
 		return
 	endif
-	t_oDebugInfo["error"] := e
-	t_oDebugInfo["inError"] := .T.
-	t_oDebugInfo['lRunning'] := .F.
-	//? "StopRun on error"
-	hb_inetSend(t_oDebugInfo['socket'],"ERROR:"+e:Description+CRLF)
-	__DEBUGITEM(t_oDebugInfo)
-	CheckSocket(.T.)
+	t_oDebugInfo['__dbgEntryLevel'] := __dbgProcLevel()
+	if !empty(t_oDebugInfo['socket'])
+		t_oDebugInfo["error"] := e
+		t_oDebugInfo["inError"] := .T.
+		t_oDebugInfo['lRunning'] := .F.
+		//? "StopRun on error"
+		hb_inetSend(t_oDebugInfo['socket'],"ERROR:"+e:Description+CRLF)
+		__DEBUGITEM(t_oDebugInfo)
+		CheckSocket(.T.)
+	endif
 	t_oDebugInfo := __DEBUGITEM()
 	if !empty(t_oDebugInfo['userErrorBlock'])
 		eval(t_oDebugInfo['userErrorBlock'], e)
