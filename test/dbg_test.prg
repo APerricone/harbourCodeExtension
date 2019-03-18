@@ -7,17 +7,18 @@
 
 ///OK
 #include <hbclass.ch>
+#include <hbmacro.ch>
 
 STATIC TestStatic_file
 MEMVAR t_aGlobal
 
 class oggetto
 protected:
-   	DATA soo AS STRING
+   	DATA soo INIT {1=>"one", 2=>"two",3=>"three"}
 exported:
    	DATA noo AS NUMERIC
    	DATA ioo, rdefrr
-	DATA newData
+	classDATA newData INIT "newData"
    	METHOD aBitmap( n )      INLINE ( If( empty(n) .or. (n > 0 .and. n <= 10), 5 , nil ) )
    	METHOD otherMedhod()
 endclass
@@ -29,31 +30,46 @@ METHOD otherMedhod() CLASS oggetto
 	endif
 return ::soo + " " + str(::noo)
 
+class figlio inherit oggetto
+	data dFiglio INIT {^ 2018/12/20 }
+	data zz INIT "Antonino Perricone"
+	constructor new()
+endclass
+
+METHOD new() class figlio
+	::soo := {"old"=>::soo,4=>"four",5=>"five",6=>"six"}
+return Self
+
 PROC MyErrorBlock(e)
-	? "ERRORISSIMO"
+	? "ERRORISSIMO "
+
+func test(a,b)
+return a+b
 
 proc main( )
-	local i as numeric, j
-	local c := oggetto():New()
+	local i as numeric, j := Do("test",3,4)
+	local c := figlio():New()
 	local bs := "{|a,c| QOut(c:otherMedhod()) }"
-	local b := {|c| QOut(c:otherMedhod()) }
-	STATIC TestStatic, TestStatic2
-	ErrorBlock({|e| MyErrorBlock(e) })
+	loca b := {|c| QOut(c:otherMedhod()) }
+	STAT TestStatic, TestStatic2
+	//memvar i,j
+	//ErrorBlock({|e| MyErrorBlock(e) })
 	TestStatic_File := {1,1,2,3,5,8,13,21,34,55,89,144}
 	TestStatic2 := {1,1,2,3,5,8,13,21,34,55,89,144}
 	? "S",valtype(TestStatic),valtype(TestStatic2)
 	c:newData := {1,2,3,4,5}
 	c:ioo := oggetto():New()
 	c:ioo:newData := {6,7,8,9,10}
+	hb_SetMacro( HB_SM_HARBOUR,  .T. )
 	for i:=1 to 10
 		j:=i*2
+		? "i vale &( str(i) ), j vale &(j), formula &(i*2)"
 	next
 	//AltD()
 	? "Perry"
-	begin sequence with {|| QOut("eh") }
-		eval(&bs,"",c)
-	end sequence
-	i:=1+{2}
+	//begin sequence with {|| QOut("eh") }
+	//	eval(&bs,"",c)
+	//end sequence
 	//eval(b,"",c)
 	AltraFunzione()
 	? i:=2
@@ -67,6 +83,7 @@ proc main( )
 	next
 return
 
+// Another function, it is to test the comment with //
 func AltraFunzione( )
 	local p := "sei fuori"
 	local a := {{'ciao'=>'belli'},{20,10},"AAA"}
@@ -74,30 +91,37 @@ func AltraFunzione( )
 	public test := {"non io"}
 	public hh := {'pp'=>3,'pi'=>3.14,4=>{1,2}}
 	private test2 := {"altro"}
+	a[{^ 2018/12/22 }] := 'date with expressions'
 	Called()
 	? p
 	? "più righe"
 	? "per provare"
 return a
 
+* Called by who?
 proc Called()
 	memvar test2
-	local timeStamp1 := {^ 1978-06-11 17:10:23.324 }
-	local date := d"2017-05-23"
-	local timeStamp2 := t"14:00"
+	local timeStamp1 := {^ 1978/11/06 17:10:23.324 }
+	//local date := d"2017/05/23"
+	//local timeStamp2 := t"14:00"
 	local test := "1978-06-11 17:10:23.324"
 	static provaStat := 611
 	? test2
 	
-
+NOTE Testing a lib
 proc TestLib()
 	LOCAL bb := {|| TestLibInside()}
 	FakeLib(bb)
 
+/* Multi line comment
+	Test with empty line too
+*/
 proc TestLibInside()
 	LOCAL bb := {|a| TestLibInside2(a)}
 	FakeLib(bb,4)
 
+* Multi line with asterisc
+* Another line
 proc TestLibInside2(v)
 	LOCAL a := "a"
 	LOCAL arr := {4,3,2,1}
