@@ -408,7 +408,7 @@ connection.onDefinition((params)=>
     /** @type {string} */
     var pos = doc.offsetAt(params.position);
     var delta = 20;
-    var word;
+    var word, prec;
     //var allText = doc.getText();
     var r = /\b[a-z_][a-z0-9_]*\b/gi
     while(true)
@@ -423,10 +423,14 @@ connection.onDefinition((params)=>
                 break;
         }
         if(!word) return [];
-        if(word.index!=0 && (word.index+word[0].length)!=(delta+delta)) break;
+        if(word.index!=0 && (word.index+word[0].length)!=(delta+delta))
+        {
+            prec = text[word.index-1];
+            break;
+        }
         delta+=10;
     }
-    word=word[0].toLowerCase();
+    word = word[0].toLowerCase();
     var dest = [];
     var thisDone = false;
     for (var file in files) { //if (files.hasOwnProperty(file)) {
@@ -446,6 +450,12 @@ connection.onDefinition((params)=>
                 continue;
             if(info.kind.endsWith("*") && file!=doc.uri)
                 continue;
+            if(info.kind=='static' && file!=doc.uri)
+                continue;
+            if((info.kind=='data' || info.kind=='method') && prec!=':')
+                continue;
+            //if(info.kind=='field' && prec!='>')
+            //    continue;
             if(info.kind=='local' || info.kind=='param')
             {
                 if(file!=doc.uri)
@@ -783,8 +793,13 @@ connection.onCompletion((param)=>
     var doc = documents.get(param.textDocument.uri);
     var line = doc.getText(server.Range.create(param.position.line,0,param.position.line,100));
     var include = line.match(/^\s*#include\s+[<"]([^>"]*)/);
+    var precLetter = doc.getText(server.Range.create(server.Position.create(param.position.line,param.position.character-1),param.position));    
     if(include!==null)
     {
+        if(precLetter == '>')
+        {
+            return server.CompletionList.create([],false); // wrong call
+        }
         var startPath = undefined;
         if(param.textDocument.uri && param.textDocument.uri.startsWith("file"))
         {
@@ -810,13 +825,19 @@ connection.onCompletion((param)=>
         pos--;
     }
     word = word.toLowerCase();
-    var precLetter = allText[pos];
-    if(precLetter == '>' && allText[pos-1]=='-')
+    //var precLetter = allText[pos];
+    if(precLetter == '>')
     {
-        precLetter='->';
-        completitions = CompletitionDBFields(word, allText,pos, pp)
-        if(completitions.length>0)
-            return server.CompletionList.create(completitions,true); // put true because added all known field of this db
+        if(allText[pos-1]=='-')
+        {
+            precLetter='->';
+            completitions = CompletitionDBFields(word, allText,pos, pp)
+            if(completitions.length>0)
+                return server.CompletionList.create(completitions,true); // put true because added all known field of this db
+        } else
+        {
+            return server.CompletionList.create([],false); // wrong call
+        }
     }
     function CheckAdd(label,kind,sort)
     {
@@ -904,8 +925,12 @@ connection.onCompletion((param)=>
         }
         var wordRE = /\b[a-z_][a-z0-9_]*\b/gi
         var foundWord;
+        var pos = doc.offsetAt(param.position);
         while(foundWord = wordRE.exec(allText))
         {
+            // remove current word
+            if(foundWord.index<pos &&  foundWord.index+foundWord[0].length>=pos)
+                continue;
             CheckAdd(foundWord[0],server.CompletionItemKind.Text,"")
         }
     }

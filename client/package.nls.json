@@ -16,6 +16,7 @@
     "harbour.launch.stopOnEntry": "Automatically stop after launch",
     "harbour.launch.sourcePaths": "Directories where search for source files",
     "harbour.launch.terminalType": "Type of terminal to use to run the application",
+    "harbour.launch.port": "Port used by debugger, It must be the same value of DBG_PORT in debugger code line 6",
     "harobur.dbgError1": "Unable to start {0} in {1}, check that all path exists",
     "harobur.dbgNoModule": "Module not found",
     "harobur.dbgNoLine": "Invalid line",

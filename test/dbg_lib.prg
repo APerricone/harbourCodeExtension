@@ -2,6 +2,10 @@
 // if the debugger code has DEBUGINFO the program will crash for stack overflow 
 #pragma -B-
 
+#ifndef DBG_PORT
+#define DBG_PORT 6110
+#endif
+
 #include <hbdebug.ch>
 #include <hbmemvar.ch>
 #include <hboo.ch>
@@ -40,12 +44,6 @@
 #endif
 
 #define CRLF e"\r\n"
-#ifndef DBG_PORT
-// Temp, I hope to find another way to do InterProcessCommunication that uses ProcessId as unique key
-// in the meanwhile, you can change the port using compiler command line argumend -D to set DBG_PORT
-// to another value, it is useful if you need to debug 2 programm in the same time.
-#define DBG_PORT 6110
-#endif
 
 // returns .T. if need step
 static procedure CheckSocket(lStopSent) 

@@ -148,7 +148,7 @@ harbourDebugSession.prototype.configurationDoneRequest = function(response, args
 
 harbourDebugSession.prototype.launchRequest = function(response, args)
 {
-	var port = 6110; //temp
+	var port = args.port? args.port : 6110;
 	var tc=this;
 	this.justStart = true;
 	this.sourcePaths = []; //[path.dirname(args.program)];
