@@ -367,18 +367,25 @@ connection.onWorkspaceSymbol((param)=>
         for (var fn in pp.funcList) { //if (pp.funcList.hasOwnProperty(fn)) {
             /** @type {provider.Info} */
             var info = pp.funcList[fn];
-            if( info.kind!="class" && 
-                info.kind!="method" && 
+            if( info.kind !="class" && 
+                info.kind !="method" && 
+                info.kind !="data" && 
+                info.kind !="public" && 
                 !info.kind.startsWith("procedure") && 
                 !info.kind.startsWith("function"))
                 continue;
             // workspace symbols takes statics too
             if(src.length>0 && !IsInside(src,info.nameCmp))
                 continue;
-            if(parent && (!info.parent || info.parent.nameCmp!=parent))
+            if(parent && (!info.parent || !IsInside(parent,info.parent.nameCmp)))
                 continue;
+            var name = info.name;
+            if(info.parent && parent)
+            {
+                name = info.parent.name + ":" + info.name;  
+            }
             dest.push(server.SymbolInformation.create(
-                info.name,
+                name,
                 kindTOVS(info.kind),
                 server.Range.create(info.startLine,info.startCol,
                                     info.endLine,info.endCol),
