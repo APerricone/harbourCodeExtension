@@ -379,13 +379,8 @@ connection.onWorkspaceSymbol((param)=>
                 continue;
             if(parent && (!info.parent || !IsInside(parent,info.parent.nameCmp)))
                 continue;
-            var name = info.name;
-            if(info.parent && parent)
-            {
-                name = info.parent.name + ":" + info.name;  
-            }
             dest.push(server.SymbolInformation.create(
-                name,
+                info.name,
                 kindTOVS(info.kind),
                 server.Range.create(info.startLine,info.startCol,
                                     info.endLine,info.endCol),
