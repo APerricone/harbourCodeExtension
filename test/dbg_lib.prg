@@ -275,6 +275,8 @@ static function format(value)
 			return "nil"
 		case "C"
 		case "M"
+			value=StrTran(value,e"\n","\$\n")
+			value=StrTran(value,e"\r","\$\r")
 			if at('"',value)==0
 				return '"'+value+'"'
 			elseif at("'",value)==0
@@ -781,14 +783,11 @@ static function inBreakpoint()
 				END
 			#endif
 				if valtype(ck)<>'L' .or. ck=.F.
-					//?? " check Exp .F."
 					return .F.
 				endif
-				//?? "check Exp .T."
 				exit
 			case 'C'
 				aBreakInfo[nExtra+2]+=1
-				//?? " counts " + alltrim(str(aBreakInfo[nExtra+2])) + "<" + alltrim(str(aBreakInfo[nExtra+1]))
 				if aBreakInfo[nExtra+2] < aBreakInfo[nExtra+1]
 					return .F.
 				endif
@@ -799,7 +798,6 @@ static function inBreakpoint()
 		endswitch
 		nExtra +=3
 	end if
-	//?? " >>.t. "
 return .T.
 
 static procedure BreakLog(cMessage)
@@ -992,7 +990,6 @@ static func classSymbols(cLine,level)
 	local oClass, aData, aMethods
 	local cResult := "", i,cName, iLen
 	LOCAL iDots := rat(":",cLine)
-	? "CLASSSYMBOL",cLine, iDots,left(cLine,iDots-1) 
 	if(iDots>0)
 		oClass := evalExpression(left(cLine,iDots-1),level)
 	else
@@ -1027,7 +1024,6 @@ static func normalSymbols(cLine,level)
 	LOCAL cResult:="", i
 	LOCAL iStack := GetStackId(level,aStack)
 	local cModule, idxModule
-	? "Normal symbol"
 	if iStack>0
 		cModule := lower(aStack[iStack,HB_DBG_CS_MODULE])
 		idxModule := aScan(aModules, {|v| v[1]=cModule})
@@ -1183,14 +1179,15 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 				fWrite(i,"HB_DBG_MODULENAME "+tmp[HB_DBG_CS_MODULE]+" "+ tmp[HB_DBG_CS_FUNCTION]+e"\r\n")
 				fclose(i)
 			#endif
-			aAdd(t_oDebugInfo['aStack'], tmp)
 			if at("_INITSTATICS", tmp[HB_DBG_CS_FUNCTION])<>0
+				tmp[HB_DBG_CS_MODULE] := ProcFile(1)
 				t_oDebugInfo['bInitStatics'] := .T.
 			elseif at("_INITGLOBALS", tmp[HB_DBG_CS_FUNCTION])<>0
 				t_oDebugInfo['bInitGlobals'] := .T.
 			elseif at("_INITLINES", tmp[HB_DBG_CS_FUNCTION])<>0
 				t_oDebugInfo['bInitLines'] := .T.
 			endif
+			aAdd(t_oDebugInfo['aStack'], tmp)
 			exit
 		case HB_DBG_LOCALNAME
 			if t_oDebugInfo['bInitGlobals']
@@ -1203,7 +1200,10 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			#ifdef SAVEMODULES
 				i := fopen("modules.dbg",1+64)
 				fSeek(i,0,2)
-				fWrite(i,"STATICNAME "+valtype(uParam1)+" "+ valtype(uParam2)+" "+valtype(uParam3)+e"\r\n")
+				fWrite(i,"STATICNAME "+valtype(uParam1)+" "+ valtype(uParam2)+" "+valtype(uParam3)+" " + ;
+						iif(t_oDebugInfo['bInitStatics'],"InitStat","") + ;
+						iif(t_oDebugInfo['bInitGlobals'],"InitGlob","") + ;
+						e"\r\n")
 				fclose(i)
 			#endif
 
@@ -1306,7 +1306,6 @@ RETURN
 #elif defined( HB_OS_OS2 ) || defined( HB_OS_DOS )
 #  include <process.h>
 #endif
-
 
 HB_FUNC( __GETLASTRETURN )
 {
