@@ -16,6 +16,7 @@
     "harbour.launch.stopOnEntry": "Detener automáticamente después de comenzar",
     "harbour.launch.sourcePaths": "Rutas para buscar código fuente",
     "harbour.launch.terminalType": "Tipo de terminal a utilizar para ejecutar la aplicación",
+    "harbour.launch.port": "Puerto utilizado por el depurador, debe ser el mismo valor de DBG_PORT en código del depurador línea 6",
     "harobur.dbgError1": "No se puede iniciar {0} en {1}, compruebe que existen todas las rutas",
     "harobur.dbgNoModule": "módulo no encontrado",
     "harobur.dbgNoLine": "lí­nea inválida",

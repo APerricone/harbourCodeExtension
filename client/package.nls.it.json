@@ -16,6 +16,7 @@
     "harbour.launch.stopOnEntry": "Fermati automaticamente dopo l'avvio",
     "harbour.launch.sourcePaths": "Percorsi dove cercare i sorgenti",
     "harbour.launch.terminalType": "Tipo di terminale da usare per avviare l'applicazione",
+    "harbour.launch.port": "Porta usata dal debugger, deve essere uguale a DBG_PORT nel codice del debugger linea 6",
     "harobur.dbgError1": "Incapace di avviare {0} in {1}, controlla che tutti i percorsi esistano",
     "harobur.dbgNoModule": "modulo non trovato",
     "harobur.dbgNoLine": "linea non valida",

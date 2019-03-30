@@ -148,7 +148,7 @@ harbourDebugSession.prototype.configurationDoneRequest = function(response, args
 
 harbourDebugSession.prototype.launchRequest = function(response, args)
 {
-	var port = 6110; //temp
+	var port = args.port? args.port : 6110;
 	var tc=this;
 	this.justStart = true;
 	this.sourcePaths = []; //[path.dirname(args.program)];
@@ -417,6 +417,11 @@ harbourDebugSession.prototype.getVarReference = function(line,eval)
 
 harbourDebugSession.prototype.getVariableFormat = function(dest,type,value,valueName,line,id)
 {
+	if(type=="C")
+	{
+		value = value.replace(/\\\$\\n/g,"\n")
+		value = value.replace(/\\\$\\r/g,"\r")
+	}
 	dest[valueName] = value;
 	dest.type = type;
 	if(["E","B","P"].indexOf(dest.type)==-1) {
@@ -650,9 +655,7 @@ harbourDebugSession.prototype.processExpression = function(line)
 	{ //the value can contains : , we need to rejoin it.
 		infos[3] = infos.splice(3).join(":");
 	}
-	var idx = this.evaluateResponses.findIndex(v=>v.body.result.toUpperCase() ==infos[2] );
-	if(idx<0) return;
-	var resp = this.evaluateResponses.splice(idx,1)[0];
+	var resp = this.evaluateResponses.shift();
 	var line = "EXP:" + infos[1] + ":" + resp.body.result.replace(/:/g,";") + ":";
 	resp.body.name = resp.body.result
 	resp.body = this.getVariableFormat(resp.body,infos[2],infos[3],"result",line);

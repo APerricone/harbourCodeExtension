@@ -213,6 +213,11 @@
                                 "description": "%harbour.launch.terminalType%",
                                 "default": "none",
                                 "enum": ["none", "external", "integrated"]
+                            },
+                            "port":{
+                                "type": "number",
+                                "description": "%harbour.launch.port%",
+                                "default": "6110"
                             }
                         }
                     }
