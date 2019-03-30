@@ -487,7 +487,7 @@ connection.onWorkspaceSymbol((param)=>
     return dest;
 });
 
-function GetWord(params)
+function GetWord(params,withPrec)
 {
     var doc = documents.get(params.textDocument.uri);
     var pos = doc.offsetAt(params.position);
@@ -514,7 +514,8 @@ function GetWord(params)
         }
         delta+=10;
     }
-    return word[0].toLowerCase();
+    word = word[0].toLowerCase();
+    return withPrec? [word,prec] : word;
 }
 
 connection.onDefinition((params)=>
@@ -532,9 +533,11 @@ connection.onDefinition((params)=>
         var pos = include[0].indexOf(include[1]);
         return definitionFiles(include[1],startPath, server.Range.create(params.position.line,pos,params.position.line,pos+include[1].length));
     }
-    var word=GetWord(params);
+    var word=GetWord(params,true);
     var dest = [];
     var thisDone = false;
+    var prec = word[1];
+    word = word[0];
     function DoProvider(pp,file)
     {
         for (var fn in pp.funcList) { //if (pp.funcList.hasOwnProperty(fn)) {
