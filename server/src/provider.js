@@ -3,16 +3,19 @@ var readline = require("readline");
 
 var procRegEx = /\s*((?:proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?)|func(?:t(?:i(?:o(?:n)?)?)?)?)\s+([a-z_][a-z0-9_]*)\s*(?:\(([^\)]*)\))?/i;
 var methodRegEx = /\s*(meth(?:o(?:d)?)?)\s+(?:(?:(?:proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?)|func(?:t(?:i(?:o(?:n)?)?)?)?)\s+)?([a-z_][a-z0-9_]*)\s*(?:\(([^\)]*)\))?(?:\s*class\s+([a-z_][a-z0-9_]*))?(\s+inline)?/i
+var defineRegEx = /\s*(#define)\s+([^\s\(]+)(?:\(([^\)]*)\))?\s+(.*)/i;
 var hb_funcRegEx = /HB_FUNC\s*\(\s*([A-Z0-9_]+)\s*\)/
-function Provider()
+function Provider(light)
 {
+	// *********** options
+	this.light = light!==undefined? light : false;
+	this.doGroups = false; 
+
 	this.Clear();
 }
 
 Provider.prototype.Clear = function()
 {
-	// *********** options
-	this.doGroups = false;
 	// *********** data used during the parsing
 	/** @type {boolean} is for multi line comments */
 	this.comment=false;
@@ -49,6 +52,7 @@ Provider.prototype.Clear = function()
 	this.databases={};
 	/** @type {Array<Group>} An array of groups found*/
 	this.groups=[];
+	this.includes=[];
 }
 
 /**
@@ -342,6 +346,24 @@ Provider.prototype.parseHarbour = function(words)
 	{
 		words[1] = "";
 	}
+	if(words[0][0]=='#')
+	{
+		if(words[0]=='#include')
+		{
+			this.includes.push(words[1].substr(1,words[1].length-2));
+		} else
+		if(words[0]=='#define')
+		{
+			var r = defineRegEx.exec(this.currLine);
+			if(r)
+			{
+				var define = this.addInfo(r[2],'define',"definition",undefined,true);
+				define.body = r[4];
+				if(r[3] && r[3].length)
+					this.parseDeclareList(r[3],"param",define);
+			}
+		}
+	} else
 	if(words[0].length>=4)
 	{
 		if((words[0] == "class") || (words[0]=="create" && words[1]=="class"))
@@ -425,6 +447,9 @@ Provider.prototype.parseHarbour = function(words)
 			words[0] == "memvar".substr(0,words[0].length) ||
 			words[0] == "field".substr(0,words[0].length))
 		{
+			// skip this in light mode
+			if(this.currentMethod && this.light)
+				return
 			if(this.currentMethod || words[0].startsWith("stat") ||
 				words[0].startsWith("memv") || words[0].startsWith("fiel"))
 			{
@@ -515,6 +540,7 @@ Provider.prototype.endParse = function()
  * @param {string} docName the uri of the file to parse
  * @param {[boolean=false]} cMode if true it is considered a c file (not harbour)
  * @param {string} encoding the encoding to use
+ * @returns {Promise<Provider>} this
  */
 Provider.prototype.parseFile = function(file, docName,cMode,encoding)
 {
