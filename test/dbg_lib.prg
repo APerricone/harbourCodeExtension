@@ -66,7 +66,7 @@ static procedure CheckSocket(lStopSent)
 				hb_idleSleep(1)
 			end do	
 			tmp := hb_inetRecvLine(t_oDebugInfo['socket'])
-			QOut("returned ",tmp)
+			//QOut("returned ",tmp)
 		endif
 		if tmp="NO"
 			t_oDebugInfo['socket'] := nil			
@@ -247,8 +247,8 @@ static procedure sendStack()
 		start := 4
 	endif
 	d := __dbgProcLevel()-1
+	//? "send stack---", start,d, t_oDebugInfo['__dbgEntryLevel']
 	hb_inetSend(t_oDebugInfo['socket'],"STACK " + alltrim(str(d-start+1))+CRLF)
-	//? "send stack---", d, d-start+1
 	for i:=start to d
 		l := d-i+1
 		IF ( p := AScan( aStack, {| a | a[ HB_DBG_CS_LEVEL ] == l } ) ) > 0
@@ -263,8 +263,7 @@ static procedure sendStack()
 			functionName	:= ProcName(i)
 			//? i,"NODEBUG", module+":"+alltrim(str(line))+ ":"+functionName, l
 		endif
-		hb_inetSend(t_oDebugInfo['socket'], module+":"+alltrim(str(line))+ ;
-			":"+functionName+CRLF)
+		hb_inetSend(t_oDebugInfo['socket'], module+":"+alltrim(str(line))+":"+functionName+CRLF)
 	next
 	//? "---"
 return
@@ -316,6 +315,9 @@ return ""
 
 static function GetStackId(level,aStack)
 	local l := __DEBUGITEM()['__dbgEntryLevel'] - level
+	if __DEBUGITEM()['inError']
+		l -= 1
+	endif
 	if empty(aStack)
 		aStack := __DEBUGITEM()['aStack']
 	endif
@@ -338,8 +340,9 @@ static procedure sendLocals(cParams,prefix)
 	local iStack := aParams[1]
 	local iStart := aParams[2]
 	local iCount := aParams[3]
+	local iLevel := __dbgProcLevel()
 	local i, aInfo, value, cLine
-	//? "sendLocals", cParams, alltrim(str(aParams[5]))
+	//? "sendLocals ", cParams, alltrim(str(aParams[5])), iStack, iLevel, t_oDebugInfo['__dbgEntryLevel']
 	hb_inetSend(t_oDebugInfo['socket'],prefix+" "+alltrim(str(aParams[5]))+CRLF)
 	if iStack>0
 		if iCount=0
@@ -350,7 +353,7 @@ static procedure sendLocals(cParams,prefix)
 				exit
 			endif
 			aInfo := aStack[iStack,HB_DBG_CS_LOCALS,i]
-			value := __dbgVMVarLGet( __dbgProcLevel()-aInfo[ HB_DBG_VAR_FRAME ], aInfo[ HB_DBG_VAR_INDEX ] )
+			value := __dbgVMVarLGet( iLevel-aInfo[ HB_DBG_VAR_FRAME ], aInfo[ HB_DBG_VAR_INDEX ] )
 			// LOC:LEVEL:IDX::
 			cLine := left(prefix,3) + ":" + alltrim(str(aInfo[ HB_DBG_VAR_FRAME ])) + ":" + ;
 					alltrim(str(aInfo[ HB_DBG_VAR_INDEX ])) + "::" + ;
