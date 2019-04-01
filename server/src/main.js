@@ -16,6 +16,8 @@ var includeDirs;
 var workspaceDepth;
 /** @type {Object.<string, Provider>} */
 var files;
+/** @type {Object.<string, Provider>} */
+var includes;
 /** @type {Array} */
 var docs;
 /** @type {Array} */
@@ -99,7 +101,8 @@ connection.onInitialize(params =>
             textDocumentSync: 1,
             workspace: {
                 supported: true
-            }
+            }//,
+            //hoverProvider: true
         }
 	}
 });
@@ -112,6 +115,7 @@ connection.onDidChangeConfiguration(params=>{
     var searchExclude = params.settings.search.exclude;
     // minimatch
     includeDirs = params.settings.harbour.extraIncludePaths;
+    includeDirs.splice(0,0,".")
     workspaceDepth = params.settings.harbour.workspaceDepth;
     ParseWorkspace();
 
@@ -148,8 +152,8 @@ function ParseDir(dir, onlyHeader, depth, subirPaths)
                 {
                     subirPaths.push(completePath);
                     var fileUri = Uri.file(completePath);
-                    var pp = new provider.Provider();
-                    pp.parseFile(path.join(dir,fileName),fileUri.toString(), cMode).then(
+                    var pp = new provider.Provider(true);
+                    pp.parseFile(completePath,fileUri.toString(), cMode).then(
                         prov => {
                             UpdateFile(prov)
                         }
@@ -167,6 +171,7 @@ function ParseWorkspace()
 {
     databases = {};
     files = {};
+    includes = {};
     for(var i=0;i<workspaceRoots.length;i++)
     {
         // other scheme of uri unsupported
@@ -175,14 +180,10 @@ function ParseWorkspace()
         if(uri.scheme != "file") return;
         ParseDir(uri.fsPath,false,workspaceDepth);
     }
-    for(var i=0;i<includeDirs.length;i++)
-    {
-        // other scheme of uri unsupported
-        /** @type {vscode-uri.default} */
-        //var uri = Uri.parse(includeDirs[i]);
-        //if(uri.scheme != "file") return;        
-        ParseDir(includeDirs[i], true,0);
-    }
+    //for(var i=0;i<includeDirs.length;i++)
+    //{
+    //    ParseDir(includeDirs[i], true,0);
+    //}
 }
 
 var documents = new server.TextDocuments();
@@ -212,6 +213,12 @@ documents.onDidSave((e)=>
 function UpdateFile(pp)
 {
     var doc = pp.currentDocument;
+    var ext = path.extname(pp.currentDocument).toLowerCase();
+    if( ext!=".prg" ) 
+    {
+        files[doc] = pp;
+        return;
+    }
     if(doc in files)
         for(var db in databases)
         {
@@ -246,6 +253,94 @@ function UpdateFile(pp)
                 gbdb.fields[f].files.push(doc);
         }
     }
+    AddIncludes(path.dirname(doc) ,pp.includes);
+}
+
+function AddIncludes(startPath, includesArray)
+{
+    if(includesArray.length==0)
+        return;
+    if(startPath.startsWith("file:///"))
+        startPath=Uri.parse(startPath).fsPath;
+    function FindInclude(dir,fileName)
+    {
+        //var ext= path.extname(ff[fi]).toLowerCase();
+        //if( ext != '.ch') return
+        if(!path.isAbsolute(dir))
+            dir = path.join(startPath,dir);
+        if(!fs.existsSync(dir)) return false;
+        var completePath = path.join(dir,fileName);
+        if(!fs.existsSync(completePath)) return false;
+        var fileUri = Uri.file(completePath);
+        var pp = new provider.Provider(true);
+        pp.parseFile(completePath,fileUri.toString(), false).then(
+            prov => {
+                includes[fileName] = prov;
+                AddIncludes(dir, prov.includes);
+                    }
+                )
+        return true;
+    }
+    for(var j=0;j<includesArray.length;j++)
+    {
+        var inc = includesArray[j];
+        if(inc in includes)
+            continue
+        var found = false;
+        for(var i=0;i<workspaceRoots.length;i++)
+        {
+            // other scheme of uri unsupported
+            /** @type {vscode-uri.default} */
+            var uri = Uri.parse(workspaceRoots[i]);
+            if(uri.scheme != "file") continue;
+            found = FindInclude(uri.fsPath,inc);
+            if(found) break;
+        }
+        if(found) continue;
+        for(var i=0;i<includeDirs.length;i++)
+        {
+            found = FindInclude(includeDirs[i],inc);
+            if(found) break;
+        }
+    }
+}
+
+function ParseInclude(startPath, includeName, addGlobal)
+{
+    if(includeName in includes)
+        return includes[includeName];
+    function FindInclude(dir)
+    {
+        if(!path.isAbsolute(dir))
+            dir = path.join(startPath,dir);
+        if(!fs.existsSync(dir)) return undefined;
+        var test = path.join(dir,includeName);
+        if(!fs.existsSync(test)) return undefined;
+        var pp = new provider.Provider();
+        pp.parse(file.readFileSync(test));
+        if(addGlobal)
+            includes[includeName] = pp;
+        return pp;
+    }
+    for(var inc in includesArray)
+    {
+        if(inc in includes)
+            continue
+        for(var i=0;i<workspaceRoots.length;i++)
+        {
+            // other scheme of uri unsupported
+            /** @type {vscode-uri.default} */
+            var uri = Uri.parse(workspaceRoots[i]);
+            if(uri.scheme != "file") continue;
+            var r = FindInclude(uri.fsPath);
+            if(r) return r;
+        }
+        for(var i=0;i<includeDirs.length;i++)
+        {
+            var r = FindInclude(includeDirs[i]);
+            if(r) return r;
+        }
+    }
 }
 
 function kindTOVS(kind,sk)
@@ -274,6 +369,8 @@ function kindTOVS(kind,sk)
             return sk? server.SymbolKind.Variable : server.CompletionItemKind.Variable;
         case "field":
             return sk? server.SymbolKind.Field : server.CompletionItemKind.Field;
+        case "define":
+            return sk? server.SymbolKind.Constant : server.CompletionItemKind.Constant;
     }
     return 0;
 }
@@ -367,19 +464,19 @@ connection.onWorkspaceSymbol((param)=>
         for (var fn in pp.funcList) { //if (pp.funcList.hasOwnProperty(fn)) {
             /** @type {provider.Info} */
             var info = pp.funcList[fn];
-            if( info.kind!="class" && 
-                info.kind!="method" && 
+            if( info.kind != "class" && info.kind != "method" && 
+                info.kind != "data" && info.kind != "public" && 
+                info.kind != "define" && 
                 !info.kind.startsWith("procedure") && 
                 !info.kind.startsWith("function"))
                 continue;
             // workspace symbols takes statics too
             if(src.length>0 && !IsInside(src,info.nameCmp))
                 continue;
-            if(parent && (!info.parent || info.parent.nameCmp!=parent))
+            if(parent && (!info.parent || !IsInside(parent,info.parent.nameCmp)))
                 continue;
             dest.push(server.SymbolInformation.create(
-                info.name,
-                kindTOVS(info.kind),
+                info.name, kindTOVS(info.kind),
                 server.Range.create(info.startLine,info.startCol,
                                     info.endLine,info.endCol),
                 file, info.parent?info.parent.name:""));
@@ -390,22 +487,9 @@ connection.onWorkspaceSymbol((param)=>
     return dest;
 });
 
-connection.onDefinition((params)=>
+function GetWord(params,withPrec)
 {
     var doc = documents.get(params.textDocument.uri);
-    var line = doc.getText(server.Range.create(params.position.line,0,params.position.line,100));
-    var include = /^\s*#include\s+[<"]([^>"]*)/.exec(line);
-    if(include!==null)
-    {
-        var startPath = undefined;
-        if(params.textDocument.uri && params.textDocument.uri.startsWith("file"))
-        {
-            startPath = path.dirname(Uri.parse(params.textDocument.uri).fsPath);
-        }
-        var pos = include[0].indexOf(include[1]);
-        return definitionFiles(include[1],startPath, server.Range.create(params.position.line,pos,params.position.line,pos+include[1].length));
-    }
-    /** @type {string} */
     var pos = doc.offsetAt(params.position);
     var delta = 20;
     var word, prec;
@@ -431,17 +515,32 @@ connection.onDefinition((params)=>
         delta+=10;
     }
     word = word[0].toLowerCase();
+    return withPrec? [word,prec] : word;
+}
+
+connection.onDefinition((params)=>
+{
+    var doc = documents.get(params.textDocument.uri);
+    var line = doc.getText(server.Range.create(params.position.line,0,params.position.line,100));
+    var include = /^\s*#include\s+[<"]([^>"]*)/.exec(line);
+    if(include!==null)
+    {
+        var startPath = undefined;
+        if(params.textDocument.uri && params.textDocument.uri.startsWith("file"))
+        {
+            startPath = path.dirname(Uri.parse(params.textDocument.uri).fsPath);
+        }
+        var pos = include[0].indexOf(include[1]);
+        return definitionFiles(include[1],startPath, server.Range.create(params.position.line,pos,params.position.line,pos+include[1].length));
+    }
+    var word=GetWord(params,true);
     var dest = [];
     var thisDone = false;
-    for (var file in files) { //if (files.hasOwnProperty(file)) {
-            if(file==doc.uri)
-            {
-                var pp = parseDocument(doc);
-                UpdateFile(pp)
-                thisDone = true;
-            }
-            var pp = files[file];
-            for (var fn in pp.funcList) { //if (pp.funcList.hasOwnProperty(fn)) {
+    var prec = word[1];
+    word = word[0];
+    function DoProvider(pp,file)
+    {
+        for (var fn in pp.funcList) { //if (pp.funcList.hasOwnProperty(fn)) {
             /** @type {provider.Info} */
             var info = pp.funcList[fn];
             if(info.foundLike!="definition")
@@ -472,33 +571,43 @@ connection.onDefinition((params)=>
             dest.push(server.Location.create(file,
                 server.Range.create(info.startLine,info.startCol,
                                 info.endLine,info.endCol)));
-        }
+        }        
     }
+    for (var file in files) { //if (files.hasOwnProperty(file)) {
+        if(file==doc.uri)
+        {
+            var pp = parseDocument(doc);
+            UpdateFile(pp)
+            thisDone = true;
+        }
+        DoProvider(files[file],file);
+    }
+    var pThis
     if(!thisDone)
     {
-        var p = parseDocument(doc);
-        for (var fn in p.funcList) {
-            //if (p.funcList.hasOwnProperty(fn)) {
-            /** @type {provider.Info} */
-            var info = p.funcList[fn];
-            if(info.nameCmp != word) continue;
-            if(info.kind=='local' || info.kind=='param')
+        pThis = parseDocument(doc);
+        DoProvider(pThis,doc.uri);
+    } else
+        pThis = files[doc.uri];
+
+    var includes = pThis.includes;
+    var i=0;
+    var startDir = path.dirname(Uri.parse( doc.uri ).fsPath);
+    while(i<includes.length)
+    {
+        pp = ParseInclude(startDir,includes[i],thisDone);
+        if(pp)
+        {
+            DoProvider(pp,pp.currentDocument)
+            for(var j=0;j<pp.includes;j++)
             {
-                var parent = info.parent;
-                if(parent)
-                {
-                    if(parent.startLine>params.position.line)
-                        continue;
-                    if(parent.endLine<params.position.line)
-                        continue;
-                }            
+                if(includes.indexOf(pp.includes[j])<0)
+                    includes.push(pp.includes[j]); 
             }
-            dest.push(server.Location.create(doc.uri,
-                server.Range.create(info.startLine,info.startCol,
-                                info.endLine,info.endCol)));
-            }        
-        //};    
+        }
+        i++;
     }
+
     return dest;
 })
 
@@ -776,13 +885,13 @@ function getStdHelp(word, nC)
  */
 function parseDocument(doc,cMode)
 {
-    var pp = new provider.Provider
+    var pp = new provider.Provider(false)
     pp.Clear();
     pp.currentDocument=doc.uri;
 	if(cMode != undefined)
         pp.cMode = cMode;
 	for (var i = 0; i < doc.lineCount; i++) {
-		pp.parse(doc.getText(server.Range.create(i,0,i,1000)));
+		pp.parse(doc.getText());
 	}
 	pp.endParse();
     return pp;
@@ -906,6 +1015,30 @@ connection.onCompletion((param)=>
     if(pp)
     {
         GetCompletitions(pp,doc.uri);
+    } else if(doc.uri in files)
+    {
+        pp = files[doc.uri]
+    }
+    if(pp)
+    {
+        var thisDone = doc.uri in files;
+        var includes = pp.includes;
+        var i=0;
+        var startDir = path.dirname(Uri.parse( doc.uri ).fsPath);
+        while(i<includes.length)
+        {
+            pInc = ParseInclude(startDir,includes[i],thisDone);
+            if(pInc)
+            {
+                GetCompletitions(pInc,pInc.currentDocument)
+                for(var j=0;j<pInc.includes;j++)
+                {
+                    if(includes.indexOf(pInc.includes[j])<0)
+                        includes.push(pInc.includes[j]); 
+                }
+            }
+            i++;
+        }            
     }
     if(precLetter!=':' && precLetter!='->')
     {
@@ -945,7 +1078,7 @@ function completitionFiles(word, startPath)
     if(startPath) startPath = startPath.toLowerCase();
     function CheckDir(dir)
     {
-        if(dir.startsWith("."))
+        if(!path.isAbsolute(dir))
             dir = path.join(startPath,dir);
         if(!fs.existsSync(dir)) return;
         
@@ -998,7 +1131,7 @@ function definitionFiles(fileName, startPath, origin)
     if(startPath) startPath = startPath.toLowerCase();
     function DefDir(dir)
     {
-        if(dir.startsWith("."))
+        if(!path.isAbsolute(dir))
             dir = path.join(startPath,dir);
         if(!fs.existsSync(dir)) return;
         if(startPath && dir.toLowerCase()==startPath) startDone=true;
@@ -1104,6 +1237,12 @@ function CompletitionDBFields(word, allText,pos, pp)
     }
     return completitions;
 }
+
+//connection.onHover((params)=> {
+//    var w = GetWord(params);
+//    //TODO
+//})
+
 
 
 /*
