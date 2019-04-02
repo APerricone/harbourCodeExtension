@@ -322,24 +322,19 @@ function ParseInclude(startPath, includeName, addGlobal)
             includes[includeName] = pp;
         return pp;
     }
-    for(var inc in includesArray)
+    for(var i=0;i<workspaceRoots.length;i++)
     {
-        if(inc in includes)
-            continue
-        for(var i=0;i<workspaceRoots.length;i++)
-        {
-            // other scheme of uri unsupported
-            /** @type {vscode-uri.default} */
-            var uri = Uri.parse(workspaceRoots[i]);
-            if(uri.scheme != "file") continue;
-            var r = FindInclude(uri.fsPath);
-            if(r) return r;
-        }
-        for(var i=0;i<includeDirs.length;i++)
-        {
-            var r = FindInclude(includeDirs[i]);
-            if(r) return r;
-        }
+        // other scheme of uri unsupported
+        /** @type {vscode-uri.default} */
+        var uri = Uri.parse(workspaceRoots[i]);
+        if(uri.scheme != "file") continue;
+        var r = FindInclude(uri.fsPath);
+        if(r) return r;
+    }
+    for(var i=0;i<includeDirs.length;i++)
+    {
+        var r = FindInclude(includeDirs[i]);
+        if(r) return r;
     }
 }
 
@@ -892,7 +887,7 @@ function parseDocument(doc,cMode)
 	if(cMode != undefined)
         pp.cMode = cMode;
 	for (var i = 0; i < doc.lineCount; i++) {
-		pp.parse(doc.getText());
+		pp.parse(doc.getText(server.Range.create(i,0,i,1000)));
 	}
 	pp.endParse();
     return pp;
@@ -901,7 +896,7 @@ function parseDocument(doc,cMode)
 connection.onCompletion((param)=> 
 {
     var doc = documents.get(param.textDocument.uri);
-    var line = doc.getText(server.Range.create(param.position.line,0,param.position.line,100));
+    var line = doc.getText(server.Range.create(param.position.line,0,param.position.line,1000));
     var include = line.match(/^\s*#include\s+[<"]([^>"]*)/);
     var precLetter = doc.getText(server.Range.create(server.Position.create(param.position.line,param.position.character-1),param.position));    
     if(include!==null)
