@@ -1,4 +1,4 @@
 .vscode
-node_modules
 debugger.md
 *.svg
+server/node_modules
