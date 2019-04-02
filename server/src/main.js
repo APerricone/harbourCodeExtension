@@ -946,10 +946,12 @@ connection.onCompletion((param)=>
     }
     function CheckAdd(label,kind,sort)
     {
-        var sortLabel = IsInside(word,label.toLowerCase());
+        var ll = label.toLowerCase()
+        var sortLabel = IsInside(word,ll);
         if(sortLabel===undefined)
             return undefined;
-        var c =completitions.find( (v) => v.label == label );
+            strcmpi
+        var c =completitions.find( (v) => v.label.toLowerCase() == ll );
         if(!c)
         {
             c = server.CompletionItem.create(label);
