@@ -2,10 +2,15 @@
 All notable changes to the "Harbour and xHarbour" extension will be documented in this file.
 
 # 0.8.8
+ - **server** New incude file management
  - **server** Added word based suggestions [#16](https://github.com/APerricone/harbourCodeExtension/issues/16)
  - **server** Added keyword suggestions
+ - **debugger** Added support for multiline string
  - **debugger** Added terminalType option 
  - **debugger** Added handshake 
+ - **server** Added define on complettion and definition
+ - **server** Added public and data in go to workspace symbol
+ - **debugger** fix statics in some conditions
 
 # 0.8.7
  - **server** Added check if C file is a compiled prg [#12](https://github.com/APerricone/harbourCodeExtension/issues/12)

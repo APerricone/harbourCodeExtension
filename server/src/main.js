@@ -473,7 +473,8 @@ connection.onWorkspaceSymbol((param)=>
             // workspace symbols takes statics too
             if(src.length>0 && !IsInside(src,info.nameCmp))
                 continue;
-            if(parent && (!info.parent || !IsInside(parent,info.parent.nameCmp)))
+            // public has parent, but they are visible everywhere
+            if(parent && info.kind != "public" && (!info.parent || !IsInside(parent,info.parent.nameCmp)))
                 continue;
             dest.push(server.SymbolInformation.create(
                 info.name, kindTOVS(info.kind),
