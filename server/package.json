@@ -5,6 +5,9 @@
   "author": "aperricone",
   "main": "src/main.js",
   "license": "GPL",
+  "repository": {
+    "url": "https://github.com/APerricone/harbourCodeExtension"
+  },
   "engines": {
     "node": "*"
   },

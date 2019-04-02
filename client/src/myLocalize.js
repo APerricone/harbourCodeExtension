@@ -1,7 +1,6 @@
 var fs = require("fs");
 var path = require('path');
-var nls = require("vscode-nls");
-var localize = nls.loadMessageBundle(); 
+var localize = require("vscode-nls").loadMessageBundle(); 
 
 var messages;
 function Init()
