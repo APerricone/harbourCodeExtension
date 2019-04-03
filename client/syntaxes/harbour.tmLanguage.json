@@ -123,7 +123,7 @@
 				]
 			},
 			{
-				"begin": "(?i:^\\s*#x?(command|translate))",
+				"begin": "(?i:^\\s*#\\s*x?(command|translate))",
 				"end": "(?<!;)\\s*[\\r\\n]{1,2}", 
 				"beginCaptures": {"0":{"name":"keyword.preprocessor.command.harbour"}},
 				"endCaptures": {"0":{"name":"keyword.preprocessor.end.command.harbour"}},
@@ -143,7 +143,7 @@
 			},
 			{
 				"name": "keyword.preprocessor.various.harbour",
-				"match": "(?i)(^\\s*#[a-zA-z]+)"
+				"match": "(?i)(^\\s*#\\s*[a-zA-z]+)"
 			}]
 		},
 		"commandInfo": {
@@ -194,87 +194,87 @@
 		"strings": {
 			"patterns": [
 				{
-					"match": "(?i:^\\s*(#pragma)\\s+(__c?streaminclude)\\s+(\"[^\"]+\")\\s+\\|([^\\n]*))$",
+					"match": "(?i:^\\s*(#\\s*pragma)\\s+(__c?streaminclude)\\s+(\"[^\"]+\")\\s+\\|([^\\n]*))$",
 					"captures": {
-						"1": { "name": "meta.preprocessor.command.harbour"},
+						"1": { "name": "keyword.preprocessor.command.harbour"},
 						"2": { "name": "keyword.text.harbor" },
 						"3": { "name": "string.quoted.double.harbour" },
 						"4": { "patterns":[
 							{"include":"source.harbour"},
 							{ 
-								"name": "variable.string.replace.harbour", 
+								"name": "variable.parameter.string.replace.harbour", 
 								"match": "%s" 
 							}]}
 					}
 				},
 				{
 					"begin": "(?i:^\\s*(TEXT(?:\\s+INTO\\s+([a-z0-9_]+)(?:\\s*(?:WRAP\\s+([a-z0-9_]+)|TRIMMED))*|TO\\s+(?:PRINTER|FILE\\s+(.*)))?))\\s*$",
-					"end": "(?i:^\\s*(#pragma)\\s+(__endtext)|(ENDTEXT)\\s*$)",
+					"end": "(?i:^\\s*(#\\s*pragma)\\s+(__endtext)|(ENDTEXT)\\s*$)",
 					"contentName": "string.multiline.harbour",
 					"beginCaptures": {
-						"1": { "name": "meta.preprocessor.command.harbour" },
+						"1": { "name": "keyword.preprocessor.command.harbour" },
 						"2": { "name": "variable.text.harbor" },
 						"3": { "patterns": [
 							{"include":"source.harbour"},
 							{
-								"name": "variable.string.replace.harbour",
+								"name": "variable.parameter.string.replace.harbour",
 								"match": "%s"
 							}
 						] },
 						"4": { "patterns": [
 							{"include":"source.harbour"},
 							{
-								"name": "variable.string.replace.harbour",
+								"name": "variable.parameter.string.replace.harbour",
 								"match": "%s"
 							}
 						] }
 					},
 					"endCaptures": {
-						"1": { "name": "meta.preprocessor.pragma.harbour" },
+						"1": { "name": "keyword.preprocessor.pragma.harbour" },
 						"2": { "name": "keyword.text.harbor" },
-						"3": { "name": "meta.preprocessor.command.harbour" }
+						"3": { "name": "keyword.preprocessor.command.harbour" }
 					}
 				},
 				{
-					"begin": "(?i:^\\s*(#pragma)\\s+(__text|__stream)(?:\\s+\\|([^\n]*))*)$",
-					"end": "(?i:^\\s*(#pragma)\\s+(__endtext)|(ENDTEXT))",
+					"begin": "(?i:^\\s*(#\\s*pragma)\\s+(__text|__stream)(?:\\s*\\|([^\n]*))*)",
+					"end": "(?i:^\\s*(#\\s*pragma)\\s+(__endtext)|(ENDTEXT))",
 					"contentName": "string.multiline.harbour",
 					"beginCaptures": {
-						"1": { "name": "meta.preprocessor.pragma.harbour" },
+						"1": { "name": "keyword.preprocessor.pragma.harbour" },
 						"2": { "name": "keyword.text.harbor" },
 						"3": { "patterns": [
 							{"include":"source.harbour"},
 							{
-								"name": "variable.string.replace.harbour",
+								"name": "variable.parameter.string.replace.harbour",
 								"match": "%s"
 							}
 						] }
 					},
 					"endCaptures": {
-						"1": { "name": "meta.preprocessor.pragma.harbour" },
+						"1": { "name": "keyword.preprocessor.pragma.harbour" },
 						"2": { "name": "keyword.text.harbor" },
-						"3": { "name": "meta.preprocessor.command.harbour" }
+						"3": { "name": "keyword.preprocessor.command.harbour" }
 					}
 				},
 				{
-					"begin": "(?i:^\\s*(#pragma)\\s+(__cstream)(?:\\s*\\|([^\n]*))*)",
-					"end": "(?i:^\\s*(#pragma)\\s+(__endtext)|(ENDTEXT))",
+					"begin": "(?i:^\\s*(#\\s*pragma)\\s+(__cstream)(?:\\s*\\|([^\n]*))*)",
+					"end": "(?i:^\\s*(#\\s*pragma)\\s+(__endtext)|(ENDTEXT))",
 					"contentName": "string.multiline.harbour",
 					"beginCaptures": {
-						"1": { "name": "meta.preprocessor.pragma.harbour" },
+						"1": { "name": "keyword.preprocessor.pragma.harbour" },
 						"2": { "name": "keyword.text.harbor" },
 						"3": { "patterns": [
 							{"include":"source.harbour"},
 							{
-								"name": "variable.string.replace.harbour",
+								"name": "variable.parameter.string.replace.harbour",
 								"match": "%s"
 							}
 						] }
 					},
 					"endCaptures": {
-						"1": { "name": "meta.preprocessor.pragma.harbour" },
+						"1": { "name": "keyword.preprocessor.pragma.harbour" },
 						"2": { "name": "keyword.text.harbor" },
-						"3": { "name": "meta.preprocessor.command.harbour" }
+						"3": { "name": "keyword.preprocessor.command.harbour" }
 					},
 					"patterns": [{"include":"#escapes"}]
 				},
@@ -304,15 +304,15 @@
 		"c_code": {
 			"patterns": [
 					{
-					"begin": "(?i:^\\s*(#pragma)\\s+(BEGINDUMP))",
-					"end": "(?i:^\\s*(#pragma)\\s+(ENDDUMP))",
+					"begin": "(?i:^\\s*(#\\s*pragma)\\s+(BEGINDUMP))",
+					"end": "(?i:^\\s*(#\\s*pragma)\\s+(ENDDUMP))",
 					"contentName": "source.c.embedded.harbour",
 					"beginCaptures": {
-						"1": { "name": "meta.preprocessor.pragma.harbour" },
+						"1": { "name": "keyword.preprocessor.pragma.harbour" },
 						"2": { "name": "keyword.dump.harbor" }
 					},
 					"endCaptures": {
-						"1": { "name": "meta.preprocessor.pragma.harbour" },
+						"1": { "name": "keyword.preprocessor.pragma.harbour" },
 						"2": { "name": "keyword.dump.harbor" }
 					},
 					"patterns": [
