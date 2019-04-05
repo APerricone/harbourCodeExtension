@@ -246,6 +246,7 @@ static procedure sendStack()
 	if t_oDebugInfo['inError']
 		start := 4
 	endif
+	//start := 0
 	d := __dbgProcLevel()-1
 	//? "send stack---", start,d, t_oDebugInfo['__dbgEntryLevel']
 	hb_inetSend(t_oDebugInfo['socket'],"STACK " + alltrim(str(d-start+1))+CRLF)
@@ -776,7 +777,7 @@ static function inBreakpoint()
 		switch aBreakInfo[nExtra]
 			case '?'
 			#ifndef __XHARBOUR__
-				BEGIN SEQUENCE 
+				BEGIN SEQUENCE WITH {|| Break() }
 					ck:=evalExpression(aBreakInfo[nExtra+1],1)			
 				END SEQUENCE
 			#else
@@ -1111,6 +1112,12 @@ STATIC PROCEDURE ErrorBlockCode( e )
 	if t_oDebugInfo["inError"] 
 		return
 	endif
+	if IsBegSeq() //Errore gestito ... TODO: Aggiungere opzione
+		if !empty(t_oDebugInfo['userErrorBlock'])
+			eval(t_oDebugInfo['userErrorBlock'], e)
+		endif
+		return
+	endif
 	t_oDebugInfo['__dbgEntryLevel'] := __dbgProcLevel()
 	if !empty(t_oDebugInfo['socket'])
 		t_oDebugInfo["error"] := e
@@ -1249,12 +1256,16 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			t_oDebugInfo['bInitLines'] := .F.
 			exit
 		case HB_DBG_SHOWLINE
+			//? "show line:" + procFile(1) + "("+alltrim(str(uParam1))+")", len(t_oDebugInfo['aStack'])
+			//for i:= 1 to len(t_oDebugInfo['aStack'])
+			//	? i,t_oDebugInfo['aStack',i,HB_DBG_CS_FUNCTION],t_oDebugInfo['aStack',i,HB_DBG_CS_LINE]
+			//next
 			//TODO check if ErrorBlock is setted by user and save user's errorBlock
 			t_oDebugInfo['__dbgEntryLevel'] := __dbgProcLevel()
 			tmp := ErrorBlock()
 			#ifndef __XHARBOUR__ //temp
 				 if empty(tmp) .or. empty(t_oDebugInfo['errorBlock']) .or. !(t_oDebugInfo['errorBlock']==tmp)
-					//? "Error block changed " + procFile(1) + "("+alltrim(str(uParam1))+")"
+					//? "Error block changed " + procFile(1) + "("+alltrim(str(uParam1))+")", len(t_oDebugInfo['aStack'])
 					//check if the new error block is an oldone
 					i:=aScan(t_oDebugInfo['errorBlockHistory'], {|x| x[1]==tmp })
 					if i>0 // it is an old one!
@@ -1341,6 +1352,11 @@ HB_FUNC( __PIDNUM )
 #else
    hb_retnint( getpid() );
 #endif
+}
+
+HB_FUNC( ISBEGSEQ )
+{
+   hb_retl( hb_stackGetRecoverBase() != 0 );
 }
 
 #pragma ENDDUMP
