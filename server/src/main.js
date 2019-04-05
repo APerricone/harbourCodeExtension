@@ -144,7 +144,7 @@ function ParseDir(dir, onlyHeader, depth, subirPaths)
                 {
                     var harbourFile = path.basename(fileName)
                     var pos = harbourFile.lastIndexOf(".");
-                    harbourFile = harbourFile.substr(0, pos < 0 ? file.length : pos) + ".prg";
+                    harbourFile = harbourFile.substr(0, pos < 0 ? harbourFile.length : pos) + ".prg";
                     if(subirPaths.findIndex((v) => v.indexOf(harbourFile)>=0)>=0)
                         continue;                    
                 }
@@ -317,7 +317,7 @@ function ParseInclude(startPath, includeName, addGlobal)
         var test = path.join(dir,includeName);
         if(!fs.existsSync(test)) return undefined;
         var pp = new provider.Provider();
-        pp.parse(file.readFileSync(test));
+        pp.parseString(fs.readFileSync(test).toString() ,Uri.file(test).toString() );
         if(addGlobal)
             includes[includeName] = pp;
         return pp;
