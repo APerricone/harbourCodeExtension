@@ -6,7 +6,7 @@ link obj/%1.obj /libpath:%HB_INSTALL_PREFIX%\lib /subsystem:console ^
     code_dbgX.lib vm.lib rtl.lib common.lib rdd.lib pcrepos.lib ^
     macro.lib dbfntx.lib dbffpt.lib hbsix.lib lang.lib gtwin.lib    
 :: 
-goto exit
+goto :eof
 
 :setup
 set HB_INSTALL_PREFIX=C:\xharbour
@@ -17,5 +17,3 @@ echo on
 cd %CD_SRC%
 set path=%PATH%;%HB_INSTALL_PREFIX%\bin;%HB_INSTALL_PREFIX%\bin\win\msvc
 goto start
-
-:exit
