@@ -77,7 +77,8 @@ harbourDebugSession.prototype.processInput = function(buff)
 		if(line.startsWith("ERROR") && !line.startsWith("ERROR_VAR"))
 		{
 			//console.log("ERROR")
-			this.sendEvent(new debugadapter.StoppedEvent("exception",1,line.substring(6)));
+			var stopEvt = new debugadapter.StoppedEvent("error",1,line.substring(6));
+			this.sendEvent(stopEvt);
 			continue;
 		}
 		if(line.startsWith("EXPRESSION"))
@@ -132,6 +133,18 @@ harbourDebugSession.prototype.initializeRequest = function (response, args)
 	response.body.supportsLogPoint = true;
 	response.body.supportsCompletionsRequest = true;
 	response.body.supportsTerminateRequest = true;
+	response.body.exceptionBreakpointFilters = [
+		{
+			label: localize('harbour.dbgError.all'),
+			filter: 'all',
+			default: false
+		},
+		{
+			label: localize('harbour.dbgError.notSeq'),
+			filter: 'notSeq',
+			default: true
+		}
+	];
 	//response.body.supportsEvaluateForHovers = true; too risky
 	this.sendResponse(response);
 };
@@ -187,7 +200,7 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
 				process=cp.spawn(args.program, { cwd:args.workingDir });
 			process.on("error", e =>
 			{
-				tc.sendEvent(new debugadapter.OutputEvent(localize("harobur.dbgError1",args.program,args.workingDir),"stderr"))
+				tc.sendEvent(new debugadapter.OutputEvent(localize("harbour.dbgError1",args.program,args.workingDir),"stderr"))
 				tc.sendEvent(new debugadapter.TerminatedEvent());
 				return
 			})
@@ -610,9 +623,9 @@ harbourDebugSession.prototype.processBreak = function(line)
 	{
 		dest.response.body.breakpoints[idBreak].verified = false;
 		if(aInfos[4]=='notfound')
-			dest.response.body.breakpoints[idBreak].message = localize('harobur.dbgNoModule')
+			dest.response.body.breakpoints[idBreak].message = localize('harbour.dbgNoModule')
 		else
-			dest.response.body.breakpoints[idBreak].message = localize('harobur.dbgNoLine')
+			dest.response.body.breakpoints[idBreak].message = localize('harbour.dbgNoLine')
 		dest[aInfos[2]] = 1;
 	} 
 	this.checkBreakPoint(aInfos[1]);
@@ -631,6 +644,21 @@ harbourDebugSession.prototype.checkBreakPoint = function(src)
 	}
 	//this.sendEvent(new debugadapter.OutputEvent("Response "+src+"\r\n","console"))
 	this.sendResponse(dest.response);
+}
+
+/// Exception / error
+harbourDebugSession.prototype.setExceptionBreakPointsRequest = function(response,args)
+{
+	var errorType = args.filters.length;
+	// 0 - no stop on error
+	// 1 - stop only ut-of-sequence
+	// 2 - stop all
+	if(errorType==1 && args.filters[0]!='notSeq')
+	{
+		errorType++;
+	}
+	this.command(`ERRORTYPE\r\n${errorType}\r\n`)	
+	this.sendResponse(response);
 }
 
 /// Evaluation

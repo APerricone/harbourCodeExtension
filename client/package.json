@@ -24,10 +24,10 @@
         "Snippets"
     ],
     "dependencies": {
-        "vscode-debugadapter": "^1.33.0",
-        "vscode-debugprotocol": "^1.33.0",
+        "vscode-debugadapter": "^1.34.0",
+        "vscode-debugprotocol": "^1.34.0",
         "vscode-languageclient": "^5.2.1",
-        "vscode-nls": "^4.0.0"
+        "vscode-nls": "^4.1.0"
     },
     "contributes": {
         "problemMatchers": [
@@ -208,13 +208,17 @@
                                     "${workspaceFolder}"
                                 ]
                             },
-                            "terminalType":{
+                            "terminalType": {
                                 "type": "string",
                                 "description": "%harbour.launch.terminalType%",
                                 "default": "none",
-                                "enum": ["none", "external", "integrated"]
+                                "enum": [
+                                    "none",
+                                    "external",
+                                    "integrated"
+                                ]
                             },
-                            "port":{
+                            "port": {
                                 "type": "number",
                                 "description": "%harbour.launch.port%",
                                 "default": "6110"

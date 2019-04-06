@@ -17,9 +17,11 @@
     "harbour.launch.sourcePaths": "Directories where search for source files",
     "harbour.launch.terminalType": "Type of terminal to use to run the application",
     "harbour.launch.port": "Port used by debugger, It must be the same value of DBG_PORT in debugger code line 6",
-    "harobur.dbgError1": "Unable to start {0} in {1}, check that all path exists",
-    "harobur.dbgNoModule": "Module not found",
-    "harobur.dbgNoLine": "Invalid line",
+    "harbour.dbgError1": "Unable to start {0} in {1}, check that all path exists",
+    "harbour.dbgNoModule": "Module not found",
+    "harbour.dbgNoLine": "Invalid line",
+    "harbour.dbgError.all": "Stop on all errors",
+    "harbour.dbgError.notSeq": "Stop only on out-of-sequence errors",
     "harbour.validation.NoExe": "Unable to start {0}, check the 'harbour.compilerExecutable' value",
     "harbour.dbgCodeCmd": "Harbour: Get debugger code"
 }

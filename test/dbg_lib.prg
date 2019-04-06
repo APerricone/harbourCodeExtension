@@ -182,6 +182,9 @@ static procedure CheckSocket(lStopSent)
 						endif
 						hb_inetSend(t_oDebugInfo['socket'],"END"+CRLF)
 						END_COM
+					COMMAND "ERRORTYPE"
+						SetErrorType(hb_inetRecvLine(t_oDebugInfo['socket']))
+						END_COM
 					COMMAND "COMPLETITION"
 						sendCompletition(hb_inetRecvLine(t_oDebugInfo['socket']))
 						END_COM
@@ -1107,12 +1110,26 @@ static func AddDynSymbols(cmd)
     next
 return cRet
 
+STATIC PROCEDURE SetErrorType( nType )
+	LOCAL t_oDebugInfo := __DEBUGITEM()
+	t_oDebugInfo["errorType"] := val(nType)
+	//? "errorType = ",t_oDebugInfo["errorType"]
+	__DEBUGITEM(t_oDebugInfo)
+return
+	
 STATIC PROCEDURE ErrorBlockCode( e )
 	LOCAL t_oDebugInfo := __DEBUGITEM()
 	if t_oDebugInfo["inError"] 
 		return
 	endif
-	if IsBegSeq() //Errore gestito ... TODO: Aggiungere opzione
+	//? "error with ",t_oDebugInfo["errorType"]
+	if t_oDebugInfo["errorType"]==0 // 0 is no stop on error
+		if !empty(t_oDebugInfo['userErrorBlock'])
+			eval(t_oDebugInfo['userErrorBlock'], e)
+		endif
+		return
+	endif
+	if t_oDebugInfo["errorType"]==1 .and. IsBegSeq() // 1 is no stop on error in sequence
 		if !empty(t_oDebugInfo['userErrorBlock'])
 			eval(t_oDebugInfo['userErrorBlock'], e)
 		endif
@@ -1156,6 +1173,7 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 					'bInitLines' =>  .F., ;
 					'errorBlock' => nil, ;
 					'userErrorBlock' => nil, ;
+					'errorType' => 1, ;
 					'errorBlockHistory' => {}, ;
 					'error' => nil, ;
 					'inError' => .F., ;
@@ -1353,6 +1371,9 @@ HB_FUNC( __PIDNUM )
    hb_retnint( getpid() );
 #endif
 }
+#if !defined( _HB_API_INTERNAL_ ) && !defined( _HB_STACK_MACROS_ )
+extern HB_EXPORT HB_ISIZ     hb_stackGetRecoverBase( void );
+#endif
 
 HB_FUNC( ISBEGSEQ )
 {

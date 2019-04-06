@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to the "Harbour and xHarbour" extension will be documented in this file.
 
+# 0.8.12
+ - **debugger** Added options for error management
+ - **server** Fix some crash
+
 # 0.8.10 - 0.8.11
   - restored files
 

@@ -25,12 +25,12 @@
 			"request": "launch",
 			"name": "Launch currentFile",
 			"program": "${workspaceRoot}/${fileBasenameNoExtension}",
-			"workspaceRoot": "${workspaceRoot}",
+			"sourcePaths": ["${workspaceRoot}"],
 			"workingDir": "${workspaceRoot}/",
 			"stopOnEntry": true,
 			"preLaunchTask": "build",
-			"debugServer": 4711,
-			"terminalType": "external"
+			"terminalType": "integrated",
+			"debugServer": 4711
 		}
 	]
 }
