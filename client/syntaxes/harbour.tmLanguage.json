@@ -60,7 +60,12 @@
 			]
 		},
 		"keywords": {
-			"patterns": [{
+			"patterns": [
+			{
+				"name": "constant.values.field.harbour",
+				"match": "(?<=->)(?i:[a-z_][a-z0-9_]*)"
+			},			
+			{
 				"name": "keyword.control.harbour",
 				"match": "\\b(?i:if|ELSEIF|ELSE|end\\s*(if|while|case|do|switch|class|sequence)?|next|do|while|switch|case|endcase|otherwise|default|exit|loop|begin\\s+sequence(\\s+with)?|recover(\\s+using)?|try|catch|finally)\\b"
 			},
@@ -106,6 +111,22 @@
 			{
 				"name": "keyword.operator.logical.harbour",
 				"match": "(?i)(\\.(T|F|and|or|not)\\.)"
+			},
+			{
+				"name": "operator.field.harbour",
+				"match": "->"
+			},
+			{
+				"name": "operator.assign.harbour",
+				"match": "(\\:|\\+|-|\\*|/|\\^)\\="
+			},
+			{
+				"name": "operator.unary.harbour",
+				"match": "(\\+\\+|--)"
+			},
+			{
+				"name": "operator.binary.harbour",
+				"match": "(\\+|-|\\*|/|\\^)"
 			},
 			{
 				"name": "keyword.preprocessor.include.harbour",
