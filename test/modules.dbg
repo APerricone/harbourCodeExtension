@@ -1,2 +1,0 @@
-bInitStatics dbg_test.prg:(_INITSTATICS)
-AddStaticModule dbg_test.prg <- TESTSTATIC_FILE
