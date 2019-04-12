@@ -62,8 +62,8 @@
 		"keywords": {
 			"patterns": [
 			{
-				"name": "constant.values.field.harbour",
-				"match": "(?<=->)(?i:[a-z_][a-z0-9_]*)"
+				"name": "variable.values.field.harbour",
+				"match": "(?<=->)(?i:\\s*[a-z_][a-z0-9_]*)"
 			},			
 			{
 				"name": "keyword.control.harbour",

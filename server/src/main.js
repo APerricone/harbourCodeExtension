@@ -275,7 +275,7 @@ function AddIncludes(startPath, includesArray)
         var pp = new provider.Provider(true);
         pp.parseFile(completePath,fileUri.toString(), false).then(
             prov => {
-                includes[fileName.toLowerCase()] = prov;
+                includes[fileName] = prov;
                 AddIncludes(dir, prov.includes);
                     }
                 )
@@ -307,8 +307,8 @@ function AddIncludes(startPath, includesArray)
 
 function ParseInclude(startPath, includeName, addGlobal)
 {
-    if(includeName.toLowerCase() in includes)
-        return includes[includeName.toLowerCase()];
+    if(includeName in includes)
+        return includes[includeName];
     function FindInclude(dir)
     {
         if(!path.isAbsolute(dir))
@@ -319,7 +319,7 @@ function ParseInclude(startPath, includeName, addGlobal)
         var pp = new provider.Provider();
         pp.parseString(fs.readFileSync(test).toString() ,Uri.file(test).toString() );
         if(addGlobal)
-            includes[includeName.toLowerCase()] = pp;
+            includes[includeName] = pp;
         return pp;
     }
     for(var i=0;i<workspaceRoots.length;i++)
