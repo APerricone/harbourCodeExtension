@@ -930,7 +930,7 @@ connection.onCompletion((param)=>
         pos--;
     }
     word = word.toLowerCase();
-    //var precLetter = allText[pos];
+    var precLetter = allText[pos];
     if(precLetter == '>')
     {
         if(allText[pos-1]=='-')
@@ -950,7 +950,6 @@ connection.onCompletion((param)=>
         var sortLabel = IsInside(word,ll);
         if(sortLabel===undefined)
             return undefined;
-            strcmpi
         var c =completitions.find( (v) => v.label.toLowerCase() == ll );
         if(!c)
         {
