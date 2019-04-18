@@ -225,7 +225,7 @@ function UpdateFile(pp)
             for(var f in databases[db].fields)
             {
                 var idx = databases[db].fields[f].files.indexOf(doc);
-                if(idx>0)
+                if(idx>=0)
                 {
                     databases[db].fields[f].files.splice(idx,1);
                     if(databases[db].fields[f].files.length==0)
@@ -250,7 +250,10 @@ function UpdateFile(pp)
             if(!(f in gbdb.fields))
                 gbdb.fields[f]={name: ppdb.fields[f], files: [doc]}; 
             else
-                gbdb.fields[f].files.push(doc);
+            {        
+                var idx = gbdb.fields[f].files.indexOf(doc);
+                if(idx<0) gbdb.fields[f].files.push(doc);                    
+            }
         }
     }
     AddIncludes(path.dirname(doc) ,pp.includes);
@@ -893,7 +896,7 @@ function parseDocument(doc,cMode)
     return pp;
 }
 
-connection.onCompletion((param)=> 
+connection.onCompletion((param, cancelled)=> 
 {
     var doc = documents.get(param.textDocument.uri);
     var line = doc.getText(server.Range.create(param.position.line,0,param.position.line,1000));
@@ -965,11 +968,17 @@ connection.onCompletion((param)=>
     if(!precLetter)
     {
         for(var dbName in databases)
+        {
             CheckAdd(databases[dbName].name,server.CompletionItemKind.Struct,"AAAA")
+            if(cancelled.isCancellationRequested) return server.CompletionList.create(completitions,false);
+        }
         if(pp)
         {
             for(var dbName in pp.databases)
+            {
                 CheckAdd(pp.databases[dbName].name,server.CompletionItemKind.Struct,"AAAA")
+                if(cancelled.isCancellationRequested) return server.CompletionList.create(completitions,false);
+            }
         }
     }
     function GetCompletitions(pp,file)
@@ -1003,11 +1012,13 @@ connection.onCompletion((param)=>
                         continue;
             }
             CheckAdd(info.name,kindTOVS(info.kind,false),"AAA")
+            if(cancelled.isCancellationRequested) return
         }
     }
     for (var file in files) // if (files.hasOwnProperty(file)) it is unnecessary
     {
         GetCompletitions(files[file],file);
+        if(cancelled.isCancellationRequested) return server.CompletionList.create(completitions,false);
     }
     if(pp)
     {
@@ -1035,6 +1046,7 @@ connection.onCompletion((param)=>
                 }
             }
             i++;
+            if(cancelled.isCancellationRequested) return server.CompletionList.create(completitions,false);
         }            
     }
     if(precLetter!=':' && precLetter!='->')
@@ -1042,16 +1054,18 @@ connection.onCompletion((param)=>
         for (var i = 0; i < docs.length; i++)
         {
             var c = CheckAdd(docs[i].name,server.CompletionItemKind.Function,"AA")
-            if(c)
-                c.documentation = docs[i].documentation;
+            if(c) c.documentation = docs[i].documentation;
+            if(cancelled.isCancellationRequested) return server.CompletionList.create(completitions,false);
         }
         for (var i = 1; i < keywords.length; i++)
         {
             CheckAdd(keywords[i],server.CompletionItemKind.Keyword,"AAA")
+            if(cancelled.isCancellationRequested) return server.CompletionList.create(completitions,false);
         }
         for (var i = 1; i < missing.length; i++)
         {
             CheckAdd(missing[i],server.CompletionItemKind.Function,"A")
+            if(cancelled.isCancellationRequested) return server.CompletionList.create(completitions,false);
         }
         var wordRE = /\b[a-z_][a-z0-9_]*\b/gi
         var foundWord;
@@ -1062,6 +1076,7 @@ connection.onCompletion((param)=>
             if(foundWord.index<pos &&  foundWord.index+foundWord[0].length>=pos)
                 continue;
             CheckAdd(foundWord[0],server.CompletionItemKind.Text,"")
+            if(cancelled.isCancellationRequested) return server.CompletionList.create(completitions,false);
         }
     }
     return server.CompletionList.create(completitions,false);
