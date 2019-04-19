@@ -307,6 +307,8 @@ function AddIncludes(startPath, includesArray)
 
 function ParseInclude(startPath, includeName, addGlobal)
 {
+    if(includeName.length==0)
+        return undefined;
     if(includeName.toLowerCase() in includes)
         return includes[includeName.toLowerCase()];
     function FindInclude(dir)
@@ -950,7 +952,6 @@ connection.onCompletion((param)=>
         var sortLabel = IsInside(word,ll);
         if(sortLabel===undefined)
             return undefined;
-            strcmpi
         var c =completitions.find( (v) => v.label.toLowerCase() == ll );
         if(!c)
         {
