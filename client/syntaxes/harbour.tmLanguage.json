@@ -1,9 +1,7 @@
 {
 	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
 	"name": "Harbour",
-	"firstLineMatch": "^#!/.*\\bHARBOUR",
-	"foldingStartMarker": "(?i)^\\s*(IF|(DO\\s*)?WHILE)",
-	"foldingStopMarker": "(?i)^\\s*(END|NEXT)",
+
 	"patterns": [{
 			"include": "#directives"
 		},
@@ -100,7 +98,7 @@
 		},
 		"numbers": {
 			"patterns": [{
-					"match": "(?i)\\b[0-9]+(\\.[0-9]+)?(?i:e[0-9]+)?\\b",
+					"match": "\\b[0-9]+(\\.[0-9]+)?\\b",
 					"name": "constant.numeric.harbour"
 				},
 				{
@@ -110,16 +108,7 @@
 			]
 		},
 		"comments": {
-			"patterns": [{
-					"name": "comment.block.documentation.harbour",
-					"begin": "/\\*\\*(?!/)",
-					"end": "\\*/",
-					"captures": {
-						"0": {
-							"name": "punctuation.definition.comment.harbour"
-						}
-					}
-				},
+			"patterns": [
 				{
 					"name": "comment.block.harbour",
 					"begin": "/\\*",
@@ -191,14 +180,14 @@
 					}
 				},
 				{
-					"match": "\\*/.*\\n",
+					"match": "\\*/.*(\\r|\\n)",
 					"name": "invalid.illegal.stray-comment-end.harbour"
 				}
 			]
 		},
 		"continue-expression": {
 			"patterns": [{
-				"begin": "(;)\\s*(?=(?:\\/\\/.*|(?:\\s+|\\/\\*.*\\*\\/)+)?$)",
+				"begin": "(;)\\s*(?=(?:\\/\\/.*|&&.*|(?:\\/\\*.*\\*\\/)+)?$)",
 				"beginCaptures": {
 					"1": {
 						"name": "constant.character.escape.line-continuation.harbour"
@@ -264,13 +253,13 @@
 		"function-declaration": {
 			"patterns": [{
 				"name": "meta.function.harbour",
-				"begin": "(?i)^\\s*(?:(static)\\s+)?(proc(?:e(?:d(?:u(?:re?)?)?)?)?|func(?:t(?:i(?:on?)?)?)?)\\b",
+				"begin": "(?i)^\\s*(?:stat(?:i(?:c)?)?\\s+)?(proc(?:e(?:d(?:u(?:re?)?)?)?)?|func(?:t(?:i(?:on?)?)?)?)\\b",
 				"beginCaptures": {
 					"1": {
-						"name": "storage.modifier.harbour"
+						"name": "keyword.modifier.harbour"
 					},
 					"2": {
-						"name": "storage.type.function.harbour"
+						"name": "keyword.type.function.harbour"
 					}
 				},
 				"end": "$",
@@ -318,9 +307,17 @@
 				}
 			]
 		},
+		"variable-type-definition": {
+			"patterns": [
+				{
+					"name": "keyword.type.harbour",
+					"match": "\\b(?i:as\\s+(?:character|numeric|date|logical|codeblock|array|nil))\\b"
+				}
+			]
+		},
 		"variable-parameters-declaration": {
 			"name": "meta.parameters.harbour",
-			"begin": "(?i)^\\s*(parameters)\\b",
+			"begin": "(?i)^\\s*para(?:m(?:e(?:t(?:e(?:r(?:s)?)?)?)?)?)?\\b",
 			"beginCaptures": {
 				"0": {
 					"name": "storage.type.parameters.harbour"
@@ -349,7 +346,7 @@
 		},
 		"variable-memvar-declaration": {
 			"name": "meta.definition.variable.memvar.harbour",
-			"begin": "(?i)^\\s*(memvar)\\b",
+			"begin": "(?i)^\\s*memv(?:a(?:r)?)?\\b",
 			"beginCaptures": {
 				"0": {
 					"name": "storage.type.memvar.harbour"
@@ -373,7 +370,7 @@
 		},
 		"variable-field-declaration": {
 			"name": "meta.definition.variable.field.harbour",
-			"begin": "(?i)^\\s*(field)\\b",
+			"begin": "(?i)^\\s*(fiel(?:d)?)\\b",
 			"beginCaptures": {
 				"0": {
 					"name": "storage.type.field.harbour"
@@ -418,7 +415,7 @@
 		},
 		"variable-local-declaration": {
 			"name": "meta.definition.variable.local.harbour",
-			"begin": "(?i)^\\s*(local)\\b",
+			"begin": "(?i)^\\s*(loca(?:l)?)\\b",
 			"beginCaptures": {
 				"0": {
 					"name": "storage.type.local.harbour"
@@ -438,6 +435,9 @@
 					"include": "#variable-initializer"
 				},
 				{
+					"include": "#variable-type-definition"
+				},
+				{
 					"name": "variable.other.readwrite.local.harbour",
 					"match": "(?i)\\b([A-Z_]\\w*)\\b"
 				}
@@ -445,7 +445,7 @@
 		},
 		"variable-static-declaration": {
 			"name": "meta.definition.variable.static.harbour",
-			"begin": "(?i)^\\s*(static)\\b",
+			"begin": "(?i)^\\s*(stat(?:i(?:c)?)?)\\b",
 			"beginCaptures": {
 				"0": {
 					"name": "storage.type.static.harbour"
@@ -465,6 +465,9 @@
 					"include": "#variable-initializer"
 				},
 				{
+					"include": "#variable-type-definition"
+				},
+				{
 					"name": "variable.other.readwrite.static.harbour",
 					"match": "(?i)\\b([A-Z_]\\w*)\\b"
 				}
@@ -472,7 +475,7 @@
 		},
 		"variable-private-declaration": {
 			"name": "meta.definition.variable.private.harbour",
-			"begin": "(?i)^\\s*(private)\\b",
+			"begin": "(?i)^\\s*(priv(?:a(?:t(?:e)?)?)?)\\b",
 			"beginCaptures": {
 				"0": {
 					"name": "storage.type.private.harbour"
@@ -492,6 +495,9 @@
 					"include": "#variable-initializer"
 				},
 				{
+					"include": "#variable-type-definition"
+				},
+				{
 					"name": "variable.other.readwrite.private.harbour",
 					"match": "(?i)\\b([A-Z_]\\w*)\\b"
 				}
@@ -499,7 +505,7 @@
 		},
 		"variable-public-declaration": {
 			"name": "meta.definition.variable.public.harbour",
-			"begin": "(?i)^\\s*(public)\\b",
+			"begin": "(?i)^\\s*(publ(?:i(?:c)?)?)\\b",
 			"beginCaptures": {
 				"0": {
 					"name": "storage.type.public.harbour"
@@ -517,6 +523,9 @@
 				},
 				{
 					"include": "#variable-initializer"
+				},
+				{
+					"include": "#variable-type-definition"
 				},
 				{
 					"name": "variable.other.readwrite.public.harbour",
@@ -552,18 +561,10 @@
 			"patterns": [{
 				"name": "meta.class.harbour",
 				"begin": "(?i)(?=^\\s*(?:CREATE\\s*)?CLASS\\b)",
-				"beginCaptures": {
-					"1": {
-						"name": "storage.type.class.harbour"
-					},
-					"2": {
-						"name": "support.class.harbour"
-					}
-				},
 				"end": "(?i)END[\\t ]*CLASS",
 				"endCaptures": {
 					"0": {
-						"name": "storage.type.class.harbour"
+						"name": "keyword.end.class.harbour"
 					}
 				},
 				"patterns": [{
@@ -573,13 +574,13 @@
 						"include": "#comments"
 					},
 					{
-						"begin": "(?i)^\\s*((?:CREATE\\s*)?CLASS)\\s*([a-z_]\\w*)\\b",
+						"begin": "(?i)^\\s*((?:create\\s*)?class)\\s*([a-z_]\\w*)\\b",
 						"beginCaptures": {
 							"1": {
-								"name": "storage.type.class.harbour"
+								"name": "keyword.class.class.harbour"
 							},
 							"2": {
-								"name": "support.class.harbour"
+								"name": "entity.name.type.harbour"
 							}
 						},
 						"end": "$",
@@ -590,7 +591,7 @@
 								"include": "#comments"
 							},
 							{
-								"match": "(?i)(FUNCTION)\\s+([a-z_]\\w*)",
+								"match": "(?i)(function)\\s+([a-z_]\\w*)",
 								"captures": {
 									"1": {
 										"name": "keyword.control.function.harbour"
@@ -602,15 +603,19 @@
 							},
 							{
 								"name": "keyword.control.static.harbour",
-								"match": "(?i)STATIC"
+								"match": "(?i)static"
+							},
+							{
+								"name": "keyword.control.metaclass.harbour",
+								"match": "(?i)metaclass"
 							},
 							{
 								"name": "keyword.control.module.harbour",
-								"match": "(?i)MODULE\\s+FRIENDLY"
+								"match": "(?i)module\\s+friendly"
 							},
 							{
-								"name": "storage.modifier.harbour",
-								"match": "(?i)FROM|INHERIT"
+								"name": "keyword.inherit.harbour",
+								"match": "(?i)from|inherit"
 							},
 							{
 								"include": "#punctuation-comma"
@@ -625,7 +630,7 @@
 						"include": "#method-declaration"
 					},
 					{
-						"match": "^\\s*(EXPORT(?:ED)?|VISIBLE|HIDDEN|PROTECTED):",
+						"match": "^\\s*(export(?:ed)?|visible|hidden|protected):",
 						"captures": {
 							"1": {
 								"name": "storage.modifier.harbour"
@@ -634,7 +639,7 @@
 					},
 					{
 						"name": "meta.field.declaration.harbour",
-						"begin": "(?i)^\\s*(?:CLASS\\s*)?(DATA|VAR)\\b",
+						"begin": "(?i)^\\s*(?:class\\s*)?(data|var)\\b",
 						"beginCaptures": {
 							"0": {
 								"name": "storage.type.field.harbour"
@@ -649,10 +654,10 @@
 							},
 							{
 								"name": "storage.modifier.harbour",
-								"match": "(?i)\\b(EXPORTED|VISIBLE|PROTECTED|HIDDEN|READONLY|RO|PERSISTENT|PROPERTY|SYNC)\\b"
+								"match": "(?i)\\b(exported|visible|protected|hidden|readonly|ro|persistent|property|sync)\\b"
 							},
 							{
-								"match": "(?i)\\b(TYPE|AS)\\s+([a-z_]\\w*)",
+								"match": "(?i)\\b(type|as)\\s+([a-z_]\\w*)",
 								"captures": {
 									"1": {
 										"name": "keyword.control.${1:/downcase}.harbour"
@@ -663,13 +668,13 @@
 								}
 							},
 							{
-								"begin": "(?i)(ASSIGN|INIT)\\s+",
+								"begin": "(?i)(assign|init)\\s+",
 								"beginCaptures": {
 									"1": {
 										"name": "keyword.control.${1:/downcase}.harbour"
 									}
 								},
-								"end": "(?i)$|(?=\\b(?:EXPORTED|VISIBLE|PROTECTED|HIDDEN|READONLY|RO|PERSISTENT|PROPERTY|SYNC)\\b)",
+								"end": "(?i)$|(?=\\b(?:exported|visible|protected|hidden|readonly|ro|persistent|property|sync)\\b)",
 								"patterns": [{
 									"include": "#inline-staments"
 								}]
@@ -689,10 +694,10 @@
 		"method-declaration": {
 			"patterns": [{
 				"name": "meta.method.declaration.harbour",
-				"begin": "(?i)^\\s*(METHOD)\\b",
+				"begin": "(?i)^\\s*(method)\\b",
 				"beginCaptures": {
 					"1": {
-						"name": "storage.type.method.harbour"
+						"name": "keyword.type.method.harbour"
 					}
 				},
 				"end": "$",
@@ -703,7 +708,7 @@
 						"include": "#comments"
 					},
 					{
-						"begin": "(?i)\\bCLASS\\b",
+						"begin": "(?i)\\bclass\\b",
 						"beginCaptures": {
 							"0": {
 								"name": "storage.modifier.class.harbour"
@@ -806,7 +811,7 @@
 						]
 					},
 					{
-						"begin": "(?i)\\b(AUTOPEN|BELL|CENTURY|CONFIRM|CONSOLE|CURSOR|DELETED?|ESCAPE|EXACT|EXCLUSIVE|FIXED|HARDCOMMIT|INTENSITY|OPTIMIZE|SCOREBOARD|SOFTSEEK|STRICTREAD|UNIQUE|WRAP)\\b",
+						"begin": "(?i)\\b(autopen|bell|century|confirm|console|cursor|deleted?|escape|exact|exclusive|fixed|hardcommit|intensity|optimize|scoreboard|softseek|strictread|unique|wrap)\\b",
 						"beginCaptures": {
 							"1": {
 								"name": "keyword.operator.${1:/downcase}.harbour"
@@ -1371,14 +1376,14 @@
 				{
 					"name": "meta.preprocessor.include.harbour",
 					"begin": "(?i:^\\s*#include\\s)",
-					"end": "(?=//|&&|/\\*)|(?<!;)(?=\\n)",
+					"end": "(?=//|&&|/\\*)|(?<!;)(?=\\r|\\n)",
 					"patterns": [{
 							"include": "#strings"
 						},
 						{
 							"name": "string.quoted.angle.harbour",
 							"begin": "<",
-							"end": ">"
+							"end": "(?:>|\\r|\\n)"
 						}
 					]
 				}
@@ -1401,6 +1406,10 @@
 						}
 					}
 				},
+				{
+					"name": "variable.values.field.harbour",
+					"match": "(?<=->)(?i:\\s*[a-z_][a-z0-9_]*)"
+				},	
 				{
 					"match": "(::)\\s*(?=[a-zA-Z_])",
 					"captures": {
@@ -1475,7 +1484,7 @@
 		},
 		"strings": {
 			"patterns": [{
-					"begin": "(?i:^\\s*(#pragma)\\s+(__text|__stream)(?:\\s*\\|([^\n]*))*)",
+					"begin": "(?i:^\\s*(#pragma)\\s+(__text|__stream)(?:\\s*\\|([^\\r\\n]*))*)",
 					"end": "(?i:^\\s*(#pragma)\\s+(__endtext))",
 					"contentName": "string.multiline.harbour",
 					"beginCaptures": {
@@ -1506,7 +1515,7 @@
 					}
 				},
 				{
-					"begin": "(?i:^\\s*(#pragma)\\s+(__cstream)(?:\\s*\\|([^\n]*))*)",
+					"begin": "(?i:^\\s*(#pragma)\\s+(__cstream)(?:\\s*\\|([^\\r\\n]*))*)",
 					"end": "(?i:^\\s*(#pragma)\\s+(__endtext))",
 					"contentName": "string.multiline.harbour",
 					"beginCaptures": {
@@ -1547,7 +1556,7 @@
 							"name": "punctuation.definition.string.begin.harbour"
 						}
 					},
-					"end": "(\")|(\\n)",
+					"end": "(\"|\\n|\\r)",
 					"endCaptures": {
 						"1": {
 							"name": "punctuation.definition.string.end.harbour"
@@ -1572,7 +1581,7 @@
 							"name": "punctuation.definition.string.begin.harbour"
 						}
 					},
-					"end": "(\")|(\\n)",
+					"end": "(\"|\\n|\\r)",
 					"endCaptures": {
 						"1": {
 							"name": "punctuation.definition.string.end.harbour"
@@ -1593,7 +1602,7 @@
 							"name": "punctuation.definition.string.begin.harbour"
 						}
 					},
-					"end": "(')|(\\n)",
+					"end": "('|\\n|\\r)",
 					"endCaptures": {
 						"1": {
 							"name": "punctuation.definition.string.end.harbour"
@@ -1610,60 +1619,18 @@
 		},
 		"match-markers": {
 			"patterns": [{
-					"name": "meta.command.match.harbour",
-					"match": "(?i)(<[\\(\\*]?)(\\w+)([\\*\\)]?>)",
-					"captures": {
-						"1": {
-							"name": "punctuation.definition.tag.begin.harbour"
-						},
-						"2": {
-							"name": "entity.name.tag.harbour"
-						},
-						"3": {
-							"name": "punctuation.definition.tag.end.harbour"
-						}
-					}
-				},
-				{
-					"name": "meta.command.match.harbour",
-					"match": "(?i)(<)(\\w+)(,)(\\.\\.\\.)(>)",
-					"captures": {
-						"1": {
-							"name": "punctuation.definition.tag.begin.harbour"
-						},
-						"2": {
-							"name": "entity.name.tag.harbour"
-						},
-						"3": {
-							"name": "keyword.operator.spread.harbour"
-						},
-						"4": {
-							"name": "punctuation.separator.comma.harbour"
-						},
-						"5": {
-							"name": "punctuation.definition.tag.end.harbour"
-						}
-					}
+					"name": "variable.name.match.harbour",
+					"match": "(<[\\(\\*!]?)(\\w+)(,\\.\\.\\.)?([!\\*\\)]?>)"
 				},
 				{
 					"name": "meta.command.match.harbour",
 					"begin": "(?i)(<)(\\w+)(:)",
 					"beginCaptures": {
-						"1": {
-							"name": "punctuation.definition.tag.begin.harbour"
-						},
-						"2": {
-							"name": "entity.name.tag.harbour"
-						},
-						"3": {
-							"name": "keyword.operator.harbour"
-						}
+						"0": { "name": "entity.name.match.harbour" } 
 					},
-					"end": "(>)",
+					"end": ">",
 					"endCaptures": {
-						"1": {
-							"name": "punctuation.definition.tag.end.harbour"
-						}
+						"0": { "name": "punctuation.definition.tag.end.harbour" }
 					},
 					"patterns": [{
 							"include": "#punctuation-comma"
@@ -1699,21 +1666,22 @@
 		"directives": {
 			"patterns": [{
 					"begin": "(?i)^\\s*((#)\\s*(x?command|x?translate))\\b",
-					"captures": {
-						"1": {
+					"beginCaptures": {
+						"0": {
 							"name": "keyword.control.directive.$3.harbour"
-						},
-						"2": {
-							"name": "punctuation.definition.directive.harbour"
 						}
 					},
-					"end": "$",
+					"end": "(?<!;)\\s*[\\r\\n]{1,2}",
 					"name": "meta.preprocessor.command.harbour",
-					"patterns": [{
-							"include": "#continue-expression"
+					"patterns": [
+						{
+							"include": "#match-markers"
 						},
 						{
 							"include": "#comments"
+						},
+						{
+							"include": "#continue-expression"
 						},
 						{
 							"begin": "=>",
@@ -1722,40 +1690,19 @@
 									"name": "keyword.operator.key.harbour"
 								}
 							},
-							"end": "$",
-							"patterns": [{
-									"include": "#continue-expression"
-								},
-								{
-									"include": "#comments"
-								},
-								{
-									"include": "#result-markers"
-								},
-								{
-									"include": "#keywords"
-								},
-								{
-									"include": "#identifiers"
-								}
+							"end": "(?<!;)\\s*(?=[\\r\\n]{1,2})",
+							"patterns": [
+								{ "include": "source.harbour" }
 							]
-						},
-						{
-							"include": "#match-markers"
-						}
+						}						
 					]
 				},
 				{
-					"begin": "^\\s*((#)\\s*stdout)\\b",
-					"captures": {
-						"1": {
-							"name": "keyword.control.directive.stdout.harbour"
-						},
-						"2": {
-							"name": "punctuation.definition.directive.harbour"
-						}
+					"begin": "^\\s*#\\s*stdout\\b",
+					"begincaptures": {
+						"0": { "name": "keyword.control.directive.stdout.harbour" }
 					},
-					"end": "(?=//|&&|/\\*)|(?<!;)(?=\\n)",
+					"end": "(?=//|&&|/\\*)|(?<!;)(?=\\r|\\n)",
 					"name": "meta.preprocessor.stdout.harbour",
 					"contentName": "string.stdout.harbour"
 				}
@@ -1767,22 +1714,15 @@
 					"end": "(?i:^\\s*(#pragma)\\s+(ENDDUMP))",
 					"contentName": "source.c.embedded.harbour",
 					"beginCaptures": {
-						"1": {
-							"name": "meta.preprocessor.pragma.harbour"
-						},
-						"2": {
-							"name": "keyword.dump.harbour"
-						}
+						"1": { "name": "meta.preprocessor.pragma.harbour" },
+						"2": { "name": "keyword.dump.harbour" }
 					},
 					"endCaptures": {
-						"1": {
-							"name": "meta.preprocessor.pragma.harbour"
-						},
-						"2": {
-							"name": "keyword.dump.harbour"
-						}
+						"1": { "name": "meta.preprocessor.pragma.harbour" },
+						"2": { "name": "keyword.dump.harbour" }
 					},
-					"patterns": [{
+					"patterns": [
+						{
 							"include": "source.c"
 						},
 						{
@@ -1790,13 +1730,6 @@
 							"name": "keyword.connection.harbour"
 						}
 					]
-				},
-				{
-					"begin": "(?=^\\s*\\#)",
-					"end": "(?=$)",
-					"patterns": [{
-						"include": "source.c"
-					}]
 				}
 			]
 		}

@@ -2,7 +2,7 @@
 
 ## Features
 
-- [simple and complete syntax hightlight](https://github.com/APerricone/harbourCodeExtension/wiki/Syntax-hightlight)
+- [syntax hightlight](https://github.com/APerricone/harbourCodeExtension/wiki/Syntax-hightlight), with [Edgard Lorraine Messias](mailto:edgardmessias@gmail.com)
 - [Debug support](https://github.com/APerricone/harbourCodeExtension/wiki/Debugger)
 - [Diagnostic infos](https://github.com/APerricone/harbourCodeExtension/wiki/Diagnostics-Lint)
 - Symbol Definitions Within a Document provider (access it by pressing <kbd>CTRL</kbd>+<kbd>SHIFT</kbd>+<kbd>O</kbd> or <kbd>CTRL</kbd>+<kbd>P</kbd> then <kbd>@</kbd>)

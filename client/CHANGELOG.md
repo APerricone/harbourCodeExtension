@@ -4,6 +4,8 @@ All notable changes to the "Harbour and xHarbour" extension will be documented i
 # 0.8.12
  - **debugger** Added options for error management
  - **server** Fix some crash
+ - **syntax** use of [Edgard Lorraine Messias](mailto:edgardmessias@gmail.com) syntax
+ - **server** Fixed deletion of wrong fields
 
 # 0.8.10 - 0.8.11
   - restored files
