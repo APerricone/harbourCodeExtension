@@ -1,5 +1,9 @@
 # Antonino Perricone's extension for visual studio code about Harbour and xHarbour programming languages
 
+[![Version](https://vsmarketplacebadge.apphb.com/version-short/aperricone.harbour.svg)](https://marketplace.visualstudio.com/items?itemName=aperricone.harbour)
+[![Installs](https://vsmarketplacebadge.apphb.com/installs-short/aperricone.harbour.svg)](https://marketplace.visualstudio.com/items?itemName=aperricone.harbour)
+[![Ratings](https://vsmarketplacebadge.apphb.com/rating-short/aperricone.harbour.svg)](https://marketplace.visualstudio.com/items?itemName=aperricone.harbour)
+
 ## Features
 
 - [syntax hightlight](https://github.com/APerricone/harbourCodeExtension/wiki/Syntax-hightlight), with [Edgard Lorraine Messias](mailto:edgardmessias@gmail.com)
