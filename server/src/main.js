@@ -310,6 +310,8 @@ function AddIncludes(startPath, includesArray)
 
 function ParseInclude(startPath, includeName, addGlobal)
 {
+    if(includeName.length==0)
+        return undefined;
     if(includeName in includes)
         return includes[includeName];
     function FindInclude(dir)
