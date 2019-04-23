@@ -67,7 +67,7 @@
 			},			
 			{
 				"name": "keyword.control.harbour",
-				"match": "\\b(?i:if|ELSEIF|ELSE|end\\s*(if|while|case|do|switch|class|sequence)?|next|do|while|switch|case|endcase|otherwise|default|exit|loop|begin\\s+sequence(\\s+with)?|recover(\\s+using)?|try|catch|finally)\\b"
+				"match": "\\b(?i:if|ELSEIF|ELSE|end\\s*(if|while|case|do|switch|sequence)?|next|do|while|switch|case|endcase|otherwise|default|exit|loop|begin\\s+sequence(\\s+with)?|recover(\\s+using)?|try|catch|finally)\\b"
 			},
 			{
 				"name": "for.control.harbour",
@@ -302,23 +302,23 @@
 				{
 					"name": "string.escaped.harbour",
 					"begin": "[eE]\"",
-					"end": "\"|$",
+					"end": "\"|(?m:$)",
 					"patterns": [{"include":"#escapes"}]
 				},
 				{
 					"name": "string.quoted.double.harbour",
 					"begin": "\"",
-					"end": "\"|$"
+					"end": "\"|(?m:$)"
 				},
 				{
 					"name": "string.quoted.single.harbour",
 					"begin": "'",
-					"end": "'|$"
+					"end": "'|(?m:$)"
 				},
 				{
 					"name": "string.square.harbour",
 					"begin": "(?<![a-zA-Z0-9_\\]\\)])\\s*\\[",
-					"end": "\\]|$"
+					"end": "\\]|(?m:$)"
 				}
 			]
 		},
