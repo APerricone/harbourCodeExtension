@@ -358,7 +358,7 @@ Provider.prototype.parseHarbour = function(words)
 			if(r)
 			{
 				var define = this.addInfo(r[2],'define',"definition",undefined,true);
-				define.body = r[4];
+				define.body = r[4].trim();
 				if(r[3] && r[3].length)
 					this.parseDeclareList(r[3],"param",define);
 			}

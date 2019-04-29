@@ -79,14 +79,14 @@
 			},			
 			{
 				"name": "keyword.function.harbour",				
-				"match": "\\b(?i:static|retu(rn?)?|method|proc(e(d(u(re?)?)?)?)?|func(t(i(on?)?)?)?)\\b"
-			},
-			{
-				"name": "keyword.declarations.harbour",
-				"match": "\\b(?i:loc(?:a(?:l)?)?|priv(?:a(?:t(?:e)?)?)?|publ(?:i(?:c)?)?|fiel(?:d)?|thread|memv(?:a(?:r)?)?|para(?:m(?:e(?:t(?:e(?:r)?)?)?)?)?)\\b"
+				"match": "\\b(?i:retu(rn?)?|method|proc(e(d(u(re?)?)?)?)?|func(t(i(on?)?)?)?)\\b"
 			},
 			{
 				"name": "storage.type.harbour",
+				"match": "\\b(?i:stat(?:i(?:c)?)?|loc(?:a(?:l)?)?|priv(?:a(?:t(?:e)?)?)?|publ(?:i(?:c)?)?|fiel(?:d)?|thread|memv(?:a(?:r)?)?|para(?:m(?:e(?:t(?:e(?:r)?)?)?)?)?)\\b"
+			},
+			{
+				"name": "keyword.type.harbour",
 				"match": "\\b(?i:as\\s+(?:character|numeric|date|logical|codeblock|array|nil))\\b"
 			},
 			{
@@ -113,20 +113,24 @@
 				"match": "(?i)(\\.(T|F|and|or|not)\\.)"
 			},
 			{
-				"name": "operator.field.harbour",
+				"name": "keyword.operator.field.harbour",
 				"match": "->"
 			},
 			{
-				"name": "operator.assign.harbour",
+				"name": "keyword.operator.assign.harbour",
 				"match": "(\\:|\\+|-|\\*|/|\\^)\\="
 			},
 			{
-				"name": "operator.unary.harbour",
+				"name": "keyword.operator.unary.harbour",
 				"match": "(\\+\\+|--)"
 			},
 			{
-				"name": "operator.binary.harbour",
+				"name": "keyword.operator.binary.harbour",
 				"match": "(\\+|-|\\*|/|\\^)"
+			},
+			{
+				"name": "keyword.operator.logical.harbour",
+				"match": "(<(=|>)?|>=?|==?|!=?)"
 			},
 			{
 				"name": "keyword.preprocessor.include.harbour",

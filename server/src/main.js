@@ -101,8 +101,8 @@ connection.onInitialize(params =>
             textDocumentSync: 1,
             workspace: {
                 supported: true
-            }//,
-            //hoverProvider: true
+            },
+            hoverProvider: true
         }
 	}
 });
@@ -272,6 +272,8 @@ function AddIncludes(startPath, includesArray)
         if(!path.isAbsolute(dir))
             dir = path.join(startPath,dir);
         if(!fs.existsSync(dir)) return false;
+        if(fileName.length<1)
+            return false;
         var completePath = path.join(dir,fileName);
         if(!fs.existsSync(completePath)) return false;
         var fileUri = Uri.file(completePath);
@@ -515,7 +517,7 @@ function GetWord(params,withPrec)
         }
         delta+=10;
     }
-    word = word[0].toLowerCase();
+    word = word[0];
     return withPrec? [word,prec] : word;
 }
 
@@ -538,7 +540,7 @@ connection.onDefinition((params)=>
     var dest = [];
     var thisDone = false;
     var prec = word[1];
-    word = word[0];
+    word = word[0].toLowerCase();
     function DoProvider(pp,file)
     {
         for (var fn in pp.funcList) { //if (pp.funcList.hasOwnProperty(fn)) {
@@ -1252,10 +1254,55 @@ function CompletitionDBFields(word, allText,pos, pp)
     return completitions;
 }
 
-//connection.onHover((params)=> {
-//    var w = GetWord(params);
-//    //TODO
-//})
+connection.onHover((params,cancelled)=> {
+    var w = GetWord(params);
+    var doc = documents.get(params.textDocument.uri);
+    var pp;
+    if(doc.uri in files)
+    {
+        pp = files[doc.uri];
+    } else
+    {
+        pp = parseDocument(doc,false);
+    }
+    if(pp)
+    {
+        for (var iSign=0;iSign<pp.funcList.length;iSign++)
+        {
+            var info = pp.funcList[iSign];
+            if(info.kind != 'define') continue;
+            if(info.name != w) continue
+            return {contents: {  language: 'harbour', value: info.body }};
+        }
+
+        var thisDone = doc.uri in files;
+        var includes = pp.includes;
+        var i=0;
+        var startDir = path.dirname(Uri.parse( doc.uri ).fsPath);
+        while(i<includes.length)
+        {
+            var pInc = ParseInclude(startDir,includes[i],thisDone);
+            if(pInc)
+            {
+                for (var iSign=0;iSign<pInc.funcList.length;iSign++)
+                {
+                    var info = pInc.funcList[iSign];
+                    if(info.kind != 'define') continue;
+                    if(info.name != w) continue
+                    return {contents: {  language: 'harbour', value: info.body }};
+                }
+                for(var j=0;j<pInc.includes;j++)
+                {
+                    if(includes.indexOf(pInc.includes[j])<0)
+                        includes.push(pInc.includes[j]); 
+                }
+            }
+            i++;
+            if(cancelled.isCancellationRequested) return server.CompletionList.create(completitions,false);
+        }            
+    }
+    return undefined;
+})
 
 
 
