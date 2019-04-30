@@ -692,7 +692,7 @@
 								"include": "#punctuation-comma"
 							},
 							{
-								"name": "meta.definition.property.harbour-variable.object.property.harbour",
+								"name": "meta.definition.property.harbour variable.object.property.harbour",
 								"match": "(?i)\\b[a-z_]\\w*\\b"
 							}
 						]
@@ -738,7 +738,7 @@
 						]
 					},
 					{
-						"name": "meta.definition.function.harbour-entity.name.function.harbour",
+						"name": "meta.definition.function.harbour entity.name.function.harbour",
 						"match": "(?i)\\b([A-Z_]\\w*)(?=\\s*\\()"
 					},
 					{
