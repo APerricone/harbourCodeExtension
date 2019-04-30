@@ -1367,6 +1367,10 @@
 					"match": "[=!<>]=|<>|<|>|\\#|\\$"
 				},
 				{
+					"name": "constant.character.format.placeholder.other.harbour",
+					"match": "%s\\b"
+				},
+				{
 					"name": "keyword.operator.arithmetic.harbour",
 					"match": "\\-\\-|\\+\\+|/|%|\\*|\\+|\\-"
 				},
@@ -1525,12 +1529,8 @@
 									"name": "keyword.operator.bitwise.harbour"
 								}
 							},
-							"end": "(?=$)",
+							"end": "(?=\\||$)",
 							"patterns": [
-								{
-									"name": "constant.character.format.placeholder.other.harbour",
-									"match": "%s"
-								},
 								{
 									"include": "#inline-staments"
 								}
@@ -1578,17 +1578,39 @@
 									"name": "keyword.operator.bitwise.harbour"
 								}
 							},
-							"end": "(?=$)",
+							"end": "(?=\\||$)",
 							"patterns": [
-								{
-									"name": "constant.character.format.placeholder.other.harbour",
-									"match": "%s"
-								},
 								{
 									"include": "#inline-staments"
 								}
 							]
 						},
+						{
+							"include": "#escapes"
+						}
+					]
+				},
+				{
+					"begin": "(?i)^\\s*([cx]?text)\\s+(into|to\\s+var)\\s+([a-z_]\\w*)\\b",
+					"end": "(?i)^\\s*(endtext)",
+					"contentName": "string.multiline.harbour",
+					"beginCaptures": {
+						"1": {
+							"name": "keyword.text.harbour"
+						},
+						"2": {
+							"name": "keyword.operator.into.harbour"
+						},
+						"3": {
+							"name": "variable.other.readwrite.harbour"
+						}
+					},
+					"endCaptures": {
+						"1": {
+							"name": "keyword.text.harbour"
+						}
+					},
+					"patterns": [
 						{
 							"include": "#escapes"
 						}
