@@ -276,6 +276,14 @@
 				]
 			}]
 		},
+		"variable-name": {
+			"patterns": [
+				{
+					"name": "variable.other.readwrite.harbour",
+					"match": "(?i)\\b([a-z_]\\w*)\\b"
+				}
+			]
+		},
 		"variable-initializer": {
 			"begin": ":=",
 			"beginCaptures": {
@@ -1098,6 +1106,40 @@
 				]
 			}]
 		},
+		"command-foreach": {
+			"patterns": [
+				{
+					"begin": "(?i)^\\s*(for)\\s+(each)\\b",
+					"beginCaptures": {
+						"1": {
+							"name": "keyword.control.for.harbour"
+						},
+						"2": {
+							"name": "keyword.control.for.harbour"
+						}
+					},
+					"end": "$",
+					"patterns": [
+						{
+							"include": "#continue-expression"
+						},
+						{
+							"include": "#comments"
+						},
+						{
+							"include": "#inline-staments"
+						},
+						{
+							"name": "keyword.control.in.harbour",
+							"match": "(?i)\\bin\\b"
+						},
+						{
+							"include": "#variable-name"
+						}
+					]
+				}
+			]
+		},
 		"commands-all": {
 			"patterns": [{
 					"include": "#command-set"
@@ -1119,6 +1161,9 @@
 				},
 				{
 					"include": "#command-read"
+				},
+				{
+					"include": "#command-foreach"
 				}
 			]
 		},
@@ -1324,7 +1369,7 @@
 		"keywords": {
 			"patterns": [{
 					"name": "keyword.control.harbour",
-					"match": "\\b(?i:if(?!\\()|ELSEIF|ELSE|end\\s*(?:if|while|case|do|switch|class|sequence|with)?|for(?:\\s+each)?|in|to|step|descend|next|do|while|switch|case|endcase|otherwise|exit|loop|begin\\s+sequence?|recover(?:\\s+using)?|break)\\b"
+					"match": "\\b(?i:if(?!\\()|ELSEIF|ELSE|end\\s*(?:if|while|case|do|switch|class|sequence|with)?|for|to|step|descend|next|do|while|switch|case|endcase|otherwise|exit|loop|begin\\s+sequence?|recover(?:\\s+using)?|break)\\b"
 				},
 				{
 					"name": "keyword.function.harbour",
