@@ -1483,78 +1483,121 @@
 				}
 			]
 		},
-		"strings": {
-			"patterns": [{
-					"begin": "(?i:^\\s*(#)(pragma)\\s+(__text|__stream)(?:\\s*\\|([^\\r\\n]*))*)",
-					"end": "(?i:^\\s*(#)(pragma)\\s+(__endtext))",
+		"multiline-strings": {
+			"patterns": [
+				{
+					"begin": "(?i)^\\s*(#)(pragma)\\s+(__text|__stream)\\b",
+					"end": "(?i)^\\s*(#)(pragma)\\s+(__endtext)",
 					"contentName": "string.multiline.harbour",
 					"beginCaptures": {
 						"0": {
-							"name": "meta.preprocessor.pragma.harbour"
+							"name": "meta.preprocessor.string.harbour"
 						},
 						"1": {
 							"name": "punctuation.definition.directive.harbour"
 						},
 						"2": {
-							"name": "keyword.text.harbour"
+							"name": "keyword.control.directive.pragma.harbour"
 						},
 						"3": {
-							"patterns": [{
-									"include": "source.harbour"
-								},
-								{
-									"name": "variable.string.replace.harbour",
-									"match": "%s"
-								}
-							]
+							"name": "entity.other.attribute-name.pragma.preprocessor.harbour"
 						}
 					},
 					"endCaptures": {
 						"0": {
-							"name": "meta.preprocessor.pragma.harbour"
+							"name": "meta.preprocessor.string.harbour"
 						},
 						"1": {
 							"name": "punctuation.definition.directive.harbour"
 						},
 						"2": {
-							"name": "keyword.text.harbour"
+							"name": "keyword.control.directive.pragma.harbour"
+						},
+						"3": {
+							"name": "entity.other.attribute-name.pragma.preprocessor.harbour"
 						}
-					}
+					},
+					"patterns": [
+						{
+							"begin": "\\s*(\\|)",
+							"beginCaptures": {
+								"1": {
+									"name": "keyword.operator.bitwise.harbour"
+								}
+							},
+							"end": "(?=$)",
+							"patterns": [
+								{
+									"name": "constant.character.format.placeholder.other.harbour",
+									"match": "%s"
+								},
+								{
+									"include": "#inline-staments"
+								}
+							]
+						}
+					]
 				},
 				{
-					"begin": "(?i:^\\s*(#pragma)\\s+(__cstream)(?:\\s*\\|([^\\r\\n]*))*)",
-					"end": "(?i:^\\s*(#pragma)\\s+(__endtext))",
+					"begin": "(?i)^\\s*(#)(pragma)\\s+(__cstream)\\b",
+					"end": "(?i)^\\s*(#)(pragma)\\s+(__endtext)",
 					"contentName": "string.multiline.harbour",
 					"beginCaptures": {
+						"0": {
+							"name": "meta.preprocessor.string.harbour"
+						},
 						"1": {
-							"name": "meta.preprocessor.pragma.harbour"
+							"name": "punctuation.definition.directive.harbour"
 						},
 						"2": {
-							"name": "keyword.text.harbour"
+							"name": "keyword.control.directive.pragma.harbour"
 						},
 						"3": {
-							"patterns": [{
-									"include": "source.harbour"
-								},
-								{
-									"name": "variable.string.replace.harbour",
-									"match": "%s"
-								}
-							]
+							"name": "entity.other.attribute-name.pragma.preprocessor.harbour"
 						}
 					},
 					"endCaptures": {
+						"0": {
+							"name": "meta.preprocessor.string.harbour"
+						},
 						"1": {
-							"name": "meta.preprocessor.pragma.harbour"
+							"name": "punctuation.definition.directive.harbour"
 						},
 						"2": {
-							"name": "keyword.text.harbour"
+							"name": "keyword.control.directive.pragma.harbour"
+						},
+						"3": {
+							"name": "entity.other.attribute-name.pragma.preprocessor.harbour"
 						}
 					},
-					"patterns": [{
-						"include": "#escapes"
-					}]
-				},
+					"patterns": [
+						{
+							"begin": "\\s*(\\|)",
+							"beginCaptures": {
+								"1": {
+									"name": "keyword.operator.bitwise.harbour"
+								}
+							},
+							"end": "(?=$)",
+							"patterns": [
+								{
+									"name": "constant.character.format.placeholder.other.harbour",
+									"match": "%s"
+								},
+								{
+									"include": "#inline-staments"
+								}
+							]
+						},
+						{
+							"include": "#escapes"
+						}
+					]
+				}
+			]
+		},
+		"strings": {
+			"patterns": [
 				{
 					"name": "string.escaped.harbour",
 					"begin": "[eE]\"",
@@ -1701,7 +1744,7 @@
 							"patterns": [
 								{ "include": "source.harbour" }
 							]
-						}						
+						}
 					]
 				},
 				{
@@ -1712,6 +1755,9 @@
 					"end": "(?=//|&&|/\\*)|(?<!;)(?=\\r|\\n)",
 					"name": "meta.preprocessor.stdout.harbour",
 					"contentName": "string.stdout.harbour"
+				},
+				{
+					"include": "#multiline-strings"
 				}
 			]
 		},
