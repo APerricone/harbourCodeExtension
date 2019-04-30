@@ -243,7 +243,7 @@
 		},
 		"function-header": {
 			"patterns": [{
-					"name": "meta.definition.function.harbour-entity.name.function.harbour",
+					"name": "meta.definition.function.harbour entity.name.function.harbour",
 					"match": "(?i)\\b([A-Z_]\\w*)"
 				},
 				{
@@ -254,7 +254,7 @@
 		"function-declaration": {
 			"patterns": [{
 				"name": "meta.function.harbour",
-				"begin": "(?i)^\\s*(?:stat(?:i(?:c)?)?\\s+)?(proc(?:e(?:d(?:u(?:re?)?)?)?)?|func(?:t(?:i(?:on?)?)?)?)\\b",
+				"begin": "(?i)^\\s*(stat(?:i(?:c)?)?\\s+)?(proc(?:e(?:d(?:u(?:re?)?)?)?)?|func(?:t(?:i(?:on?)?)?)?)\\b",
 				"beginCaptures": {
 					"1": {
 						"name": "keyword.modifier.harbour"
