@@ -40,6 +40,9 @@
 					"include": "#codeblock"
 				},
 				{
+					"include": "#constants"
+				},
+				{
 					"include": "#array"
 				},
 				{
@@ -64,9 +67,6 @@
 				},
 				{
 					"include": "#round-braces"
-				},
-				{
-					"include": "#constants"
 				},
 				{
 					"include": "#strings"
