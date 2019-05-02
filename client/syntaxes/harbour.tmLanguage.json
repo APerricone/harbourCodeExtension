@@ -1536,6 +1536,44 @@
 		"multiline-strings": {
 			"patterns": [
 				{
+					"begin": "(?i)^\\s*((#)\\s*pragma)\\s+(__c?streaminclude)\\b",
+					"end": "(?=$)",
+					"contentName": "string.multiline.harbour",
+					"beginCaptures": {
+						"0": {
+							"name": "meta.preprocessor.string.harbour"
+						},
+						"1": {
+							"name": "keyword.control.directive.pragma.harbour"
+						},
+						"2": {
+							"name": "punctuation.definition.directive.harbour"
+						},
+						"3": {
+							"name": "entity.other.attribute-name.pragma.preprocessor.harbour"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#strings"
+						},
+						{
+							"begin": "\\s*(\\|)",
+							"beginCaptures": {
+								"1": {
+									"name": "keyword.operator.bitwise.harbour"
+								}
+							},
+							"end": "(?=\\||$)",
+							"patterns": [
+								{
+									"include": "#inline-staments"
+								}
+							]
+						}
+					]
+				},
+				{
 					"begin": "(?i)^\\s*((#)\\s*pragma)\\s+(__text|__stream)\\b",
 					"end": "(?i)^\\s*(?:((#)\\s*pragma)\\s+(__endtext)|(endtext))",
 					"contentName": "string.multiline.harbour",
@@ -1827,8 +1865,11 @@
 			"patterns": [{
 					"begin": "(?i)^\\s*((#)\\s*(x?command|x?translate))\\b",
 					"beginCaptures": {
-						"0": {
+						"1": {
 							"name": "keyword.control.directive.$3.harbour"
+						},
+						"2": {
+							"name": "punctuation.definition.directive.harbour"
 						}
 					},
 					"end": "(?<!;)\\s*[\\r\\n]{1,2}",
