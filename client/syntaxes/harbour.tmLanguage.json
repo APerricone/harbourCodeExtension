@@ -201,14 +201,14 @@
 			}]
 		},
 		"punctuation-comma": {
-			"name": "punctuation.separator.comma.harbour",
 			"patterns": [{
+				"name": "punctuation.separator.comma.harbour",
 				"match": ","
 			}]
 		},
 		"parameter-comma": {
-			"name": "punctuation.separator.parameters.harbour",
 			"patterns": [{
+				"name": "punctuation.separator.parameters.harbour",
 				"match": ","
 			}]
 		},
@@ -1321,7 +1321,8 @@
 					"name": "punctuation.definition.parameters.end.bracket.round.harbour"
 				}
 			},
-			"patterns": [{
+			"patterns": [
+				{
 					"include": "#punctuation-comma"
 				},
 				{
