@@ -1934,20 +1934,6 @@
 					]
 				},
 				{
-					"begin": "(?i:^\\s*((#)\\s*elif)\\s+)",
-					"end": "(?=$)",
-					"beginCaptures": {
-						"0": { "name": "meta.preprocessor.harbour" },
-						"1": { "name": "keyword.control.directive.conditional.harbour" },
-						"2": { "name": "punctuation.definition.directive.harbour" }
-					},
-					"patterns": [
-						{
-							"include": "#inline-staments"
-						}
-					]
-				},
-				{
 					"begin": "(?i:^\\s*((#)\\s*if)\\s+)",
 					"end": "(?i:^\\s*((#)\\s*endif))",
 					"beginCaptures": {
@@ -1961,6 +1947,29 @@
 						"2": { "name": "punctuation.definition.directive.harbour" }
 					},
 					"patterns": [
+						{
+							"begin": "(?i:^\\s*((#)\\s*elif)\\s+)",
+							"end": "(?=$)",
+							"beginCaptures": {
+								"0": { "name": "meta.preprocessor.harbour" },
+								"1": { "name": "keyword.control.directive.conditional.harbour" },
+								"2": { "name": "punctuation.definition.directive.harbour" }
+							},
+							"patterns": [
+								{
+									"include": "#inline-staments"
+								}
+							]
+						},
+						{
+							"begin": "(?i:^\\s*((#)\\s*else)\\s+)",
+							"end": "(?=$)",
+							"beginCaptures": {
+								"0": { "name": "meta.preprocessor.harbour" },
+								"1": { "name": "keyword.control.directive.conditional.harbour" },
+								"2": { "name": "punctuation.definition.directive.harbour" }
+							}
+						},
 						{
 							"include": "$base"
 						}
