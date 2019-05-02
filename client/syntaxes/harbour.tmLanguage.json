@@ -1846,6 +1846,41 @@
 				},
 				{
 					"include": "#multiline-strings"
+				},
+				{
+					"begin": "(?i:^\\s*((#)\\s*pragma))",
+					"beginCaptures": {
+						"1": { "name": "keyword.control.directive.pragma.harbour" },
+						"2": { "name": "punctuation.definition.directive.harbour" }
+					},
+					"end": "(?=$)",
+					"name": "meta.preprocessor.pragma.harbour",
+					"patterns": [
+						{
+							"include": "#comments"
+						},
+						{
+							"include": "#strings"
+						},
+						{
+							"match": "(?i)\\b(on|off)\\b",
+							"name": "constant.other.harbour"
+						},
+						{
+							"match": "(?i)[\\/+-=]",
+							"name": "punctuation.definition.pragma.harbour"
+						},
+						{
+							"match": "[a-zA-Z_$][\\w\\-$]*",
+							"name": "entity.other.attribute-name.pragma.preprocessor.harbour"
+						},
+						{
+							"include": "#numbers"
+						},
+						{
+							"include": "#continue-expression"
+						}
+					]
 				}
 			]
 		},
