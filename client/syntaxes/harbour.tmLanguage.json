@@ -1695,7 +1695,7 @@
 							"name": "punctuation.definition.string.begin.harbour"
 						}
 					},
-					"end": "(\"|\\n|\\r)",
+					"end": "(\")|(\\n|\\r)",
 					"endCaptures": {
 						"1": {
 							"name": "punctuation.definition.string.end.harbour"
@@ -1720,7 +1720,7 @@
 							"name": "punctuation.definition.string.begin.harbour"
 						}
 					},
-					"end": "(\"|\\n|\\r)",
+					"end": "(\")|(\\n|\\r)",
 					"endCaptures": {
 						"1": {
 							"name": "punctuation.definition.string.end.harbour"
@@ -1735,13 +1735,34 @@
 				},
 				{
 					"name": "string.quoted.single.harbour",
-					"begin": "'",
+					"begin": "('|`)",
 					"beginCaptures": {
 						"0": {
 							"name": "punctuation.definition.string.begin.harbour"
 						}
 					},
-					"end": "('|\\n|\\r)",
+					"end": "(')|(\\n|\\r)",
+					"endCaptures": {
+						"1": {
+							"name": "punctuation.definition.string.end.harbour"
+						},
+						"2": {
+							"name": "invalid.illegal.newline.harbour"
+						}
+					},
+					"patterns": [{
+						"include": "#macro-var"
+					}]
+				},
+				{
+					"name": "string.square.harbour",
+					"begin": "(?<![a-zA-Z0-9_\\]\\)])\\s*\\[",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.begin.harbour"
+						}
+					},
+					"end": "(\\])|(\\n|\\r)",
 					"endCaptures": {
 						"1": {
 							"name": "punctuation.definition.string.end.harbour"
