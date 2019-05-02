@@ -1535,18 +1535,18 @@
 		"multiline-strings": {
 			"patterns": [
 				{
-					"begin": "(?i)^\\s*(#)(pragma)\\s+(__text|__stream)\\b",
-					"end": "(?i)^\\s*(?:(#)(pragma)\\s+(__endtext)|(endtext))",
+					"begin": "(?i)^\\s*((#)\\s*pragma)\\s+(__text|__stream)\\b",
+					"end": "(?i)^\\s*(?:((#)\\s*pragma)\\s+(__endtext)|(endtext))",
 					"contentName": "string.multiline.harbour",
 					"beginCaptures": {
 						"0": {
 							"name": "meta.preprocessor.string.harbour"
 						},
 						"1": {
-							"name": "punctuation.definition.directive.harbour"
+							"name": "keyword.control.directive.pragma.harbour"
 						},
 						"2": {
-							"name": "keyword.control.directive.pragma.harbour"
+							"name": "punctuation.definition.directive.harbour"
 						},
 						"3": {
 							"name": "entity.other.attribute-name.pragma.preprocessor.harbour"
@@ -1590,18 +1590,18 @@
 					]
 				},
 				{
-					"begin": "(?i)^\\s*(#)(pragma)\\s+(__cstream)\\b",
-					"end": "(?i)^\\s*(?:(#)(pragma)\\s+(__endtext)|(endtext))",
+					"begin": "(?i)^\\s*((#)\\s*pragma)\\s+(__cstream)\\b",
+					"end": "(?i)^\\s*(?:((#)\\s*pragma)\\s+(__endtext)|(endtext))",
 					"contentName": "string.multiline.harbour",
 					"beginCaptures": {
 						"0": {
 							"name": "meta.preprocessor.string.harbour"
 						},
 						"1": {
-							"name": "punctuation.definition.directive.harbour"
+							"name": "keyword.control.directive.pragma.harbour"
 						},
 						"2": {
-							"name": "keyword.control.directive.pragma.harbour"
+							"name": "punctuation.definition.directive.harbour"
 						},
 						"3": {
 							"name": "entity.other.attribute-name.pragma.preprocessor.harbour"
@@ -1646,7 +1646,7 @@
 				},
 				{
 					"begin": "(?i)^\\s*([cx]?text)\\s+(into|to\\s+var)\\s+([a-z_]\\w*)\\b",
-					"end": "(?i)^\\s*(?:(#)(pragma)\\s+(__endtext)|(endtext))",
+					"end": "(?i)^\\s*(?:((#)\\s*pragma)\\s+(__endtext)|(endtext))",
 					"contentName": "string.multiline.harbour",
 					"beginCaptures": {
 						"1": {
@@ -1664,10 +1664,10 @@
 							"name": "meta.preprocessor.string.harbour"
 						},
 						"1": {
-							"name": "punctuation.definition.directive.harbour"
+							"name": "keyword.control.directive.pragma.harbour"
 						},
 						"2": {
-							"name": "keyword.control.directive.pragma.harbour"
+							"name": "punctuation.definition.directive.harbour"
 						},
 						"3": {
 							"name": "entity.other.attribute-name.pragma.preprocessor.harbour"
@@ -1851,19 +1851,19 @@
 		},
 		"c_code": {
 			"patterns": [{
-					"begin": "(?i:^\\s*(#)(pragma)\\s+(BEGINDUMP))",
-					"end": "(?i:^\\s*(#)(pragma)\\s+(ENDDUMP))",
+					"begin": "(?i:^\\s*((#)\\s*pragma)\\s+(BEGINDUMP))",
+					"end": "(?i:^\\s*((#)\\s*pragma)\\s+(ENDDUMP))",
 					"contentName": "source.c.embedded.harbour",
 					"beginCaptures": {
 						"0": { "name": "meta.preprocessor.pragma.harbour" },
-						"1": { "name": "punctuation.definition.directive.harbour" },
-						"2": { "name": "keyword.control.directive.pragma.harbour" },
+						"1": { "name": "keyword.control.directive.pragma.harbour" },
+						"2": { "name": "punctuation.definition.directive.harbour" },
 						"3": { "name": "keyword.dump.harbour" }
 					},
 					"endCaptures": {
 						"0": { "name": "meta.preprocessor.pragma.harbour" },
-						"1": { "name": "punctuation.definition.directive.harbour" },
-						"2": { "name": "keyword.control.directive.pragma.harbour" },
+						"1": { "name": "keyword.control.directive.pragma.harbour" },
+						"2": { "name": "punctuation.definition.directive.harbour" },
 						"3": { "name": "keyword.dump.harbour" }
 					},
 					"patterns": [
@@ -1877,12 +1877,12 @@
 					]
 				},
 				{
-					"begin": "(?i:^\\s*(#)(elif)\\s+)",
+					"begin": "(?i:^\\s*((#)\\s*elif)\\s+)",
 					"end": "(?=$)",
 					"beginCaptures": {
 						"0": { "name": "meta.preprocessor.harbour" },
-						"1": { "name": "punctuation.definition.directive.harbour" },
-						"2": { "name": "keyword.control.directive.conditional.harbour" }
+						"1": { "name": "keyword.control.directive.conditional.harbour" },
+						"2": { "name": "punctuation.definition.directive.harbour" }
 					},
 					"patterns": [
 						{
@@ -1891,17 +1891,17 @@
 					]
 				},
 				{
-					"begin": "(?i:^\\s*(#)(if)\\s+)",
-					"end": "(?i:^\\s*(#)(endif))",
+					"begin": "(?i:^\\s*((#)\\s*if)\\s+)",
+					"end": "(?i:^\\s*((#)\\s*endif))",
 					"beginCaptures": {
 						"0": { "name": "meta.preprocessor.harbour" },
-						"1": { "name": "punctuation.definition.directive.harbour" },
-						"2": { "name": "keyword.control.directive.conditional.harbour" }
+						"1": { "name": "keyword.control.directive.conditional.harbour" },
+						"2": { "name": "punctuation.definition.directive.harbour" }
 					},
 					"endCaptures": {
 						"0": { "name": "meta.preprocessor.harbour" },
-						"1": { "name": "punctuation.definition.directive.harbour" },
-						"2": { "name": "keyword.control.directive.conditional.harbour" }
+						"1": { "name": "keyword.control.directive.conditional.harbour" },
+						"2": { "name": "punctuation.definition.directive.harbour" }
 					},
 					"patterns": [
 						{
