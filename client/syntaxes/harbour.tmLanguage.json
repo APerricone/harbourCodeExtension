@@ -1536,7 +1536,7 @@
 			"patterns": [
 				{
 					"begin": "(?i)^\\s*(#)(pragma)\\s+(__text|__stream)\\b",
-					"end": "(?i)^\\s*(#)(pragma)\\s+(__endtext)",
+					"end": "(?i)^\\s*(?:(#)(pragma)\\s+(__endtext)|(endtext))",
 					"contentName": "string.multiline.harbour",
 					"beginCaptures": {
 						"0": {
@@ -1564,6 +1564,9 @@
 						},
 						"3": {
 							"name": "entity.other.attribute-name.pragma.preprocessor.harbour"
+						},
+						"4": {
+							"name": "keyword.text.harbour"
 						}
 					},
 					"patterns": [
@@ -1578,6 +1581,9 @@
 							"patterns": [
 								{
 									"include": "#inline-staments"
+								},
+								{
+									"include": "#variable-name"
 								}
 							]
 						}
@@ -1585,7 +1591,7 @@
 				},
 				{
 					"begin": "(?i)^\\s*(#)(pragma)\\s+(__cstream)\\b",
-					"end": "(?i)^\\s*(#)(pragma)\\s+(__endtext)",
+					"end": "(?i)^\\s*(?:(#)(pragma)\\s+(__endtext)|(endtext))",
 					"contentName": "string.multiline.harbour",
 					"beginCaptures": {
 						"0": {
@@ -1613,6 +1619,9 @@
 						},
 						"3": {
 							"name": "entity.other.attribute-name.pragma.preprocessor.harbour"
+						},
+						"4": {
+							"name": "keyword.text.harbour"
 						}
 					},
 					"patterns": [
@@ -1637,7 +1646,7 @@
 				},
 				{
 					"begin": "(?i)^\\s*([cx]?text)\\s+(into|to\\s+var)\\s+([a-z_]\\w*)\\b",
-					"end": "(?i)^\\s*(endtext)",
+					"end": "(?i)^\\s*(?:(#)(pragma)\\s+(__endtext)|(endtext))",
 					"contentName": "string.multiline.harbour",
 					"beginCaptures": {
 						"1": {
@@ -1651,7 +1660,19 @@
 						}
 					},
 					"endCaptures": {
+						"0": {
+							"name": "meta.preprocessor.string.harbour"
+						},
 						"1": {
+							"name": "punctuation.definition.directive.harbour"
+						},
+						"2": {
+							"name": "keyword.control.directive.pragma.harbour"
+						},
+						"3": {
+							"name": "entity.other.attribute-name.pragma.preprocessor.harbour"
+						},
+						"4": {
 							"name": "keyword.text.harbour"
 						}
 					},
