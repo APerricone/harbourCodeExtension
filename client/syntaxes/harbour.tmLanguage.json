@@ -1964,7 +1964,8 @@
 						{ "include": "#continue-expression" },
 						{ "include": "source.harbour" }
 					]
-				}{
+				},
+				{
 					"name": "meta.preprocessor.generic.harbour",
 					"begin": "(?mi:^\\s*((#)\\s*[_a-z][_a-z0-9]*))",
 					"end": "(?=//|&&|/\\*)|(?<!;)(?=(?m:$))",
