@@ -989,6 +989,7 @@ connection.onCompletion((param, cancelled)=>
     {
         for (var iSign=0;iSign<pp.funcList.length;iSign++)
         {
+            /** @type {provider.Info} */
             var info = pp.funcList[iSign];
             if(word.length>0 && !IsInside(word,info.nameCmp))
                 continue;
@@ -1015,7 +1016,9 @@ connection.onCompletion((param, cancelled)=>
                     param.position.line>info.parent.endLine)
                         continue;
             }
-            CheckAdd(info.name,kindTOVS(info.kind,false),"AAA")
+            var added = CheckAdd(info.name,kindTOVS(info.kind,false),"AAA");
+            if(added && (info.kind == "method" || info.kind == "data") && info.parent)
+                added.documentation = info.parent.name;
             if(cancelled.isCancellationRequested) return
         }
     }
