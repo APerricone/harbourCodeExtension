@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to the "Harbour and xHarbour" extension will be documented in this file.
 
+# 0.9.0
+ - **server** add hover for defines
+ - **syntax** a lot of fixes by [Edgard Lorraine Messias](mailto:edgardmessias@gmail.com)
+ - **server** added information about class during completition
+
 # 0.8.12
  - **debugger** Added options for error management
  - **server** Fix some crash

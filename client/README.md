@@ -12,9 +12,13 @@
 - Symbol Definitions Within a Document provider (access it by pressing <kbd>CTRL</kbd>+<kbd>SHIFT</kbd>+<kbd>O</kbd> or <kbd>CTRL</kbd>+<kbd>P</kbd> then <kbd>@</kbd>)
 - Symbol Definitions in workspace provider (access it by pressing <kbd>CTRL</kbd>+<kbd>T</kbd> or <kbd>CTRL</kbd>+<kbd>P</kbd> then <kbd>#</kbd>)
 
-## Requirements
+## Documentation links
 See the [wiki](https://github.com/APerricone/harbourCodeExtension/wiki) for more information.
+An introdution for harbour developers can be found in these articles:
+- [Harbour Wiki - Developing and Debugging Harbour Programs with VSCODE](https://harbour.wiki/index.asp?page=PublicArticles&mode=show&id=190401174818&sig=6893630672) by Eric Lendvai
+- [Harbour magazine - Visual Studio Code for Harbour](https://medium.com/harbour-magazine/visual-studio-code-for-harbour-e148f9c1861a) by José Luis Sánchez ([available in spanish too](https://medium.com/harbour-magazine/visual-studio-code-para-harbour-85b0646ff312))
 
+## Requirements
 Sometime is necessary to set `harbour.compilerExecutable` with complete path.
 
 ## Extension Settings
