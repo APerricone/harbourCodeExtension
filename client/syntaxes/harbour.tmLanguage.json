@@ -1670,7 +1670,7 @@
 					]
 				},
 				{
-					"begin": "(?i)^\\s*([cx]?text)\\s+(into|to\\s+var)\\s+([a-z_]\\w*)\\b",
+					"begin": "(?i)^\\s*([cx]?text)(?:\\s+(into|to\\s+var)\\s+([a-z_]\\w*))?\\b",
 					"end": "(?i)^\\s*(?:((#)\\s*pragma)\\s+(__endtext)|(endtext))",
 					"contentName": "string.multiline.harbour",
 					"beginCaptures": {
