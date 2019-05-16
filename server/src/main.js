@@ -537,6 +537,7 @@ connection.onDefinition((params)=>
         return definitionFiles(include[1],startPath, server.Range.create(params.position.line,pos,params.position.line,pos+include[1].length));
     }
     var word=GetWord(params,true);
+    if(word.length==0) return undefined;        
     var dest = [];
     var thisDone = false;
     var prec = word[1];
