@@ -14,6 +14,8 @@ var workspaceRoots;
 var includeDirs;
 /** @type {number} */
 var workspaceDepth;
+/** @type {boolean} */
+var wordBasedSuggestions;
 /** @type {Object.<string, Provider>} */
 var files;
 /** @type {Object.<string, Provider>} */
@@ -117,6 +119,7 @@ connection.onDidChangeConfiguration(params=>{
     includeDirs = params.settings.harbour.extraIncludePaths;
     includeDirs.splice(0,0,".")
     workspaceDepth = params.settings.harbour.workspaceDepth;
+    wordBasedSuggestions = params.settings.editor.wordBasedSuggestions
     ParseWorkspace();
 
 })
@@ -952,14 +955,18 @@ connection.onCompletion((param, cancelled)=>
             return server.CompletionList.create([],false); // wrong call
         }
     }
+    var done = {}
     function CheckAdd(label,kind,sort)
     {
         var ll = label.toLowerCase()
+        if(ll in done)
+            return;
+        done[ll]=true;
         var sortLabel = IsInside(word,ll);
         if(sortLabel===undefined)
             return undefined;
-        var c =completitions.find( (v) => v.label.toLowerCase() == ll );
-        if(!c)
+        //var c =completitions.find( (v) => v.label.toLowerCase() == ll );
+        //if(!c)
         {
             c = server.CompletionItem.create(label);
             c.kind = kind
@@ -1075,16 +1082,19 @@ connection.onCompletion((param, cancelled)=>
             CheckAdd(missing[i],server.CompletionItemKind.Function,"A")
             if(cancelled.isCancellationRequested) return server.CompletionList.create(completitions,false);
         }
-        var wordRE = /\b[a-z_][a-z0-9_]*\b/gi
-        var foundWord;
-        var pos = doc.offsetAt(param.position);
-        while(foundWord = wordRE.exec(allText))
+        if (wordBasedSuggestions) 
         {
-            // remove current word
-            if(foundWord.index<pos &&  foundWord.index+foundWord[0].length>=pos)
-                continue;
-            CheckAdd(foundWord[0],server.CompletionItemKind.Text,"")
-            if(cancelled.isCancellationRequested) return server.CompletionList.create(completitions,false);
+            var wordRE = /\b[a-z_][a-z0-9_]*\b/gi
+            var foundWord;
+            var pos = doc.offsetAt(param.position);
+            while(foundWord = wordRE.exec(allText))
+            {
+                // remove current word
+                if(foundWord.index<pos &&  foundWord.index+foundWord[0].length>=pos)
+                    continue;
+                CheckAdd(foundWord[0],server.CompletionItemKind.Text,"")
+                if(cancelled.isCancellationRequested) return server.CompletionList.create(completitions,false);
+            }
         }
     }
     return server.CompletionList.create(completitions,false);

@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to the "Harbour and xHarbour" extension will be documented in this file.
 
+# 0.9.2
+ - **server** speed-up completition
+ - **server** use of editor.wordBasedSuggestions setting
+ - **syntax** Fixed multiline string on screen (aka TEXT/ENDTEXT)
+
 # 0.9.1
  - **server** Fix error pressing CTRL on empty space [#28](https://github.com/APerricone/harbourCodeExtension/issues/28)
  - **syntax** Fixed multiline string on screen (aka TEXT/ENDTEXT)
