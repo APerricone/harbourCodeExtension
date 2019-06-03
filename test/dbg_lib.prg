@@ -1,5 +1,5 @@
 // DO NOT REMOVE THIS PRAGMA
-// if the debugger code has DEBUGINFO the program will crash for stack overflow 
+// if the debugger code has DEBUGINFO the program will crash for stack overflow
 #pragma -B-
 
 #ifndef DBG_PORT
@@ -22,7 +22,7 @@
 #ifdef _DEBUGDEBUG
 #command ? [<explist,...>] => dbgQOut( <explist> )
 #else
-#command ? [<explist,...>] => 
+#command ? [<explist,...>] =>
 #endif
 
 #ifndef HB_DBG_CS_LEN
@@ -46,7 +46,7 @@
 #define CRLF e"\r\n"
 
 // returns .T. if need step
-static procedure CheckSocket(lStopSent) 
+static procedure CheckSocket(lStopSent)
 	LOCAL tmp, lNeedExit := .F.
 	LOCAL t_oDebugInfo := __DEBUGITEM()
 	lStopSent := iif(empty(lStopSent),.F.,lStopSent)
@@ -64,12 +64,12 @@ static procedure CheckSocket(lStopSent)
 			hb_inetSend(t_oDebugInfo['socket'],HB_ARGV(0)+CRLF+str(__PIDNum())+CRLF)
 			do while hb_inetDataReady(t_oDebugInfo['socket']) != 1
 				hb_idleSleep(1)
-			end do	
+			end do
 			tmp := hb_inetRecvLine(t_oDebugInfo['socket'])
 			//QOut("returned ",tmp)
 		endif
 		if tmp="NO"
-			t_oDebugInfo['socket'] := nil			
+			t_oDebugInfo['socket'] := nil
 			hb_idleSleep(1)
 			t_oDebugInfo['timeCheckForDebug']+=1
 		endif
@@ -81,9 +81,9 @@ static procedure CheckSocket(lStopSent)
 			t_oDebugInfo['lRunning'] := .T.
 			t_oDebugInfo['aBreaks'] := {=>}
 			t_oDebugInfo['maxLevel'] := nil
-			return 
+			return
 		endif
-		
+
 		do while hb_inetDataReady(t_oDebugInfo['socket']) = 1
 			tmp := hb_inetRecvLine(t_oDebugInfo['socket'])
 			if .not. empty(tmp)
@@ -94,13 +94,13 @@ static procedure CheckSocket(lStopSent)
 				endif
 #ifndef __XHARBOUR__
 #define BEGIN_C switch tmp
-#define COMMAND case 
+#define COMMAND case
 #define END_COM exit
 #define END_C endswitch
 #else
 #define BEGIN_C do case
 #define COMMAND case tmp=
-#define END_COM 
+#define END_COM
 #define END_C endcase
 #endif
 				BEGIN_C
@@ -136,7 +136,7 @@ static procedure CheckSocket(lStopSent)
 						t_oDebugInfo['inError'] := .F. // If it was on error, now it doesn't
 						lNeedExit := .T.
 						END_COM
-					COMMAND "STACK" 
+					COMMAND "STACK"
 						sendStack()
 						END_COM
 					COMMAND "BREAKPOINT"
@@ -144,7 +144,7 @@ static procedure CheckSocket(lStopSent)
 						END_COM
 					COMMAND "LOCALS"
 						sendLocals(hb_inetRecvLine(t_oDebugInfo['socket']),tmp)
-						END_COM							
+						END_COM
 					COMMAND "STATICS"
 						sendStatics(hb_inetRecvLine(t_oDebugInfo['socket']),tmp)
 						END_COM
@@ -188,9 +188,9 @@ static procedure CheckSocket(lStopSent)
 					COMMAND "COMPLETITION"
 						sendCompletition(hb_inetRecvLine(t_oDebugInfo['socket']))
 						END_COM
-				END_C	
+				END_C
 #undef BEGIN_C
-#undef COMMAND 
+#undef COMMAND
 #undef END_C
 			endif
 		enddo
@@ -214,8 +214,8 @@ static procedure CheckSocket(lStopSent)
 					lStopSent := .T.
 				endif
 			endif
-			if .not. empty(t_oDebugInfo['maxLevel']) 
-				//? "maxLevel",t_oDebugInfo['maxLevel'], t_oDebugInfo['__dbgEntryLevel']	
+			if .not. empty(t_oDebugInfo['maxLevel'])
+				//? "maxLevel",t_oDebugInfo['maxLevel'], t_oDebugInfo['__dbgEntryLevel']
 				if t_oDebugInfo['maxLevel'] < t_oDebugInfo['__dbgEntryLevel']
 					// we are not in the same procedure
 					return
@@ -228,21 +228,21 @@ static procedure CheckSocket(lStopSent)
 					lStopSent := .T.
 				endif
 			endif
-		endif	
-		if t_oDebugInfo['lRunning'] 
+		endif
+		if t_oDebugInfo['lRunning']
 			return
-		else
+      else
+         hb_idleSleep(0.1)
 			if .not. lStopSent
 				hb_inetSend(t_oDebugInfo['socket'],"STOP:step"+CRLF)
 				lStopSent := .T.
 			endif
-			hb_idleSleep(0.1)
 		endif
 	enddo
 	// unreachable code
 return
 
-static procedure sendStack() 
+static procedure sendStack()
 	local i,d,p, line, module, functionName,l, start := 3
 	LOCAL t_oDebugInfo := __DEBUGITEM()
 	local aStack := t_oDebugInfo['aStack']
@@ -272,7 +272,7 @@ static procedure sendStack()
 	//? "---"
 return
 
-static function format(value) 
+static function format(value)
 	switch valtype(value)
 		case "U"
 			return "nil"
@@ -285,7 +285,7 @@ static function format(value)
 			elseif at("'",value)==0
 				return "'"+value+"'"
 			else
-				return "["+value+"]" //i don't like it decontexted 
+				return "["+value+"]" //i don't like it decontexted
 			endif
 		case "N"
 			return alltrim(str(value))
@@ -327,7 +327,7 @@ static function GetStackId(level,aStack)
 	endif
 return AScan( aStack, {| a | a[ HB_DBG_CS_LEVEL ] == l } )
 
-static function GetStackAndParams(cParams, aStack) 
+static function GetStackAndParams(cParams, aStack)
 	local aParams := hb_aTokens(cParams,":")
 	local iStack
 	local iStart := val(aParams[2])
@@ -337,7 +337,7 @@ static function GetStackAndParams(cParams, aStack)
 	iStack := GetStackId(idx,aStack)
 return {iStack, iStart, iCount,l,idx} //l and idx used by sendFromInfo
 
-static procedure sendLocals(cParams,prefix) 
+static procedure sendLocals(cParams,prefix)
 	LOCAL t_oDebugInfo := __DEBUGITEM()
 	local aStack := t_oDebugInfo['aStack']
 	local aParams := GetStackAndParams(cParams,aStack)
@@ -368,7 +368,7 @@ static procedure sendLocals(cParams,prefix)
 	hb_inetSend(t_oDebugInfo['socket'],"END"+CRLF)
 return
 
-static procedure sendStatics(cParams,prefix) 
+static procedure sendStatics(cParams,prefix)
 	LOCAL t_oDebugInfo := __DEBUGITEM()
 	local aStack := t_oDebugInfo['aStack']
 	local aModules := t_oDebugInfo['aModules']
@@ -398,7 +398,7 @@ static procedure sendStatics(cParams,prefix)
 	hb_inetSend(t_oDebugInfo['socket'],prefix+" "+alltrim(str(aParams[5]))+CRLF)
 	for i:=iStart to iStart+iCount
 		if i<=nVarMod
-			aInfo := aModules[idxModule,4,i]	
+			aInfo := aModules[idxModule,4,i]
 		elseif i<=nVarMod+nVarStack
 			aInfo := aStack[iStack,HB_DBG_CS_STATICS,i-nVarMod]
 		else
@@ -431,7 +431,7 @@ static function MyGetSta(iStack,varIndex)
 		nVarMod:=0
 	endif
 	if varIndex<=nVarMod
-		aInfo := aModules[idxModule,4,varIndex]	
+		aInfo := aModules[idxModule,4,varIndex]
 	elseif varIndex<=nVarMod+nVarStack
 		aInfo := aStack[iStack,HB_DBG_CS_STATICS,varIndex-nVarMod]
 	else
@@ -439,7 +439,7 @@ static function MyGetSta(iStack,varIndex)
 	endif
 return  __dbgVMVarSGet( aInfo[ HB_DBG_VAR_FRAME ], aInfo[ HB_DBG_VAR_INDEX ] )
 
-static procedure sendFromInfo(prefix, cParams, HB_MV, lLocal) 
+static procedure sendFromInfo(prefix, cParams, HB_MV, lLocal)
 	LOCAL t_oDebugInfo := __DEBUGITEM()
 	local aStack := t_oDebugInfo['aStack']
 	local nVars := __mvDbgInfo( HB_MV )
@@ -464,7 +464,7 @@ static procedure sendFromInfo(prefix, cParams, HB_MV, lLocal)
 		if i > nVars
 			loop
 		endif
-		if HB_MV = HB_MV_PRIVATE 
+		if HB_MV = HB_MV_PRIVATE
 			if lLocal .and. i>nLocal
 				loop
 			endif
@@ -480,24 +480,24 @@ static procedure sendFromInfo(prefix, cParams, HB_MV, lLocal)
 	next
 
 	hb_inetSend(t_oDebugInfo['socket'],"END"+CRLF)
-return 
+return
 
-static function getValue(req) 
+static function getValue(req)
 	local aInfos := hb_aTokens(req,":")
 	local v, i, aIndices, cName
 	//? "getValue", req
 #ifndef __XHARBOUR__
 #define BEGIN_T switch aInfos[1]
-#define TYPE case 
+#define TYPE case
 #define ENDTYPE exit
 #define END_T endswitch
 #else
 #define BEGIN_T do case
 #define TYPE case aInfos[1]=
-#define ENDTYPE 
+#define ENDTYPE
 #define END_T endcase
 #endif
-	
+
 	BEGIN_T
 		TYPE "ERR"
 			v := __DEBUGITEM()["error"]
@@ -557,7 +557,7 @@ static function getValue(req)
 					v :=  __dbgObjGetValue(val(aInfos[2]),v,aIndices[i])
 			endswitch
 		next
-	endif	
+	endif
 	if at(valtype(v),"AHO") == 0
 		return {}
 	endif
@@ -604,7 +604,7 @@ STATIC FUNCTION __dbgObjGetValue( nProcLevel, oObject, cVar )
 	t_oDebugInfo['lRunning'] := lOldRunning
 RETURN xResult
 
-static procedure sendCoumpoundVar(req, cParams ) 
+static procedure sendCoumpoundVar(req, cParams )
 	local value := getValue(@req)
 	local aInfos := hb_aTokens(req,":")
 	local aParams := GetStackAndParams(cParams)
@@ -661,11 +661,11 @@ static procedure sendCoumpoundVar(req, cParams )
 		hb_inetSend(t_oDebugInfo['socket'],cLine + CRLF )
 	next
 
-	hb_inetSend(t_oDebugInfo['socket'],"END"+CRLF)	
+	hb_inetSend(t_oDebugInfo['socket'],"END"+CRLF)
 return
 
 // returns -1 if the module is not valid, 0 if the line is not valid, 1 in case of valid line
-static function IsValidStopLine(cModule,nLine) 
+static function IsValidStopLine(cModule,nLine)
 	LOCAL iModule
 	LOCAL t_oDebugInfo := __DEBUGITEM()
 	local nIdx, nInfo, tmp
@@ -685,7 +685,7 @@ static function IsValidStopLine(cModule,nLine)
 	nInfo = Asc(SubStr(t_oDebugInfo['aModules'][iModule,3],tmp+1,1))
 return HB_BITAND(HB_BITSHIFT(nInfo, -(nIdx-tmp*8)),1)
 
-static procedure setBreakpoint(cInfo) 
+static procedure setBreakpoint(cInfo)
 	LOCAL aInfos := hb_aTokens(cInfo,":"), idLine
 	local nReq, nLine, nReason, nExtra
 	LOCAL t_oDebugInfo := __DEBUGITEM()
@@ -763,7 +763,7 @@ static procedure setBreakpoint(cInfo)
 	//? "BREAK:"+aInfos[2]+":"+aInfos[3]+":"+alltrim(str(nLine))
 return
 
-static function inBreakpoint() 
+static function inBreakpoint()
 	LOCAL aBreaks := __DEBUGITEM()['aBreaks']
 	LOCAL nLine := procLine(3), aBreakInfo
 	local idLine, cFile := lower(procFile(3)), nExtra := 2
@@ -781,12 +781,12 @@ static function inBreakpoint()
 			case '?'
 			#ifndef __XHARBOUR__
 				BEGIN SEQUENCE WITH {|| Break() }
-					ck:=evalExpression(aBreakInfo[nExtra+1],1)			
+					ck:=evalExpression(aBreakInfo[nExtra+1],1)
 				END SEQUENCE
 			#else
-				TRY 
-					ck:=evalExpression(aBreakInfo[nExtra+1],1)	
-				catch		
+				TRY
+					ck:=evalExpression(aBreakInfo[nExtra+1],1)
+				catch
 				END
 			#endif
 				if valtype(ck)<>'L' .or. ck=.F.
@@ -808,7 +808,7 @@ static function inBreakpoint()
 return .T.
 
 static procedure BreakLog(cMessage)
-	LOCAL cResponse := "", cCur, cExpr 
+	LOCAL cResponse := "", cCur, cExpr
 	LOCAL nCurly:=0, i
 	for i:=1 to len(cMessage)
 		cCur := subStr(cMessage,i,1)
@@ -836,8 +836,8 @@ static procedure BreakLog(cMessage)
 	hb_inetSend(__DEBUGITEM()['socket'],"LOG:"+cResponse+CRLF)
 return
 
-//#define SAVEMODULES 
-static procedure AddModule(aInfo) 
+//#define SAVEMODULES
+static procedure AddModule(aInfo)
 	LOCAL t_oDebugInfo := __DEBUGITEM()
 	local i, idx
 	#ifdef SAVEMODULES
@@ -853,12 +853,12 @@ static procedure AddModule(aInfo)
 		idx := aScan(t_oDebugInfo['aModules'], {|v| aInfo[i,1]=v[1]})
 		if idx=0
 			aAdd(aInfo[i],{}) //statics
-			aadd(t_oDebugInfo['aModules'],aInfo[i])			
+			aadd(t_oDebugInfo['aModules'],aInfo[i])
 		else
 			aAdd(aInfo[i],t_oDebugInfo['aModules'][idx,4])
 			t_oDebugInfo['aModules'][idx] := aInfo[i]
 		endif
-		
+
 		#ifdef SAVEMODULES
 			fWrite(fFileModules,aInfo[i,1]+str(aInfo[i,2])+e"\r\n")
 			for j:=1 to len(aInfo[i,3])*8
@@ -887,7 +887,7 @@ static procedure AddStaticModule(idx,name,frame)
 	aAdd(t_oDebugInfo['aModules'][idxModule,4],{name,idx,"S",frame})
 return
 
-static function replaceExpression(xExpr, __dbg, name, value) 
+static function replaceExpression(xExpr, __dbg, name, value)
 	local aMatches := HB_REGEXALL("\b"+name+"\b",xExpr,.F./*CASE*/,/*line*/,/*nMat*/,/*nGet*/,.F.)
 	local i, cVal
 	if empty(aMatches)
@@ -900,7 +900,7 @@ static function replaceExpression(xExpr, __dbg, name, value)
 	next
 return xExpr
 
-static function evalExpression( xExpr, level ) 
+static function evalExpression( xExpr, level )
 	local oErr, xResult, __dbg := {}
 	local i, cName, v
 	LOCAL t_oDebugInfo := __DEBUGITEM(), lOldRunning
@@ -959,11 +959,11 @@ static function evalExpression( xExpr, level )
 	CATCH oErr
 		xResult := oErr:Description //oErr
 	END
-#endif	
+#endif
 	t_oDebugInfo['lRunning'] := lOldRunning
 return xResult
 
-static procedure sendExpression( xExpr ) 
+static procedure sendExpression( xExpr )
 	LOCAL xResult
 	LOCAL cType, level, iDots := at(":",xExpr)
 	LOCAL t_oDebugInfo := __DEBUGITEM()
@@ -1076,7 +1076,7 @@ static func normalSymbols(cLine,level)
 		next
 	endif
 	if len(cLine)>0
-		cResult+=AddDynSymbols(cLine) 
+		cResult+=AddDynSymbols(cLine)
 	endif
 return cResult
 
@@ -1084,7 +1084,7 @@ static func AddDynSymbols(cmd)
     LOCAL uiFirst := 0,uiLast := __DynSCount()
     local uiMiddle, cCurrent, cRet := ""
     //cmd := upper(cmd)
-    do while  uiFirst < uiLast  
+    do while  uiFirst < uiLast
         uiMiddle = hb_bitshift(( uiFirst + uiLast ), -1)
         cCurrent := __DynSGetName(uiMiddle)
         if cCurrent==cmd
@@ -1092,7 +1092,7 @@ static func AddDynSymbols(cmd)
         endif
         if cCurrent<cmd
           uiLast := uiMiddle
-        else 
+        else
           uiFirst := uiMiddle + 1
         endif
     enddo
@@ -1116,10 +1116,10 @@ STATIC PROCEDURE SetErrorType( nType )
 	//? "errorType = ",t_oDebugInfo["errorType"]
 	__DEBUGITEM(t_oDebugInfo)
 return
-	
+
 STATIC PROCEDURE ErrorBlockCode( e )
 	LOCAL t_oDebugInfo := __DEBUGITEM()
-	if t_oDebugInfo["inError"] 
+	if t_oDebugInfo["inError"]
 		return
 	endif
 	//? "error with ",t_oDebugInfo["errorType"]
@@ -1254,10 +1254,10 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			if t_oDebugInfo['maxLevel']=-2
 				t_oDebugInfo['lRunning']:=.F.
 			endif
- 
+
 			aSize(t_oDebugInfo['aStack'],len(t_oDebugInfo['aStack'])-1)
 			if t_oDebugInfo['bInitLines']
-				// I don't like this hack, shoud be better if in case of HB_DBG_ENDPROC 
+				// I don't like this hack, shoud be better if in case of HB_DBG_ENDPROC
 				// uParam1 is the returned value, it allow to show it in watch too...
 				// * Harbour is 12
 				// * xHarbur is 13
@@ -1302,7 +1302,7 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			#endif
 			t_oDebugInfo['error'] := nil
 			t_oDebugInfo['inError'] := .F.
-			t_oDebugInfo['aStack'][len(t_oDebugInfo['aStack'])][HB_DBG_CS_LINE] := uParam1			
+			t_oDebugInfo['aStack'][len(t_oDebugInfo['aStack'])][HB_DBG_CS_LINE] := uParam1
 			CheckSocket()
 			__dbgInvokeDebug(.F.)
 			exit
