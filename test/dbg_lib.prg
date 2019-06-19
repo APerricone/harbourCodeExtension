@@ -232,7 +232,9 @@ static procedure CheckSocket(lStopSent)
 		if t_oDebugInfo['lRunning']
 			return
       else
+         t_oDebugInfo['lInternalRun'] := .T.
          hb_idleSleep(0.1)
+         t_oDebugInfo['lInternalRun'] := .F.
 			if .not. lStopSent
 				hb_inetSend(t_oDebugInfo['socket'],"STOP:step"+CRLF)
 				lStopSent := .T.
@@ -568,11 +570,10 @@ STATIC FUNCTION __dbgObjGetValue( nProcLevel, oObject, cVar )
    LOCAL xResult
    LOCAL oErr
    LOCAL t_oDebugInfo := __DEBUGITEM()
-   LOCAL lOldRunning := t_oDebugInfo['lRunning']
 #ifdef __XHARBOUR__
    LOCAL i
 #endif
-  t_oDebugInfo['lRunning'] := .T.
+  t_oDebugInfo['lInternalRun'] := .T.
 
 #ifdef __XHARBOUR__
    TRY
@@ -601,7 +602,7 @@ STATIC FUNCTION __dbgObjGetValue( nProcLevel, oObject, cVar )
       	END SEQUENCE
    	END SEQUENCE
 #endif
-	t_oDebugInfo['lRunning'] := lOldRunning
+	t_oDebugInfo['lInternalRun'] := .F.
 RETURN xResult
 
 static procedure sendCoumpoundVar(req, cParams )
@@ -903,7 +904,7 @@ return xExpr
 static function evalExpression( xExpr, level )
 	local oErr, xResult, __dbg := {}
 	local i, cName, v
-	LOCAL t_oDebugInfo := __DEBUGITEM(), lOldRunning
+	LOCAL t_oDebugInfo := __DEBUGITEM()
 	local aStack := t_oDebugInfo['aStack']
 	LOCAL iStack := GetStackId(level,aStack)
 	local aModules := t_oDebugInfo['aModules']
@@ -945,8 +946,7 @@ static function evalExpression( xExpr, level )
 		next
 	endif
 	// ******
-	lOldRunning := t_oDebugInfo['lRunning']
-	t_oDebugInfo['lRunning'] := .T.
+	t_oDebugInfo['lInternalRun'] := .T.
 #ifndef __XHARBOUR__
 	BEGIN SEQUENCE WITH {|oErr| BREAK( oErr ) }
 		xResult := Eval(&("{|__dbg| "+xExpr+"}"),__dbg)
@@ -960,7 +960,7 @@ static function evalExpression( xExpr, level )
 		xResult := oErr:Description //oErr
 	END
 #endif
-	t_oDebugInfo['lRunning'] := lOldRunning
+	t_oDebugInfo['lInternalRun'] := .F.
 return xResult
 
 static procedure sendExpression( xExpr )
@@ -1164,6 +1164,7 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 				t_oDebugInfo := { ;
 					'socket' =>  nil, ;
 					'lRunning' =>  .F., ;
+					'lInternalRun' => .F., ;
 					'aBreaks' =>  {=>}, ;
 					'aStack' =>  {}, ;
 					'aModules' =>  {}, ;
@@ -1279,6 +1280,9 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			//	? i,t_oDebugInfo['aStack',i,HB_DBG_CS_FUNCTION],t_oDebugInfo['aStack',i,HB_DBG_CS_LINE]
 			//next
 			//TODO check if ErrorBlock is setted by user and save user's errorBlock
+			if t_oDebugInfo['lInternalRun']
+				exit
+			endif
 			t_oDebugInfo['__dbgEntryLevel'] := __dbgProcLevel()
 			tmp := ErrorBlock()
 			#ifndef __XHARBOUR__ //temp

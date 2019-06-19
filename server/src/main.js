@@ -528,7 +528,7 @@ connection.onDefinition((params)=>
 {
     var doc = documents.get(params.textDocument.uri);
     var line = doc.getText(server.Range.create(params.position.line,0,params.position.line,100));
-    var include = /^\s*#include\s+[<"]([^>"]*)/.exec(line);
+    var include = /^\s*#include\s+[<"]([^>"]*)/i.exec(line);
     if(include!==null)
     {
         var startPath = undefined;
@@ -908,7 +908,7 @@ connection.onCompletion((param, cancelled)=>
 {
     var doc = documents.get(param.textDocument.uri);
     var line = doc.getText(server.Range.create(param.position.line,0,param.position.line,1000));
-    var include = line.match(/^\s*#include\s+[<"]([^>"]*)/);
+    var include = line.match(/^\s*#include\s+[<"]([^>"]*)/i);
     var precLetter = doc.getText(server.Range.create(server.Position.create(param.position.line,param.position.character-1),param.position));    
     if(include!==null)
     {
