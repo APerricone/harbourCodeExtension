@@ -1082,19 +1082,19 @@ connection.onCompletion((param, cancelled)=>
             CheckAdd(missing[i],server.CompletionItemKind.Function,"A")
             if(cancelled.isCancellationRequested) return server.CompletionList.create(completitions,false);
         }
-        if (wordBasedSuggestions) 
+    }
+    if (wordBasedSuggestions) 
+    {
+        var wordRE = /\b[a-z_][a-z0-9_]*\b/gi
+        var foundWord;
+        var pos = doc.offsetAt(param.position);
+        while(foundWord = wordRE.exec(allText))
         {
-            var wordRE = /\b[a-z_][a-z0-9_]*\b/gi
-            var foundWord;
-            var pos = doc.offsetAt(param.position);
-            while(foundWord = wordRE.exec(allText))
-            {
-                // remove current word
-                if(foundWord.index<pos &&  foundWord.index+foundWord[0].length>=pos)
-                    continue;
-                CheckAdd(foundWord[0],server.CompletionItemKind.Text,"")
-                if(cancelled.isCancellationRequested) return server.CompletionList.create(completitions,false);
-            }
+            // remove current word
+            if(foundWord.index<pos &&  foundWord.index+foundWord[0].length>=pos)
+                continue;
+            CheckAdd(foundWord[0],server.CompletionItemKind.Text,"")
+            if(cancelled.isCancellationRequested) return server.CompletionList.create(completitions,false);
         }
     }
     return server.CompletionList.create(completitions,false);
