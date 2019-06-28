@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to the "Harbour and xHarbour" extension will be documented in this file.
 
+# 0.9.3
+ - **server** fixed wordBasedSuggestions for methods and fields
+ - **debugger** added ATTACH support
+
 # 0.9.2
  - **server** speed-up completition
  - **server** use of editor.wordBasedSuggestions setting

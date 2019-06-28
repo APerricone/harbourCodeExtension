@@ -215,6 +215,29 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
 	this.sendResponse(response);
 }
 
+harbourDebugSession.prototype.attachRequest = function(response, args)
+{
+	var port = args.port? args.port : 6110;
+	var tc=this;
+	this.justStart = true;
+	this.sourcePaths = []; //[path.dirname(args.program)];
+	if("workspaceRoot" in args)
+	{
+		this.sourcePaths.push(args.workspaceRoot); 
+	}
+	if("sourcePaths" in args)
+	{
+		this.sourcePaths = this.sourcePaths.concat(args.sourcePaths);
+	}
+	this.Debugging = !args.noDebug;
+	this.startGo = true;
+	// starts the server
+	var server = net.createServer(socket => {
+		tc.evaluateClient(socket, server, args)
+	}).listen(port);
+	this.sendResponse(response);
+}
+
 harbourDebugSession.prototype.SetProcess = function(pid)
 {
 	var tc=this
@@ -229,6 +252,12 @@ harbourDebugSession.prototype.SetProcess = function(pid)
 			clearInterval(interval);	
 		}
 	},1000)
+}
+
+harbourDebugSession.prototype.disconnectRequest = function(response, args)
+{
+	this.command("DISCONNECT\r\n");
+	this.sendResponse(response);
 }
 
 harbourDebugSession.prototype.terminateRequest = function(response, args)

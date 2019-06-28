@@ -29,7 +29,14 @@
 			"workingDir": "${workspaceRoot}/",
 			"stopOnEntry": true,
 			"preLaunchTask": "build",
-			"terminalType": "integrated",
+			"terminalType": "integrated"
+		},
+		{
+			"type": "harbour-dbg",
+			"request": "attach",
+			"name": "Attach currentFile",
+			"program": "${workspaceRoot}/${fileBasenameNoExtension}",
+			"sourcePaths": ["${workspaceRoot}"],
 			"debugServer": 4711
 		}
 	]

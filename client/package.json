@@ -154,12 +154,24 @@
                 ],
                 "configurationSnippets": [
                     {
-                        "label": "Harbour",
+                        "label": "Harbour launch",
                         "description": "%harbour.configurationSnippetsDesc%",
                         "body": {
                             "type": "harbour-dbg",
                             "request": "launch",
                             "name": "%harbour.configurationSnippets%",
+                            "program": "^\"\\${workspaceFolder}/${2:Program}\"",
+                            "workingDir": "${workspaceFolder}/",
+                            "sourcePaths": "^[\"\\${workspaceFolder}\"]"
+                        }
+                    },
+                    {
+                        "label": "Harbour attach",
+                        "description": "%harbour.configurationSnippetsDesc2%",
+                        "body": {
+                            "type": "harbour-dbg",
+                            "request": "attach",
+                            "name": "%harbour.configurationSnippets2%",
                             "program": "^\"\\${workspaceFolder}/${2:Program}\"",
                             "workingDir": "${workspaceFolder}/",
                             "sourcePaths": "^[\"\\${workspaceFolder}\"]"
@@ -216,6 +228,37 @@
                                     "none",
                                     "external",
                                     "integrated"
+                                ]
+                            },
+                            "port": {
+                                "type": "number",
+                                "description": "%harbour.launch.port%",
+                                "default": "6110"
+                            }
+                        }
+                    },
+                    "attach": {
+                        "required": [
+                            "program"
+                        ],
+                        "properties": {
+                            "workspaceRoot": {
+                                "type": "string",
+                                "default": "${workspaceFolder}",
+                                "deprecationMessage": "%harbour.launch.workspaceRoot%"
+                            },
+                            "program": {
+                                "type": "string",
+                                "description": "%harbour.launch.program%"
+                            },
+                            "sourcePaths": {
+                                "type": "array",
+                                "description": "%harbour.launch.sourcePaths%",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "default": [
+                                    "${workspaceFolder}"
                                 ]
                             },
                             "port": {
