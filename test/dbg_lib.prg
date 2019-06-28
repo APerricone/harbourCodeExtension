@@ -139,7 +139,7 @@ static procedure CheckSocket(lStopSent)
 						END_COM
 					COMMAND "EXIT" // go to callee procedure
 						t_oDebugInfo['lRunning'] := .T.
-						t_oDebugInfo['maxLevel'] := -2
+						t_oDebugInfo['maxLevel'] := t_oDebugInfo['__dbgEntryLevel']-1
 						t_oDebugInfo['inError'] := .F. // If it was on error, now it doesn't
 						lNeedExit := .T.
 						END_COM
@@ -1265,11 +1265,13 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 		case HB_DBG_ENDPROC
 			//uParam1 := __GETLASTRETURN(12)
 			//? "EndPROC", uParam1, uParam2, uParam3, valtype(uParam1), valtype(uParam2), valtype(uParam3)
-			//? "EndPROC",procName(1),t_oDebugInfo['maxLevel'], t_oDebugInfo['__dbgEntryLevel']
-			if t_oDebugInfo['maxLevel']=-2
-				t_oDebugInfo['lRunning']:=.F.
+			//? "EndPROC",procName(1),t_oDebugInfo['maxLevel'], t_oDebugInfo['__dbgEntryLevel'], __dbgProcLevel()
+			if .not. empty(t_oDebugInfo['maxLevel'])
+				if t_oDebugInfo['maxLevel'] >= __dbgProcLevel()-1
+					//? "stopped for OUT"
+					t_oDebugInfo['lRunning']:=.F.
+				endif
 			endif
-
 			aSize(t_oDebugInfo['aStack'],len(t_oDebugInfo['aStack'])-1)
 			if t_oDebugInfo['bInitLines']
 				// I don't like this hack, shoud be better if in case of HB_DBG_ENDPROC
