@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "vscode-languageserver": "^5.2.1",
-    "vscode-uri": "^1.0.5"
+    "vscode-uri": "^1.0.8"
   },
   "devDependencies": {
     "@types/node": "^6.0.112"

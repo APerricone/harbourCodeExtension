@@ -284,7 +284,7 @@ harbourDebugSession.prototype.evaluateClient = function(socket, server, args)
 		nData++;
 		// the client sended exe name and process ID		
 		var lines = data.toString().split("\r\n");
-		if(lines.length<2)
+		if(lines.length<2) //todo: check if they arrive in 2 tranches.
 			return;
 		var clPath = path.basename(lines[0],path.extname(lines[0])).toLowerCase();
 		if(clPath!=exeTarget)
@@ -351,15 +351,20 @@ harbourDebugSession.prototype.sendStack = function(line)
 	this.processLine = function(line)
 	{
 		var infos = line.split(":");
-		var completePath = infos[0];
-		for(i=0;i<this.sourcePaths.length;i++)
+		for(i=0;i<infos.length;i++) infos[i]=infos[i].replace(";",":")
+		var completePath = infos[0]
+		if(fs.existsSync(infos[0]))
 		{
-			if(fs.existsSync(path.join(this.sourcePaths[i],infos[0])))
+			completePath = infos[0];
+		} else
+			for(i=0;i<this.sourcePaths.length;i++)
 			{
-				completePath = path.join(this.sourcePaths[i],infos[0]);
-				break;
+				if(fs.existsSync(path.join(this.sourcePaths[i],infos[0])))
+				{
+					completePath = path.join(this.sourcePaths[i],infos[0]);
+					break;
+				}
 			}
-		}
 		frames[j] = new debugadapter.StackFrame(j,infos[2],
 			new debugadapter.Source(infos[0],completePath),
 			parseInt(infos[1]));
@@ -371,7 +376,7 @@ harbourDebugSession.prototype.sendStack = function(line)
 				var args = this.stackArgs.shift();
 				var resp = this.stack.shift();
 				args.startFrame = args.startFrame || 0;
-				args.levels = args.levels || 100;
+				args.levels = args.levels || frames.length;
 				args.levels += args.startFrame;
 				resp.body = {
 					stackFrames: frames.slice(args.startFrame, args.levels)

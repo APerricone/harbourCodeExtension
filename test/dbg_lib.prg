@@ -201,10 +201,10 @@ static procedure CheckSocket(lStopSent)
 						t_oDebugInfo['aBreaks'] := {=>}
 						t_oDebugInfo['maxLevel'] := nil
 						return
-						END_COM
 				END_C
 #undef BEGIN_C
 #undef COMMAND
+#undef END_COM
 #undef END_C
 			endif
 		enddo
@@ -271,21 +271,20 @@ static procedure sendStack()
 	hb_inetSend(t_oDebugInfo['socket'],"STACK " + alltrim(str(d-start+1))+CRLF)
 	for i:=start to d
 		l := d-i+1
-		IF ( p := AScan( aStack, {| a | a[ HB_DBG_CS_LEVEL ] == l } ) ) > 0
-			line			:= aStack[p,HB_DBG_CS_LINE]
-			module			:= aStack[p,HB_DBG_CS_MODULE]
-			functionName	:= aStack[p,HB_DBG_CS_FUNCTION]
-			//? i," DEBUG ", module+":"+alltrim(str(line))+ ":"+functionName + "- ("+ ;
-			//	procFile(i)+":"+alltrim(str(procLine(i)))+ ":"+ProcName(i) +")", l
-		else
-			line			:= procLine(i)
-			module			:= procFile(i)
-			functionName	:= ProcName(i)
-			//? i,"NODEBUG", module+":"+alltrim(str(line))+ ":"+functionName, l
-		endif
+		line			:= procLine(i)
+		module			:= strTran(procFile(i),":",";")
+		functionName	:= strTran(ProcName(i),":",";")
 		hb_inetSend(t_oDebugInfo['socket'], module+":"+alltrim(str(line))+":"+functionName+CRLF)
 	next
 	//? "---"
+#ifdef _DEBUGDEBUG
+	for i:=1 to len(aStack)
+		line			:= aStack[i,HB_DBG_CS_LINE]
+		module			:= aStack[i,HB_DBG_CS_MODULE]
+		functionName	:= aStack[i,HB_DBG_CS_FUNCTION]		
+		? i," DEBUG ", module,":",alltrim(str(line)),":",functionName,aStack[i,HB_DBG_CS_LEVEL],len(aStack[i,HB_DBG_CS_LOCALS]),len(aStack[i,HB_DBG_CS_LOCALS])
+	next
+#endif
 return
 
 static function format(value)
