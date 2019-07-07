@@ -353,18 +353,22 @@ harbourDebugSession.prototype.sendStack = function(line)
 		var infos = line.split(":");
 		for(i=0;i<infos.length;i++) infos[i]=infos[i].replace(";",":")
 		var completePath = infos[0]
+		var found = false;
 		if(fs.existsSync(infos[0]))
 		{
 			completePath = infos[0];
+			found=true;
 		} else
 			for(i=0;i<this.sourcePaths.length;i++)
 			{
 				if(fs.existsSync(path.join(this.sourcePaths[i],infos[0])))
 				{
 					completePath = path.join(this.sourcePaths[i],infos[0]);
+					found=true;
 					break;
 				}
 			}
+		if(found) infos[0]=path.basename(infos[0]);
 		frames[j] = new debugadapter.StackFrame(j,infos[2],
 			new debugadapter.Source(infos[0],completePath),
 			parseInt(infos[1]));
