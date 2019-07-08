@@ -51,10 +51,11 @@ static procedure CheckSocket(lStopSent)
 	LOCAL t_oDebugInfo := __DEBUGITEM()
 	lStopSent := iif(empty(lStopSent),.F.,lStopSent)
 	// if no server then search it.
-	do while (empty(t_oDebugInfo['socket']) .and. t_oDebugInfo['timeCheckForDebug']<10)
-		//QOut("try to connect to debug server",t_oDebugInfo['timeCheckForDebug'], seconds())
+	// 140+130+120+110+100+90+80+70+60+50+40+30+20+10=1050 wait 1sec at start, then 0
+	do while (empty(t_oDebugInfo['socket']) .and. t_oDebugInfo['timeCheckForDebug']<=14)
+		//QOut("try to connect to debug server",t_oDebugInfo['timeCheckForDebug'], seconds()," timeout:",140-t_oDebugInfo['timeCheckForDebug']*10)
 		hb_inetInit()
-		t_oDebugInfo['socket'] := hb_inetCreate(100)
+		t_oDebugInfo['socket'] := hb_inetCreate(140-t_oDebugInfo['timeCheckForDebug']*10)
 		hb_inetConnect("127.0.0.1",DBG_PORT,t_oDebugInfo['socket'])
 		if hb_inetErrorCode(t_oDebugInfo['socket']) <> 0			
 			//QOut("failed")			// no server found
@@ -71,9 +72,7 @@ static procedure CheckSocket(lStopSent)
 		endif
 		if tmp="NO" //server not found or handshake failed 
 			t_oDebugInfo['socket'] := nil
-			//hb_idleSleep(0.1) //they are already the timeout
 			t_oDebugInfo['timeCheckForDebug']+=1
-			// at start of application it waits 1 sec.
 		endif
 	end do
 	if empty(t_oDebugInfo['socket'])
