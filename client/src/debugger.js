@@ -724,7 +724,12 @@ harbourDebugSession.prototype.processExpression = function(line)
 	var resp = this.evaluateResponses.shift();
 	var line = "EXP:" + infos[1] + ":" + resp.body.result.replace(/:/g,";") + ":";
 	resp.body.name = resp.body.result
-	resp.body = this.getVariableFormat(resp.body,infos[2],infos[3],"result",line);
+	if(infos[2]=="E")
+	{
+		resp.success = false;
+		resp.message = infos[3];
+	} else
+		resp.body = this.getVariableFormat(resp.body,infos[2],infos[3],"result",line);
 	this.sendResponse(resp);	
 }
 

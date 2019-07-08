@@ -601,7 +601,7 @@ STATIC FUNCTION __dbgObjGetValue( nProcLevel, oObject, cVar )
 		xResult := nil
 	  endif
    CATCH oErr
-      xResult := oErr:description
+      xResult := oErr
    END
 #else
    	BEGIN SEQUENCE WITH {|| Break() }
@@ -612,7 +612,7 @@ STATIC FUNCTION __dbgObjGetValue( nProcLevel, oObject, cVar )
         	/* Try to access variables using class code level */
          	xResult := __dbgSENDMSG( 0, oObject, cVar )
       	RECOVER USING oErr
-        	xResult := oErr:description
+        	xResult := oErr
       	END SEQUENCE
    	END SEQUENCE
 #endif
@@ -965,13 +965,13 @@ static function evalExpression( xExpr, level )
 	BEGIN SEQUENCE WITH {|oErr| BREAK( oErr ) }
 		xResult := Eval(&("{|__dbg| "+xExpr+"}"),__dbg)
 	RECOVER USING oErr
-		xResult := oErr:Description //oErr
+		xResult := oErr
 	END SEQUENCE
 #else
 	TRY
 		xResult := Eval(&("{|__dbg| "+xExpr+"}"),__dbg)
 	CATCH oErr
-		xResult := oErr:Description //oErr
+		xResult := oErr
 	END
 #endif
 	t_oDebugInfo['lInternalRun'] := .F.

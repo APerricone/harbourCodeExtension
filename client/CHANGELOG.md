@@ -5,6 +5,7 @@ All notable changes to the "Harbour and xHarbour" extension will be documented i
  - **server** fixed wordBasedSuggestions for methods and fields
  - **debugger** added ATTACH support
  - **debugger** better stack format
+ - **debugger** better management of eval error
 
 # 0.9.2
  - **server** speed-up completition
