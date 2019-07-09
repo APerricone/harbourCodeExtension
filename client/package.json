@@ -173,7 +173,6 @@
                             "request": "attach",
                             "name": "%harbour.configurationSnippets2%",
                             "program": "^\"\\${workspaceFolder}/${2:Program}\"",
-                            "workingDir": "${workspaceFolder}/",
                             "sourcePaths": "^[\"\\${workspaceFolder}\"]"
                         }
                     }
