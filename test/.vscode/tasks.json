@@ -62,7 +62,7 @@
             "windows": {
                 "command": "myBuild.bat"
             },
-            "args": [ "dbg_lib", "-w", "-ql", "-ocode_dbg","-gc3", "-hblib","-inc","-winuni"],
+            "args": [ "dbg_lib", "-w3", "-es2", "-ql", "-ocode_dbg","-gc3", "-hblib","-inc","-winuni"],
             "problemMatcher": [
             {
                 "owner": "cpp",

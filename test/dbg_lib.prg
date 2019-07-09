@@ -259,9 +259,11 @@ static procedure CheckSocket(lStopSent)
 return
 
 static procedure sendStack()
-	local i,d,p, line, module, functionName,l, start := 3
+	local i,d, line, module, functionName, start := 3
 	LOCAL t_oDebugInfo := __DEBUGITEM()
+#ifdef _DEBUGDEBUG
 	local aStack := t_oDebugInfo['aStack']
+#endif
 	if t_oDebugInfo['inError']
 		start := 4
 	endif
@@ -270,7 +272,6 @@ static procedure sendStack()
 	//? "send stack---", start,d, t_oDebugInfo['__dbgEntryLevel']
 	hb_inetSend(t_oDebugInfo['socket'],"STACK " + alltrim(str(d-start+1))+CRLF)
 	for i:=start to d
-		l := d-i+1
 		line			:= procLine(i)
 		module			:= strTran(procFile(i),":",";")
 		functionName	:= strTran(ProcName(i),":",";")
