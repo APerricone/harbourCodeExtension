@@ -1,7 +1,8 @@
 var provider = require('./src/provider.js');
 
 var p = new provider.Provider();
-p.parseFile("../test/db1.prg").then(()=>
+p.doGroups = true;
+p.parseFile("../test/minimal.prg").then(()=>
 {
     for (var fn in p.funcList) {
         if (p.funcList.hasOwnProperty(fn)) {
