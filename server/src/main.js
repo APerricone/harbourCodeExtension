@@ -1358,6 +1358,14 @@ connection.onFoldingRanges((params) => {
                 ranges.push(rr);
             }
     }
+    for (let iComment = 0; iComment < pp.multilineComments.length; iComment++) {
+        const cc = pp.multilineComments[iComment];
+        var rr= {};
+        rr.king = "comment"
+        rr.startLine=cc[0];
+        rr.endLine=cc[1];
+        ranges.push(rr);
+    }
 
     return ranges;
 })

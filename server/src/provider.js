@@ -50,9 +50,13 @@ Provider.prototype.Clear = function()
 	/** @type {Object.<string, dbInfo>} every key is the lowercase name of db
 	*/
 	this.databases={};
-	/** @type {Array<Group>} An array of groups found*/
+	/** @type {Array<Group>} The array of groups found*/
 	this.groups=[];
 	this.includes=[];
+	/** @type {number[][]} */
+	this.multilineComments=[];
+	/** @type {number} */
+	this.firstLineCommment=-1;
 }
 
 /**
@@ -204,6 +208,7 @@ Provider.prototype.linePrepare = function(line)
 	{
 		this.currentComment += "\r\n"+this.currLine.trim().substr(4);
 		this.currLine="";
+		if(this.firstLineCommment<0) this.firstLineCommment = this.lineNr;
 		return;
 	}
 	for(var i=0;i<this.currLine.length;i++)
@@ -247,6 +252,7 @@ Provider.prototype.linePrepare = function(line)
 					this.currentComment+="\r\n"+this.currLine.substr(i+1)
 					this.comment = true;
 					this.currLine = this.currLine.substr(0,i-1)
+					if(this.firstLineCommment<0) this.firstLineCommment=this.lineNr;
 					return;
 				}
 			}
@@ -255,6 +261,7 @@ Provider.prototype.linePrepare = function(line)
 				// commented line: skip
 				this.currentComment+="\r\n"+this.currLine.substr(i+1)
 				this.currLine="";
+				if(this.firstLineCommment<0) this.firstLineCommment=this.lineNr;
 				return;
 			}
 		}
@@ -265,6 +272,8 @@ Provider.prototype.linePrepare = function(line)
 			this.currentComment+="\r\n"+this.currLine.substr(i+1)
 			this.currLine = this.currLine.substr(0,i-1)
 			this.cont = this.currLine.trim().endsWith(";");
+			if(precJustStart && this.firstLineCommment<0)
+				this.firstLineCommment=this.lineNr;
 			return;
 		}
 		if(c=='"')
@@ -500,6 +509,12 @@ Provider.prototype.parse = function(line)
 	this.linePrepare(line);
 	if(this.currLine.trim().length==0 || this.cont) return;
 	/** @type{string[]} */
+	if(this.firstLineCommment>=0)
+	{
+		if(this.firstLineCommment<this.lineNr-1) 
+			this.multilineComments.push([this.firstLineCommment,this.lineNr-1])
+		this.firstLineCommment=-1;
+	}
 	if(this.cMode) {
 		var words = this.currLine.replace(/\s+/g," ").trim().split(" ");
 		this.parseC(words);
@@ -548,6 +563,8 @@ Provider.prototype.parseString = function(txt,docName,cMode)
 Provider.prototype.endParse = function()
 {
 	if(this.currentMethod) this.currentMethod.endLine = this.lastCodeLine;
+	if(this.firstLineCommment>0 && this.firstLineCommment<this.lineNr-1) 
+		this.multilineComments.push([this.firstLineCommment,this.lineNr-1])
 }
 
 /**
@@ -651,50 +668,6 @@ Provider.prototype.updateGroups = function(words)
 			break;
 		}
 	}
-}
-
-Provider.prototype.GetLineAt = function(txt,pos)
-{
-	var lines = [];
-	var posLineStart = pos
-	while(txt[posLineStart]!="\n" && posLineStart>0) posLineStart--;
-	if(txt[posLineStart]=="\n")	posLineStart+=1;
-	var posLineEnd = pos;
-	while(txt[posLineEnd]!="\n" && posLineEnd<txt.length-1) posLineEnd++;
-	// go back until a line without ; found
-	var curStart = posLineStart,curEnd;
-	var line=";"
-	while(line.indexOf(";")>=0 && curStart>0)
-	{
-		curEnd = curStart-1;
-		curStart =  curEnd-1;
-		while(txt[curStart]!="\n" && curStart>0) curStart--;
-		if(txt[curStart]=="\n") curStart+=1;		
-		line = txt.substring(curStart,curEnd)
-		lines.splice(0,0,line)
-	}
-	// go forward until a line without ; found
-	curStart = posLineStart;
-	curEnd = posLineEnd;
-	line = txt.substring(curStart,curEnd)
-	lines.push(line)
-	while(line.indexOf(";")>=0 && curEnd<txt.length-1)
-	{
-		curStart = curEnd+1;
-		curEnd=curStart+1;
-		while(txt[curEnd]!="\n" && curEnd<txt.length-1) curEnd++;
-		line = txt.substring(curStart,curEnd)
-		lines.push(line)	
-	}
-	for(var i=0;i<lines.length;i++)
-	{
-		var line = lines[i];
-		this.linePP(line);
-		if(this.comment || this.cont) contine;
-		this.linePrepare();
-		return this.currLine
-	}
-	return this.currLine
 }
 
 exports.Info = Info;
