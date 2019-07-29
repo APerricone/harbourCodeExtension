@@ -104,7 +104,8 @@ connection.onInitialize(params =>
             workspace: {
                 supported: true
             },
-            hoverProvider: true
+            hoverProvider: true,
+            foldingRangeProvider: true
         }
 	}
 });
@@ -204,7 +205,7 @@ documents.onDidSave((e)=>
     var cMode = (ext.startsWith(".c") && ext!=".ch")
     if(	ext == ".prg" || ext == ".ch" || cMode )
     {
-        var pp = parseDocument(e.document, cMode)
+        var pp = parseDocument(e.document, (p) => p.cMode = cMode)
         UpdateFile(pp);
     }
 })
@@ -890,13 +891,13 @@ function getStdHelp(word, nC)
  * @param {server.TextDocument} doc 
  * @param {boolean} cMode
  */
-function parseDocument(doc,cMode)
+function parseDocument(doc,onInit)
 {
     var pp = new provider.Provider(false)
     pp.Clear();
     pp.currentDocument=doc.uri;
-	if(cMode != undefined)
-        pp.cMode = cMode;
+    if(onInit != undefined)
+        onInit(pp);
 	for (var i = 0; i < doc.lineCount; i++) {
 		pp.parse(doc.getText(server.Range.create(i,0,i,1000)));
 	}
@@ -1197,7 +1198,6 @@ function definitionFiles(fileName, startPath, origin)
     return dest;
 }
 
-
 function CompletitionDBFields(word, allText,pos, pp)
 {
     //precLetter = '->';
@@ -1277,7 +1277,7 @@ connection.onHover((params,cancelled)=> {
         pp = files[doc.uri];
     } else
     {
-        pp = parseDocument(doc,false);
+        pp = parseDocument(doc);
     }
     if(pp)
     {
@@ -1318,7 +1318,57 @@ connection.onHover((params,cancelled)=> {
     return undefined;
 })
 
+connection.onFoldingRanges((params) => {
+    var ranges = [];
+    var doc = documents.get(params.textDocument.uri);
+    var pp = parseDocument(doc,(p) => p.doGroups=true);
+    if(doc.uri in files)
+        UpdateFile(pp)
+    for (var iSign=0;iSign<pp.funcList.length;iSign++) {
+        /** @type {provider.Info} */
+        var info = pp.funcList[iSign];
+        if(info.startLine!=info.endLine)
+        {
+            var rr = {};
+            rr.startLine=info.startLine;
+            rr.endLine=info.endLine;
+            ranges.push(rr);
+        }
+    }
+    for(var iGroup=0;iGroup<pp.groups.length;iGroup++) {
+        /** @type {provider.KeywordPos[]} */
+        var poss = pp.groups[iGroup].positions;
+        if(["if","try","sequence"].indexOf(pp.groups[iGroup].type)<0)
+        {
+            var rr = {};
+            var i=poss.length-1;
+            rr.startLine=poss[0].line;
+            rr.endLine=poss[i].line;
+            rr.startCharacter=poss[0].startCol;
+            rr.endCharacter=poss[i].endCol;
+            ranges.push(rr);
+        } else
+            for(var i=1;i<poss.length;i++)
+            {
+                var rr = {};
+                rr.startLine=poss[i-1].line;
+                rr.endLine=poss[i].line;
+                rr.startCharacter=poss[i-1].startCol;
+                rr.endCharacter=poss[i].endCol;
+                ranges.push(rr);
+            }
+    }
+    for (let iComment = 0; iComment < pp.multilineComments.length; iComment++) {
+        const cc = pp.multilineComments[iComment];
+        var rr= {};
+        rr.king = "comment"
+        rr.startLine=cc[0];
+        rr.endLine=cc[1];
+        ranges.push(rr);
+    }
 
+    return ranges;
+})
 
 /*
 connection.onDidChangeTextDocument(params => {

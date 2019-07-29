@@ -23,7 +23,8 @@
             "type": "node",
             "request": "launch",
             "name": "test_parse",
-            "program": "${workspaceRoot}/test_parse.js"
+            "program": "${workspaceRoot}/test_parse.js",
+            "console": "integratedTerminal"
         },
         {
             "type": "node",

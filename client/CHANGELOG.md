@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to the "Harbour and xHarbour" extension will be documented in this file.
 
+# 0.9.4
+ - **server** added Folder provider
+
 # 0.9.3
  - **server** fixed wordBasedSuggestions for methods and fields
  - **debugger** added ATTACH support
