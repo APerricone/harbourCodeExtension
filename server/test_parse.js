@@ -2,7 +2,7 @@ var provider = require('./src/provider.js');
 
 var p = new provider.Provider();
 p.doGroups = true;
-p.parseFile("../test/dbg_test.prg").then(()=> {
+p.parseFile("../test/minimal.prg").then(()=> {
     for (var fn in p.funcList) {
         if (p.funcList.hasOwnProperty(fn)) {
             var info = p.funcList[fn];

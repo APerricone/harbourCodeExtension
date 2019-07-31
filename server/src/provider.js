@@ -615,7 +615,7 @@ Provider.prototype.findDBReferences = function()
 	}
 }
 
-var group_firstWord = /(^|;)\s*([a-z]+(?:\s+(?:[a-z]+))?)/ig;
+//var group_firstWord = /(^|;)\s*([a-z]+(?:\s+(?:[a-z]+))?)/ig;
 var group_keywords = [
 	["if",/#?if(?:n?def)?/,/else(?:if)?/,/end\s*(?:if)?/],
 	["for",/for(?:\s+each)?/,"loop","exit","next"],
@@ -638,10 +638,11 @@ Provider.prototype.updateGroups = function(words)
 
 	var pos = this.currLine.indexOf(words[0]);
 	// look for new groups
+	var checkString = this.currLine.substr(pos);
 	for(var i=0;i<group_keywords.length;i++)
 	{
 		var m;
-		if((m=words[0].match(group_keywords[i][1])) && m.index==0)
+		if((m=checkString.match(group_keywords[i][1])) && m.index==0)
 		{
 			currGroup = new Group(group_keywords[i][0]);
 			this.groupStack.push(currGroup);	
@@ -653,7 +654,7 @@ Provider.prototype.updateGroups = function(words)
 	if(currKeywords) for(var i=2;i<currKeywords.length;i++)
 	{
 		var m;
-		if((m=words[0].match(currKeywords[i])) && m.index==0)
+		if((m=checkString.match(currKeywords[i])) && m.index==0)
 		{
 			currGroup.addRange(this.lineNr,pos,pos+m[0].length);
 			if(i==currKeywords.length-1)
