@@ -37,6 +37,8 @@ var missing
 var databases;
 /** @type {boolean} */
 var canLocationLink;
+/** @type {boolean} */
+var lineFoldingOnly;
 
 var keywords = [
     "function","procedure","return",
@@ -60,6 +62,12 @@ connection.onInitialize(params =>
         params.capabilities.textDocument.declaration &&
         params.capabilities.textDocument.declaration.linkSupport )
             canLocationLink = true;
+    lineFoldingOnly = true;
+    if( params.capabilities.textDocument &&
+        params.capabilities.textDocument.foldingRange &&
+        lineFoldingOnly in params.capabilities.textDocument.foldingRange)
+            lineFoldingOnly = params.capabilities.textDocument.foldingRange.lineFoldingOnly;
+                                
     if(params.capabilities.workspace && params.capabilities.workspace.workspaceFolders && params.workspaceFolders) {
         workspaceRoots = [];
         for(var i=0;i<params.workspaceFolders.length;i++)
@@ -1335,6 +1343,8 @@ connection.onFoldingRanges((params) => {
             ranges.push(rr);
         }
     }
+    var deltaLine = 0;
+    if( lineFoldingOnly ) deltaLine=1;
     for(var iGroup=0;iGroup<pp.groups.length;iGroup++) {
         /** @type {provider.KeywordPos[]} */
         var poss = pp.groups[iGroup].positions;
@@ -1343,18 +1353,18 @@ connection.onFoldingRanges((params) => {
             var rr = {};
             var i=poss.length-1;
             rr.startLine=poss[0].line;
-            rr.endLine=poss[i].line;
-            rr.startCharacter=poss[0].startCol;
-            rr.endCharacter=poss[i].endCol;
+            rr.endLine=poss[i].line-deltaLine;
+            rr.startCharacter=poss[0].endCol;
+            rr.endCharacter=poss[i].startCol;
             ranges.push(rr);
         } else
             for(var i=1;i<poss.length;i++)
             {
                 var rr = {};
                 rr.startLine=poss[i-1].line;
-                rr.endLine=poss[i].line;
-                rr.startCharacter=poss[i-1].startCol;
-                rr.endCharacter=poss[i].endCol;
+                rr.endLine=poss[i].line-deltaLine;
+                rr.startCharacter=poss[i-1].endCol;
+                rr.endCharacter=poss[i].startCol;
                 ranges.push(rr);
             }
     }

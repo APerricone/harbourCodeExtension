@@ -511,8 +511,8 @@ Provider.prototype.parse = function(line)
 	/** @type{string[]} */
 	if(this.firstLineCommment>=0)
 	{
-		if(this.firstLineCommment<this.lineNr-1) 
-			this.multilineComments.push([this.firstLineCommment,this.lineNr-1])
+		if(this.firstLineCommment<this.startLine-1) 
+			this.multilineComments.push([this.firstLineCommment,this.startLine-1])
 		this.firstLineCommment=-1;
 	}
 	if(this.cMode) {
@@ -645,7 +645,7 @@ Provider.prototype.updateGroups = function(words)
 		{
 			currGroup = new Group(group_keywords[i][0]);
 			this.groupStack.push(currGroup);	
-			currGroup.addRange(this.lineNr,pos,pos+m[0].length);
+			currGroup.addRange(this.startLine,pos,pos+m[0].length);
 			currKeywords=group_keywords[i];
 			break;
 		}
@@ -655,7 +655,7 @@ Provider.prototype.updateGroups = function(words)
 		var m;
 		if((m=checkString.match(currKeywords[i])) && m.index==0)
 		{
-			currGroup.addRange(this.lineNr,pos,pos+m[0].length);
+			currGroup.addRange(this.startLine,pos,pos+m[0].length);
 			if(i==currKeywords.length-1)
 			{
 				this.groups.push(this.groupStack.pop());
