@@ -519,7 +519,7 @@ Provider.prototype.parse = function(line)
 		var words = this.currLine.replace(/\s+/g," ").trim().split(" ");
 		this.parseC(words);
 	} else {
-		var lines = this.currLine.split(";")
+		var lines = this.currLine.split(/;(?!\s+[\r\n])/)
 		var pre = ""
 		var code = false;
 		for(var i=0;i<lines.length;i++) {
@@ -627,7 +627,6 @@ var group_keywords = [
 
 Provider.prototype.updateGroups = function(words)
 {
-	var member;
 	var currKeywords;
 	var currGroup;
 	if(this.groupStack.length>0)
@@ -635,10 +634,10 @@ Provider.prototype.updateGroups = function(words)
 		currGroup = this.groupStack[this.groupStack.length-1];
 		currKeywords = group_keywords.find(v=> v[0]==currGroup.type);
 	}
-
-	var pos = this.currLine.indexOf(words[0]);
+	var checkString = this.currLine.toLowerCase()
+	var pos = checkString.indexOf(words[0]);
 	// look for new groups
-	var checkString = this.currLine.substr(pos);
+	checkString = checkString.substr(pos);
 	for(var i=0;i<group_keywords.length;i++)
 	{
 		var m;
