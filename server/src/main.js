@@ -16,13 +16,15 @@ var includeDirs;
 var workspaceDepth;
 /** @type {boolean} */
 var wordBasedSuggestions;
-/** @type {Object.<string, Provider>} */
+/** @type {Object.<string, provider>} */
 var files;
-/** @type {Object.<string, Provider>} */
+/** @type {Object.<string, provider>} */
 var includes;
-/** @type {Array} */
+/** the list of documentation harbour base functions 
+ * @type {Array<object>} */
 var docs;
-/** @type {Array} */
+/** the list of undocumentation harbour base functions
+ * @type {Array<string>} */
 var missing
 /**
  * @typedef dbInfo
@@ -187,6 +189,8 @@ function ParseWorkspace()
     for(var i=0;i<workspaceRoots.length;i++)
     {
         // other scheme of uri unsupported
+        if(workspaceRoots[i] == null)
+            continue;
         /** @type {vscode-uri.default} */
         var uri = Uri.parse(workspaceRoots[i]);
         if(uri.scheme != "file") return;
@@ -200,8 +204,8 @@ function ParseWorkspace()
 
 var documents = new server.TextDocuments();
 documents.listen(connection);
-documents.onDidSave((e)=>
-{
+
+documents.onDidChangeContent((e)=>{
     var uri = Uri.parse(e.document.uri);
     if(uri.scheme != "file") return;
     var found = false;
@@ -222,8 +226,7 @@ documents.onDidSave((e)=>
  * Update a file in the workspace
  * @param {provider.Provider} pp 
  */
-function UpdateFile(pp)
-{
+function UpdateFile(pp) {
     var doc = pp.currentDocument;
     var ext = path.extname(pp.currentDocument).toLowerCase();
     if( ext!=".prg" ) 
@@ -271,8 +274,7 @@ function UpdateFile(pp)
     AddIncludes(path.dirname(doc) ,pp.includes);
 }
 
-function AddIncludes(startPath, includesArray)
-{
+function AddIncludes(startPath, includesArray) {
     if(includesArray.length==0)
         return;
     if(startPath.startsWith("file:///"))
@@ -322,8 +324,7 @@ function AddIncludes(startPath, includesArray)
     }
 }
 
-function ParseInclude(startPath, includeName, addGlobal)
-{
+function ParseInclude(startPath, includeName, addGlobal) {
     if(includeName.length==0)
         return undefined;
     if(includeName in includes)
@@ -391,7 +392,13 @@ function kindTOVS(kind,sk)
 
 connection.onDocumentSymbol((param)=>
 {
-    var p = parseDocument(documents.get(param.textDocument.uri));
+    /** @type {provider} */
+    var p;
+    if(param.textDocument.uri in docs)
+        p = files[param.textDocument.uri];
+    else 
+        p = parseDocument(documents.get(param.textDocument.uri));
+
     /** @type {server.DocumentSymbol[]} */
     var dest = [];
     for (var fn in p.funcList) {
@@ -590,12 +597,7 @@ connection.onDefinition((params)=>
         }        
     }
     for (var file in files) { //if (files.hasOwnProperty(file)) {
-        if(file==doc.uri)
-        {
-            var pp = parseDocument(doc);
-            UpdateFile(pp)
-            thisDone = true;
-        }
+        if(file==doc.uri) thisDone = true;
         DoProvider(files[file],file);
     }
     var pThis
@@ -759,12 +761,7 @@ function getWorkspaceSignatures(word, doc, className, nC)
     var thisDone = false;
     for (var file in files) //if (files.hasOwnProperty(file)) 
     {
-        if(file==doc.uri)
-        {
-            var pp=parseDocument(doc);
-            UpdateFile(pp)
-            thisDone = true;
-        }
+        if(file==doc.uri) thisDone = true;
         var pp = files[file];
         for (var iSign=0;iSign<pp.funcList.length;iSign++)
         {
@@ -898,19 +895,39 @@ function getStdHelp(word, nC)
  * 
  * @param {server.TextDocument} doc 
  * @param {boolean} cMode
+ * @returns {provider}
  */
 function parseDocument(doc,onInit)
 {
     var pp = new provider.Provider(false)
     pp.Clear();
     pp.currentDocument=doc.uri;
-    if(onInit != undefined)
-        onInit(pp);
+    if(onInit != undefined) onInit(pp);
 	for (var i = 0; i < doc.lineCount; i++) {
 		pp.parse(doc.getText(server.Range.create(i,0,i,1000)));
 	}
 	pp.endParse();
     return pp;
+}
+
+function parseDocument2(doc,onInit) {
+    var i=0;
+    var pp = new provider.Provider(false)
+    pp.Clear();
+    pp.currentDocument=doc.uri;
+    if(onInit != undefined) onInit(pp);
+    return Promise((resolve,reject)=> {
+        function step() {
+            if(i<doc.lineCount) {
+                pp.parse(doc.getText(server.Range.create(i,0,i,1000)));
+                i++;            
+            } else {
+                pp.endParse();
+                resolve(pp);
+            }
+        }
+        setImmediate(step);
+    })
 }
 
 connection.onCompletion((param, cancelled)=> 
@@ -938,12 +955,9 @@ connection.onCompletion((param, cancelled)=>
     // Get the word
     var rge = /[0-9a-z_]/i;
     var word = "", className = undefined;
-    var pp = parseDocument(doc);
-    if(doc.uri in files)
-    {
-        UpdateFile(pp)
-        pp=undefined;
-    }
+    var pp
+    if(!(doc.uri in files))
+        pp = parseDocument(doc);
     while(pos>=0 && rge.test(allText[pos]))
     {
         word = allText[pos]+word;
@@ -1109,6 +1123,11 @@ connection.onCompletion((param, cancelled)=>
     return server.CompletionList.create(completitions,false);
 })
 
+/**
+ * 
+ * @param {string} word 
+ * @param {string} startPath 
+ */
 function completitionFiles(word, startPath)
 {
     var completitons = [];
@@ -1280,13 +1299,8 @@ connection.onHover((params,cancelled)=> {
     var w = GetWord(params);
     var doc = documents.get(params.textDocument.uri);
     var pp;
-    if(doc.uri in files)
-    {
-        pp = files[doc.uri];
-    } else
-    {
-        pp = parseDocument(doc);
-    }
+    if(doc.uri in files) pp = files[doc.uri];
+                    else pp = parseDocument(doc);
     if(pp)
     {
         for (var iSign=0;iSign<pp.funcList.length;iSign++)
@@ -1329,9 +1343,11 @@ connection.onHover((params,cancelled)=> {
 connection.onFoldingRanges((params) => {
     var ranges = [];
     var doc = documents.get(params.textDocument.uri);
-    var pp = parseDocument(doc,(p) => p.doGroups=true);
+    var pp
     if(doc.uri in files)
-        UpdateFile(pp)
+        pp = files[doc.uri];
+    else
+        pp = parseDocument(doc,(p) => p.doGroups=true);
     for (var iSign=0;iSign<pp.funcList.length;iSign++) {
         /** @type {provider.Info} */
         var info = pp.funcList[iSign];

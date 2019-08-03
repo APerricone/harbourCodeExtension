@@ -617,12 +617,14 @@ Provider.prototype.findDBReferences = function()
 
 //var group_firstWord = /(^|;)\s*([a-z]+(?:\s+(?:[a-z]+))?)/ig;
 var group_keywords = [
-	["if",/#?if(?:n?def)?/,/else(?:if)?/,/end\s*(?:if)?/],
+	["if","if",/else(?:if)?/,/end\s*(?:if)?/],
 	["for",/for(?:\s+each)?/,"loop","exit","next"],
 	["case",/(switch|do\s+case)/,"case","otherwise","default","exit",/end\s*(?:switch|case)?/],
 	["while",/(?:do\s*)?while/,"loop","exit",/end\s*(?:do)?/],
 	["try","try","catch",/end\s*(?:do)?/],
-	["sequence",/begin\s*sequence/,"recover",/end\s*(?:sequence)?/]
+	["sequence",/begin\s+sequence/,"recover",/end\s*(?:sequence)?/],
+	//["#if",/#if(?:n?def)?/,/#else(?:if)?/,/#end\s*(?:if)?/], it can be mixed with other groups
+	["dump",/#pragma\s+begindump/,/#pragma\s+enddump/],
 ]; 
 
 Provider.prototype.updateGroups = function(words)
