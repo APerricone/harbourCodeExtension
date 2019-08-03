@@ -16,9 +16,9 @@ var includeDirs;
 var workspaceDepth;
 /** @type {boolean} */
 var wordBasedSuggestions;
-/** @type {Object.<string, provider>} */
+/** @type {Object.<string, provider.Provider>} */
 var files;
-/** @type {Object.<string, provider>} */
+/** @type {Object.<string, provider.Provider>} */
 var includes;
 /** the list of documentation harbour base functions 
  * @type {Array<object>} */
@@ -202,26 +202,6 @@ function ParseWorkspace()
     //}
 }
 
-var documents = new server.TextDocuments();
-documents.listen(connection);
-
-documents.onDidChangeContent((e)=>{
-    var uri = Uri.parse(e.document.uri);
-    if(uri.scheme != "file") return;
-    var found = false;
-    for(var i=0;i<workspaceRoots.length;i++)
-        if(e.document.uri.startsWith(workspaceRoots[i]))
-            found = true;
-    if(!found) return; //not include file outside the current workspace
-    var ext = path.extname(uri.fsPath).toLowerCase();
-    var cMode = (ext.startsWith(".c") && ext!=".ch")
-    if(	ext == ".prg" || ext == ".ch" || cMode )
-    {
-        var pp = parseDocument(e.document, (p) => p.cMode = cMode)
-        UpdateFile(pp);
-    }
-})
-
 /**
  * Update a file in the workspace
  * @param {provider.Provider} pp 
@@ -392,13 +372,9 @@ function kindTOVS(kind,sk)
 
 connection.onDocumentSymbol((param)=>
 {
-    /** @type {provider} */
-    var p;
-    if(param.textDocument.uri in docs)
-        p = files[param.textDocument.uri];
-    else 
-        p = parseDocument(documents.get(param.textDocument.uri));
-
+    var doc = documents.get(param.textDocument.uri);
+    /** @type {provider.Provider} */
+    var p = getDocumentProvider(doc);
     /** @type {server.DocumentSymbol[]} */
     var dest = [];
     for (var fn in p.funcList) {
@@ -603,7 +579,7 @@ connection.onDefinition((params)=>
     var pThis
     if(!thisDone)
     {
-        pThis = parseDocument(doc);
+        pThis = getDocumentProvider(doc);
         DoProvider(pThis,doc.uri);
     } else
         pThis = files[doc.uri];
@@ -814,7 +790,7 @@ function getWorkspaceSignatures(word, doc, className, nC)
     }
     if(!thisDone)
     {
-        var pp = parseDocument(doc);
+        var pp = getDocumentProvider(doc);
         for (var iSign=0;iSign<pp.funcList.length;iSign++)
         {
             /** @type {provider.Info} */
@@ -891,14 +867,35 @@ function getStdHelp(word, nC)
     return signatures;
 }
 
+var documents = new server.TextDocuments();
+documents.listen(connection);
+
+documents.onDidChangeContent((e)=>{
+    var uri = Uri.parse(e.document.uri);
+    if(uri.scheme != "file") return;
+    var found = false;
+    for(var i=0;i<workspaceRoots.length;i++)
+        if(e.document.uri.startsWith(workspaceRoots[i]))
+            found = true;
+    if(!found) return; //not include file outside the current workspace
+    var ext = path.extname(uri.fsPath).toLowerCase();
+    var cMode = (ext.startsWith(".c") && ext!=".ch")
+    if(	ext == ".prg" || ext == ".ch" || cMode )
+    {
+        var doGroups = false;
+        if(uri in files) doGroups = files[uri].doGroups;
+        var pp = parseDocument(e.document, (p) => {p.cMode = cMode; p.doGroups=doGroups; })
+        UpdateFile(pp);
+    }
+})
+
 /**
  * 
  * @param {server.TextDocument} doc 
  * @param {boolean} cMode
- * @returns {provider}
+ * @returns {provider.Provider}
  */
-function parseDocument(doc,onInit)
-{
+function parseDocument(doc,onInit) {
     var pp = new provider.Provider(false)
     pp.Clear();
     pp.currentDocument=doc.uri;
@@ -910,24 +907,28 @@ function parseDocument(doc,onInit)
     return pp;
 }
 
-function parseDocument2(doc,onInit) {
-    var i=0;
-    var pp = new provider.Provider(false)
-    pp.Clear();
-    pp.currentDocument=doc.uri;
-    if(onInit != undefined) onInit(pp);
-    return Promise((resolve,reject)=> {
-        function step() {
-            if(i<doc.lineCount) {
-                pp.parse(doc.getText(server.Range.create(i,0,i,1000)));
-                i++;            
-            } else {
-                pp.endParse();
-                resolve(pp);
-            }
-        }
-        setImmediate(step);
-    })
+/** @type {provider.Provider} */
+var lastDocOutsideWorkspaceProvider = {currentDocument:""};
+function getDocumentProvider(doc,checkGroup) {
+    var pp;
+    if(doc.uri in files) {
+        pp = files[doc.uri]
+        if(checkGroup && !pp.doGroups)
+            pp=files[doc.uri]=parseDocument(doc,(p) => p.doGroups=true);
+        return pp;
+    }
+    if(doc.uri == lastDocOutsideWorkspaceProvider.currentDocument)
+    {
+        pp = lastDocOutsideWorkspaceProvider;
+        if(checkGroup && !pp.doGroups)
+            pp=lastDocOutsideWorkspaceProvider=parseDocument(doc,(p) => p.doGroups=true);
+        return pp;
+    }
+    if(checkGroup)
+        pp=parseDocument(doc,(p) => p.doGroups=true);
+    else
+        pp=parseDocument(doc);
+    return pp;
 }
 
 connection.onCompletion((param, cancelled)=> 
@@ -955,9 +956,7 @@ connection.onCompletion((param, cancelled)=>
     // Get the word
     var rge = /[0-9a-z_]/i;
     var word = "", className = undefined;
-    var pp
-    if(!(doc.uri in files))
-        pp = parseDocument(doc);
+    var pp = getDocumentProvider(doc);
     while(pos>=0 && rge.test(allText[pos]))
     {
         word = allText[pos]+word;
@@ -1298,9 +1297,7 @@ function CompletitionDBFields(word, allText,pos, pp)
 connection.onHover((params,cancelled)=> {
     var w = GetWord(params);
     var doc = documents.get(params.textDocument.uri);
-    var pp;
-    if(doc.uri in files) pp = files[doc.uri];
-                    else pp = parseDocument(doc);
+    var pp=getDocumentProvider(doc);
     if(pp)
     {
         for (var iSign=0;iSign<pp.funcList.length;iSign++)
@@ -1343,16 +1340,11 @@ connection.onHover((params,cancelled)=> {
 connection.onFoldingRanges((params) => {
     var ranges = [];
     var doc = documents.get(params.textDocument.uri);
-    var pp
-    if(doc.uri in files)
-        pp = files[doc.uri];
-    else
-        pp = parseDocument(doc,(p) => p.doGroups=true);
+    var pp = getDocumentProvider(doc,true);
     for (var iSign=0;iSign<pp.funcList.length;iSign++) {
         /** @type {provider.Info} */
         var info = pp.funcList[iSign];
-        if(info.startLine!=info.endLine)
-        {
+        if(info.startLine!=info.endLine) {
             var rr = {};
             rr.startLine=info.startLine;
             rr.endLine=info.endLine;
@@ -1364,8 +1356,7 @@ connection.onFoldingRanges((params) => {
     for(var iGroup=0;iGroup<pp.groups.length;iGroup++) {
         /** @type {provider.KeywordPos[]} */
         var poss = pp.groups[iGroup].positions;
-        if(["if","try","sequence"].indexOf(pp.groups[iGroup].type)<0)
-        {
+        if(["if","try","sequence"].indexOf(pp.groups[iGroup].type)<0) {
             var rr = {};
             var i=poss.length-1;
             rr.startLine=poss[0].line;
@@ -1374,8 +1365,7 @@ connection.onFoldingRanges((params) => {
             rr.endCharacter=poss[i].startCol;
             ranges.push(rr);
         } else
-            for(var i=1;i<poss.length;i++)
-            {
+            for(var i=1;i<poss.length;i++) {
                 var rr = {};
                 rr.startLine=poss[i-1].line;
                 rr.endLine=poss[i].line-deltaLine;
@@ -1396,11 +1386,23 @@ connection.onFoldingRanges((params) => {
     return ranges;
 })
 
-/*
-connection.onDidChangeTextDocument(params => {
-    var p = new provider.Provider();
-    p.parseString(params.document.getText());
-    
-});
-*/
+connection.onRequest("groupAtPosition",(params)=>{
+    var doc = documents.get(params.textDocument.uri);
+    var pp = getDocumentProvider(doc,true);
+    for(var iGroup=0;iGroup<pp.groups.length;iGroup++) {
+        /** @type {Array<provider.KeywordPos>} */
+        var poss = pp.groups[iGroup].positions;
+        var intesect = false;
+        for(var i=0;i<poss.length;i++) {
+            var rr = {};
+            if( params.sel.active.line == poss[i].line && 
+                params.sel.active.character >= poss[i].startCol && 
+                params.sel.active.character <= poss[i].endCol) {
+                return poss;
+            }
+        }
+    }
+    return [];
+})
+
 connection.listen();

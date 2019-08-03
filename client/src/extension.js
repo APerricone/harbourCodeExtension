@@ -16,7 +16,6 @@ function activate(context) {
 		}
 	});
 	validation.activate(context);
-	decorator.activate(context);
 	
 	var serverModuleDbg = context.asAbsolutePath(path.join('..','server'));
 	var serverModule = context.asAbsolutePath('server');
@@ -35,6 +34,7 @@ function activate(context) {
 	context.subscriptions.push(cl.start());
 	vscode.commands.registerCommand('harbour.getdbgcode', GetDbgCode);
 	//vscode.languages.registerFoldingRangeProvider(['harbour'], new decorator.HBProvider());
+	decorator.activate(context,cl);
 }	
 
 function GetDbgCode() {

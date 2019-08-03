@@ -488,6 +488,7 @@ Provider.prototype.parseC = function(words)
 	// && /\^s*#pragma\s+ENDDUMP\s*$/.test(this.currLine)
 	{
 		this.cMode = false;
+		this.updateGroups(words);
 		return;
 	}
 	if(this.currLine.indexOf("HB_FUNC")>=0)
