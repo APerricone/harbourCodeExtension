@@ -2,7 +2,7 @@ var provider = require('./src/provider.js');
 
 var p = new provider.Provider();
 p.doGroups = true;
-p.parseFile("../test/minimal.prg").then(()=> {
+p.parseFile("../test/class_c.prg").then(()=> {
     for (var fn in p.funcList) {
         if (p.funcList.hasOwnProperty(fn)) {
             var info = p.funcList[fn];
@@ -26,6 +26,10 @@ p.parseFile("../test/minimal.prg").then(()=> {
     } 
     for(var i=0;i<p.multilineComments.length;i++) {
         console.log(`comment from ${p.multilineComments[i][0]} to ${p.multilineComments[i][1]}`);
-    } 
+    }
+    for (let i = 0; i < p.cCodeFolder.length; i++) {
+        const folder = p.cCodeFolder[i];
+        console.log(`cFolder from ${folder[0]}-${folder[1]} to ${folder[2]}-${folder[3]}`);
+    }
     process.exit();
 });

@@ -1365,7 +1365,7 @@ connection.onFoldingRanges((params) => {
             rr.endCharacter=poss[i].startCol;
             ranges.push(rr);
         } else
-            for(var i=1;i<poss.length;i++) {
+            for(let i=1;i<poss.length;i++) {
                 var rr = {};
                 rr.startLine=poss[i-1].line;
                 rr.endLine=poss[i].line-deltaLine;
@@ -1381,6 +1381,16 @@ connection.onFoldingRanges((params) => {
         rr.startLine=cc[0];
         rr.endLine=cc[1];
         ranges.push(rr);
+    }
+    for (let iCFolder = 0; iCFolder < pp.cCodeFolder.length; iCFolder++) {
+        const folder = pp.cCodeFolder[iCFolder];
+        var rr = {};
+        rr.startLine=folder[0]
+        rr.endLine=folder[2]-deltaLine;
+        rr.startCharacter=folder[1];
+        rr.endCharacter=folder[3];
+        ranges.push(rr);
+
     }
 
     return ranges;

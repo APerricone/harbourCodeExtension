@@ -53,10 +53,18 @@ Provider.prototype.Clear = function()
 	/** @type {Array<Group>} The array of groups found*/
 	this.groups=[];
 	this.includes=[];
-	/** @type {number[][]} */
+	/** Position of multiline comments.
+	 * An array of array of 2 number with start and end line 
+	 * @type {number[][]} */
 	this.multilineComments=[];
-	/** @type {number} */
+	/** TEMP: current first line of comment, 
+	 * @type {number} */
 	this.firstLineCommment=-1;
+	/** Position of curly braces {} on C Code
+	 * an array of array 4 number with line-col of open curly brace, and line-col of cloe curly brace
+	 * @type {Array<Array<number>>} 
+	 * */
+	this.cCodeFolder = [];
 }
 
 /**
@@ -204,7 +212,7 @@ Provider.prototype.linePrepare = function(line)
 		this.currLine="";
 		return;
 	}
-	if(this.currLine.trim().match(/^NOTE\s/i))
+	if(!this.cMode && this.currLine.trim().match(/^NOTE\s/i))
 	{
 		this.currentComment += "\r\n"+this.currLine.trim().substr(4);
 		this.currLine="";
@@ -256,7 +264,7 @@ Provider.prototype.linePrepare = function(line)
 					return;
 				}
 			}
-			if(justStart)
+			if(justStart && !this.cMode)
 			{
 				// commented line: skip
 				this.currentComment+="\r\n"+this.currLine.substr(i+1)
@@ -265,7 +273,7 @@ Provider.prototype.linePrepare = function(line)
 				return;
 			}
 		}
-		if((c=="/" && precC=="/")||(c=="&" && precC=="&"))
+		if((c=="/" && precC=="/")||(c=="&" && precC=="&" && !this.cMode))
 		{
 			if(!precJustStart)
 				this.currentComment=""
@@ -280,7 +288,7 @@ Provider.prototype.linePrepare = function(line)
 		{
 			string=c;
 			stringStart = i;
-			if(precC=="e")
+			if(precC=="e" || this.cMode)
 			{
 				string+='e';
 			}
@@ -386,6 +394,7 @@ Provider.prototype.parseHarbour = function(words)
 	if(this.currentClass && (words[0] == "endclass" || (words[0]=="end" && words[1]=="class")))
 	{
 		if(this.currentMethod) this.currentMethod.endLine = this.lastCodeLine;
+		this.currentMethod = undefined;
 		this.currentClass.endLine = this.lineNr;
 	} else
 	if(words[0].length>=4)
@@ -393,6 +402,7 @@ Provider.prototype.parseHarbour = function(words)
 		if((words[0] == "class") || (words[0]=="create" && words[1]=="class"))
 		{
 			if(this.currentMethod) this.currentMethod.endLine = this.lastCodeLine;
+			this.currentMethod = undefined;
 			if(words[0]=="create")
 				this.currentClass = this.addInfo(words[2],'class',"definition")
 			else
@@ -499,6 +509,21 @@ Provider.prototype.parseC = function(words)
 			this.addInfo(r[1],'C-FUNC',"definition");
 		}
 	}
+	var open = this.currLine.indexOf("{"),close = this.currLine.indexOf("}");
+	while(open>=0 || close>=0) {
+		if(open>=0 && (open<close || close<0)) {
+			this.cCodeFolder.push([this.lineNr,open]);
+			open=this.currLine.indexOf("{",open+1);
+		} else
+		//if(close>=0 && (close<open || open<0))
+		{
+			var idx=this.cCodeFolder.length-1;
+			while(idx>=0 && this.cCodeFolder[idx].length>2) idx--;
+			if(idx>=0) this.cCodeFolder[idx].push(this.lineNr,close);
+			close=this.currLine.indexOf("}",close+1)
+		}
+	}
+	
 }
 /**
  * @param {string} line
@@ -517,6 +542,7 @@ Provider.prototype.parse = function(line)
 		this.firstLineCommment=-1;
 	}
 	if(this.cMode) {
+		console.debug(this.lineNr+"-"+this.currLine);
 		var words = this.currLine.replace(/\s+/g," ").trim().split(" ");
 		this.parseC(words);
 	} else {
@@ -525,7 +551,7 @@ Provider.prototype.parse = function(line)
 		var code = false;
 		for(var i=0;i<lines.length;i++) {
 			this.currLine = pre+lines[i];
-			//console.debug(this.lineNr+"-"+this.currLine);
+			console.debug(this.lineNr+"-"+this.currLine);
 			var words = this.currLine.replace(/\s+/g," ").trim().split(" ");
 			if(words.length==0) continue;
 			code = true;
@@ -564,6 +590,7 @@ Provider.prototype.parseString = function(txt,docName,cMode)
 Provider.prototype.endParse = function()
 {
 	if(this.currentMethod) this.currentMethod.endLine = this.lastCodeLine;
+	this.currentMethod = undefined;
 	if(this.firstLineCommment>0 && this.firstLineCommment<this.lineNr-1) 
 		this.multilineComments.push([this.firstLineCommment,this.lineNr-1])
 }
