@@ -542,7 +542,7 @@ Provider.prototype.parse = function(line)
 		this.firstLineCommment=-1;
 	}
 	if(this.cMode) {
-		console.debug(this.lineNr+"-"+this.currLine);
+		//console.debug(this.lineNr+"-"+this.currLine);
 		var words = this.currLine.replace(/\s+/g," ").trim().split(" ");
 		this.parseC(words);
 	} else {
@@ -551,12 +551,11 @@ Provider.prototype.parse = function(line)
 		var code = false;
 		for(var i=0;i<lines.length;i++) {
 			this.currLine = pre+lines[i];
-			console.debug(this.lineNr+"-"+this.currLine);
+			//console.debug(this.lineNr+"-"+this.currLine);
 			var words = this.currLine.replace(/\s+/g," ").trim().split(" ");
 			if(words.length==0) continue;
 			code = true;
 			words[0] = words[0].toLowerCase();
-			//console.log((this.cMode?"C":"H")+this.lineNr+">"+this.currLine);
 			this.findDBReferences();
 			this.parseHarbour(words);
 			if(this.doGroups)
