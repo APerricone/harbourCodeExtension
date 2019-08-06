@@ -1243,16 +1243,17 @@ function CompletitionDBFields(word, allText,pos, pp)
     {
         for(var f in db.fields)
         {
-            var sortText = db.fields[f].name;
+            var name = db.fields[f];
+            if (typeof(name)!="string") name=name.name;
+            var sortText = name;
             if(word.length>0)
             {
                 sortText = IsInside(word,f);
             }
             if(!sortText) continue;
-            
-            if(!completitions.find( (v) => v.label.toLowerCase() == db.fields[f].name.toLowerCase() ))
+            if(!completitions.find( (v) => v.label.toLowerCase() == name.toLowerCase() ))
             {
-                var c = server.CompletionItem.create(db.fields[f].name);
+                var c = server.CompletionItem.create(name);
                 c.kind = server.CompletionItemKind.Field;
                 c.documentation = db.name;
                 c.sortText = "AAAA" + sortText;
