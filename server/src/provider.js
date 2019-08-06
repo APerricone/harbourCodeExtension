@@ -408,7 +408,7 @@ Provider.prototype.parseHarbour = function(words)
 			else
 				this.currentClass = this.addInfo(words1,'class',"definition")
 		} else
-		if(words[0] == "data")
+		if(words[0] == "data" || words[0] == "var")
 		{
 			if(this.currentClass)
 			{	
