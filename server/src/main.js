@@ -1354,7 +1354,7 @@ connection.onFoldingRanges((params) => {
     }
     var deltaLine = 0;
     if( lineFoldingOnly ) deltaLine=1;
-    for(var iGroup=0;iGroup<pp.groups.length;iGroup++) {
+    for(let iGroup=0;iGroup<pp.groups.length;iGroup++) {
         /** @type {provider.KeywordPos[]} */
         var poss = pp.groups[iGroup].positions;
         if(["if","try","sequence"].indexOf(pp.groups[iGroup].type)<0) {
@@ -1374,6 +1374,17 @@ connection.onFoldingRanges((params) => {
                 rr.endCharacter=poss[i].startCol;
                 ranges.push(rr);
             }
+    }
+    for(var iGroup=0;iGroup<pp.preprocGroups.length;iGroup++) {
+        /** @type {provider.KeywordPos[]} */
+        var poss = pp.preprocGroups[iGroup].positions;
+        var rr = {};
+        var i=poss.length-1;
+        rr.startLine=poss[0].line;
+        rr.endLine=poss[i].line-deltaLine;
+        rr.startCharacter=poss[0].endCol;
+        rr.endCharacter=poss[i].startCol;
+        ranges.push(rr);
     }
     for (let iComment = 0; iComment < pp.multilineComments.length; iComment++) {
         const cc = pp.multilineComments[iComment];

@@ -39,6 +39,8 @@ Provider.prototype.Clear = function()
 	this.currentDocument = "";
 	/** @type {Array<Group>} An array of current groups*/
 	this.groupStack = [];
+	/** @type {Array<Group>} An array of current groups of preprocessor*/
+	this.preprocGroupStack = [];
 	// **** OUTPUTS
 	/** @type {Array<Info>} */
 	this.funcList = [];
@@ -47,11 +49,13 @@ Provider.prototype.Clear = function()
 	 * @property {string} dbInfo.name the name to show
 	 * @property {Object.<string, string>} dbInfo.fields every key is the lowercase of the field name that is saved in the value
 	 */
-	/** @type {Object.<string, dbInfo>} every key is the lowercase name of db
-	*/
+	/** @type {Object.<string, dbInfo>} every key is the lowercase name of db */
 	this.databases={};
-	/** @type {Array<Group>} The array of groups found*/
+	/** @type {Array<Group>} The array of groups found */
 	this.groups=[];
+	/** @type {Array<Group>} The array of preproc groups found */
+	this.preprocGroups=[];
+	/** @type {Array<string>} The array of included file */
 	this.includes=[];
 	/** Position of multiline comments.
 	 * An array of array of 2 number with start and end line 
@@ -492,13 +496,12 @@ Provider.prototype.parseHarbour = function(words)
 	}	
 }
 
-Provider.prototype.parseC = function(words)
+Provider.prototype.parseC = function()
 {
 	if(this.currLine.indexOf("pragma")>=0 && this.currLine.indexOf("ENDDUMP")>=0)
 	// && /\^s*#pragma\s+ENDDUMP\s*$/.test(this.currLine)
 	{
 		this.cMode = false;
-		this.updateGroups(words);
 		return;
 	}
 	if(this.currLine.indexOf("HB_FUNC")>=0)
@@ -543,8 +546,8 @@ Provider.prototype.parse = function(line)
 	}
 	if(this.cMode) {
 		//console.debug(this.lineNr+"-"+this.currLine);
-		var words = this.currLine.replace(/\s+/g," ").trim().split(" ");
-		this.parseC(words);
+		this.parseC();
+		if(this.doGroups) this.updateGroups(!this.cMode);
 	} else {
 		var lines = this.currLine.split(/;(?!\s+[\r\n])/)
 		var pre = ""
@@ -558,8 +561,7 @@ Provider.prototype.parse = function(line)
 			words[0] = words[0].toLowerCase();
 			this.findDBReferences();
 			this.parseHarbour(words);
-			if(this.doGroups)
-				this.updateGroups(words);
+			if(this.doGroups) this.updateGroups(true);
 			pre+=" ".repeat(lines[i].length);
 		}
 	}
@@ -642,7 +644,6 @@ Provider.prototype.findDBReferences = function()
 	}
 }
 
-//var group_firstWord = /(^|;)\s*([a-z]+(?:\s+(?:[a-z]+))?)/ig;
 var group_keywords = [
 	["if","if",/else(?:if)?/,/end\s*(?:if)?/],
 	["for",/for(?:\s+each)?/,"loop","exit","next"],
@@ -650,53 +651,55 @@ var group_keywords = [
 	["while",/(?:do\s*)?while/,"loop","exit",/end\s*(?:do)?/],
 	["try","try","catch",/end\s*(?:do)?/],
 	["sequence",/begin\s+sequence/,"recover",/end\s*(?:sequence)?/],
-	//["#if",/#if(?:n?def)?/,/#else(?:if)?/,/#end\s*(?:if)?/], it can be mixed with other groups
 	["dump",/#pragma\s+begindump/,/#pragma\s+enddump/],
 ]; 
+//it can be mixed with other groups
+var preproc_keywords = [
+	["#if",/#if(?:n?def)?/,/#else(?:if)?/,/#end\s*(?:if)?/] 
+];
 
-Provider.prototype.updateGroups = function(words)
-{
+function GroupManagement(dest,destStack, keywords,checkString,pos,lineNr) {
 	var currKeywords;
 	var currGroup;
-	if(this.groupStack.length>0)
-	{
-		currGroup = this.groupStack[this.groupStack.length-1];
-		currKeywords = group_keywords.find(v=> v[0]==currGroup.type);
+	if(destStack.length>0) {
+		currGroup = destStack[destStack.length-1];
+		currKeywords = keywords.find(v=> v[0]==currGroup.type);
 	}
-	var checkString = this.currLine.toLowerCase()
-	var pos = checkString.indexOf(words[0]);
-	// look for new groups
-	checkString = checkString.substr(pos);
-	for(var i=0;i<group_keywords.length;i++)
-	{
+	a=" sss"
+	a.split()
+	for(var i=0;i<keywords.length;i++) {
 		var m;
-		if((m=checkString.match(group_keywords[i][1])) && m.index==0)
-		{
-			currGroup = new Group(group_keywords[i][0]);
-			this.groupStack.push(currGroup);	
-			currGroup.addRange(this.startLine,pos,pos+m[0].length);
-			currKeywords=group_keywords[i];
+		if((m=checkString.match(keywords[i][1])) && m.index==0) {
+			currGroup = new Group(keywords[i][0]);
+			destStack.push(currGroup);	
+			currGroup.addRange(lineNr,pos,pos+m[0].length);
+			currKeywords=keywords[i];
 			break;
 		}
 	}
-	if(currKeywords) for(var i=2;i<currKeywords.length;i++)
-	{
+	if(currKeywords) for(var i=2;i<currKeywords.length;i++) {
 		var m;
-		if((m=checkString.match(currKeywords[i])) && m.index==0)
-		{
-			currGroup.addRange(this.startLine,pos,pos+m[0].length);
-			if(i==currKeywords.length-1)
-			{
-				this.groups.push(this.groupStack.pop());
-				if(this.groupStack.length>0)
-				{
-					currGroup = this.groupStack[this.groupStack.length-1];
-					currKeywords = group_keywords.find(v=> v[0]==currGroup.type);
+		if((m=checkString.match(currKeywords[i])) && m.index==0) {
+			currGroup.addRange(lineNr,pos,pos+m[0].length);
+			if(i==currKeywords.length-1) {
+				dest.push(destStack.pop());
+				if(destStack.length>0) {
+					currGroup = destStack[destStack.length-1];
+					currKeywords = keywords.find(v=> v[0]==currGroup.type);
 				}
 			}
 			break;
 		}
 	}
+}
+
+Provider.prototype.updateGroups = function(harbour) {
+	var checkString = this.currLine.toLowerCase();
+	var pos = checkString.length-checkString.trimLeft().length;
+	checkString = checkString.substr(pos);
+	var ln = this.startLine;
+	if(harbour) GroupManagement(this.groups,this.groupStack,group_keywords,checkString,pos,ln);
+	GroupManagement(this.preprocGroups,this.preprocGroupStack,preproc_keywords,checkString,pos,ln);
 }
 
 exports.Info = Info;
