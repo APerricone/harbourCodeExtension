@@ -512,8 +512,9 @@ function GetWord(params,withPrec)
         }
         delta+=10;
     }
+    var worldPos = pos-delta+word.index;
     word = word[0];
-    return withPrec? [word,prec] : word;
+    return withPrec? [word,prec,worldPos] : word;
 }
 
 connection.onDefinition((params)=>
@@ -536,6 +537,47 @@ connection.onDefinition((params)=>
     var dest = [];
     var thisDone = false;
     var prec = word[1];
+    var className;
+    var pos = word[2];
+    if(prec==':' && doc.getText(server.Range.create(doc.positionAt(Math.max(pos-3,0)),doc.positionAt(pos)))=="():") {
+        var tmp = params.position;
+        params.position = doc.positionAt(Math.max(pos-3,0));
+        className = GetWord(params).toLowerCase();
+        params.position=tmp;
+        var found = false;
+        for (var file in files) { //if (files.hasOwnProperty(file)) {
+            if(file==doc.uri) thisDone = true;
+            pp = files[file];
+            for (var fn in pp.funcList) { //if (pp.funcList.hasOwnProperty(fn)) {
+                /** @type {provider.Info} */
+                var info = pp.funcList[fn];
+                if(info.kind!='class')
+                    continue
+                if(info.nameCmp==className) {
+                    found=true;
+                    break;
+                }
+            }
+        }
+        var pThis
+        if(!thisDone && !found)
+        {
+            pThis = getDocumentProvider(doc);
+            for (var fn in pp.funcList) { //if (pp.funcList.hasOwnProperty(fn)) {
+                /** @type {provider.Info} */
+                var info = pp.funcList[fn];
+                if(info.kind!='class')
+                    continue;
+                if(info.nameCmp==className) {
+                    found=true;
+                    break;
+                }    
+            }
+
+        }
+        if(!found) className=undefined;
+    }
+
     word = word[0].toLowerCase();
     function DoProvider(pp,file)
     {
@@ -550,8 +592,12 @@ connection.onDefinition((params)=>
                 continue;
             if(info.kind=='static' && file!=doc.uri)
                 continue;
-            if((info.kind=='data' || info.kind=='method') && prec!=':')
-                continue;
+            if(info.kind=='data' || info.kind=='method')
+            {
+                //if(prec!=':') continue;
+                if(className && className!=info.parent.nameCmp)
+                    continue;            
+            }
             //if(info.kind=='field' && prec!='>')
             //    continue;
             if(info.kind=='local' || info.kind=='param')
@@ -628,23 +674,23 @@ connection.onSignatureHelp((params)=>
     }
     word=word.toLowerCase();
     // special case for new, search the class name
-    if(word=="new")
+    var prec = text.substring(pos-2,pos+1);
+    if(prec == "():") // se è un metodo 
     {
-        var prec = text.substring(pos-2,pos+1);
-        if(prec = "():")
+        pos-=3;
+        className="";
+        while(rge.test(text[pos]))
         {
-            pos-=3;
-            className="";
-            while(rge.test(text[pos]))
-            {
-                className = text[pos]+className;
-                pos--;
-            }
-            className = className.toLowerCase();
+            className = text[pos]+className;
+            pos--;
         }
+        className = className.toLowerCase();
     }
-    var signatures = [].concat(getStdHelp(word, nC));
-    signatures = signatures.concat(getWorkspaceSignatures(word, doc, className, nC));
+    var signatures = [].concat(getWorkspaceSignatures(word, doc, className, nC));
+    if( signatures.length==0 && className!==undefined) {
+        signatures = [].concat(getWorkspaceSignatures(word, doc, undefined, nC));
+    }
+    signatures = signatures.concat(getStdHelp(word, nC));
     return {signatures:signatures, activeParameter:nC}
 })
 
