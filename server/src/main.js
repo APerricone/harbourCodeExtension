@@ -454,6 +454,7 @@ connection.onWorkspaceSymbol((param)=>
     if(colon>0)
     {
         parent = src.substring(0,colon);
+        if(parent.endsWith("()")) parent=parent.substr(0,parent.length-2);
         src = src.substr(colon+1);
     }
     for (var file in files) { //if (files.hasOwnProperty(file)) {
