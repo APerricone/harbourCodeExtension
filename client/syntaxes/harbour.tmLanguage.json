@@ -5,26 +5,17 @@
 
 	"patterns": [{
 			"include": "#directives"
-		},
-		{
-			"include": "#c_code"
-		},
-		{
+		},{
 			"include": "#function-declaration"
-		},
-		{
+		},{
 			"include": "#class-declaration"
-		},
-		{
+		},{
 			"include": "#method-declaration"
-		},
-		{
+		},{
 			"include": "#variable-declaration"
-		},
-		{
+		},{
 			"include": "#commands-all"
-		},
-		{
+		},{
 			"include": "#inline-staments"
 		}
 	],
@@ -1892,11 +1883,11 @@
 					"end": "(?=//|&&|/\\*)|(?<!;)(?=\\r|\\n)",
 					"name": "meta.preprocessor.stdout.harbour",
 					"contentName": "string.stdout.harbour"
-				},
-				{
+				},{
+					"include": "#c_code"
+				},{
 					"include": "#multiline-strings"
-				},
-				{
+				},{
 					"begin": "(?i:^\\s*((#)\\s*pragma))",
 					"beginCaptures": {
 						"1": { "name": "keyword.control.directive.pragma.harbour" },
@@ -1978,7 +1969,6 @@
 						{ "include": "source.harbour" }
 					]
 				}
-
 			]
 		},
 		"c_code": {
