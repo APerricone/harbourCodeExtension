@@ -1361,7 +1361,7 @@
 		"keywords": {
 			"patterns": [{
 					"name": "keyword.control.harbour",
-					"match": "\\b(?i:if(?!\\()|ELSEIF|ELSE|end\\s*(?:if|while|case|do|switch|class|sequence|with)?|for|to|step|descend|next|do|while|switch|case|endcase|otherwise|exit|loop|begin\\s+sequence?|recover(?:\\s+using)?|break)\\b"
+					"match": "\\b(?i:if|ELSEIF|ELSE|end\\s*(?:if|while|case|do|switch|class|sequence|with)?|for|to|step|descend|next|do|while|switch|case|endcase|otherwise|exit|loop|begin\\s+sequence?|recover(?:\\s+using)?|break)\\b"
 				},
 				{
 					"name": "keyword.function.harbour",
