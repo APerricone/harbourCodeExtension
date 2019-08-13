@@ -108,8 +108,30 @@
 					"captures": {
 						"0": {
 							"name": "punctuation.definition.comment.harbour"
-						}
-					}
+						}},
+					"patterns":[{
+						"begin": "(\\$)DOC(\\$)",
+						"end": "(\\$)END(\\$)",
+						"captures": {
+							"0": {"name": "storage.type.harbourdoc" },
+							"1": {"name": "punctuation.definition.harbourdoc" },
+							"2": {"name": "punctuation.definition.harbourdoc" }
+						},
+						"patterns": [{
+							"match": "(\\$)[A-Z]+(\\$)",
+							"name": "storage.type.harbourdoc",
+							"captures": {
+								"1": {"name": "punctuation.definition.harbourdoc"},
+								"2": {"name": "punctuation.definition.harbourdoc"}
+							}
+						},{
+							"match": "<[\\w\\s]+>",
+							"name": "variable.other.harbourdoc"
+						},{
+							"match": "\\[[\\s,]*<\\w+>[\\s\\.]*\\]",
+							"name": "variable.optional.other.harbourdoc"
+						}]
+					}]
 				},
 				{
 					"name": "comment.line.double-slash.harbour",
