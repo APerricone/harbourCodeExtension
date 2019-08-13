@@ -37,6 +37,9 @@
 					"include": "#array"
 				},
 				{
+					"include": "#keywords"
+				},
+				{
 					"include": "#method-call"
 				},
 				{
@@ -49,9 +52,6 @@
 				},
 				{
 					"include": "#builtin-class-call"
-				},
-				{
-					"include": "#keywords"
 				},
 				{
 					"include": "#function-call"

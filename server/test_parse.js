@@ -2,7 +2,7 @@ var provider = require('./src/provider.js');
 
 var p = new provider.Provider();
 p.doGroups = true;
-p.parseFile("../test/class_c.prg").then(()=> {
+p.parseFile("..\\test\\db1.prg").then(()=> {
     for (var fn in p.funcList) {
         if (p.funcList.hasOwnProperty(fn)) {
             var info = p.funcList[fn];
@@ -22,6 +22,12 @@ p.parseFile("../test/class_c.prg").then(()=> {
         console.log(`group ${p.groups[i].type}`);
         for(j=0;j<p.groups[i].positions.length;j++) {
             console.log(`  line ${p.groups[i].positions[j].line} from ${p.groups[i].positions[j].startCol} to ${p.groups[i].positions[j].endCol}`);
+        }
+    } 
+    for(var i=0;i<p.preprocGroups.length;i++) {
+        console.log(`group ${p.preprocGroups[i].type}`);
+        for(j=0;j<p.preprocGroups[i].positions.length;j++) {
+            console.log(`  line ${p.preprocGroups[i].positions[j].line} from ${p.preprocGroups[i].positions[j].startCol} to ${p.preprocGroups[i].positions[j].endCol}`);
         }
     } 
     for(var i=0;i<p.multilineComments.length;i++) {
