@@ -6,6 +6,7 @@
 *.7z
 *-lock.json
 *.c
+*.cpp
 *.log
 *.txt
 *.i
@@ -19,3 +20,4 @@ bin
 obj
 *.ilk
 settings.json
+*.bak

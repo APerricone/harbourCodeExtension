@@ -12,7 +12,21 @@ function Provider(light)
 	this.doGroups = false; 
 
 	this.Clear();
+
+	this.__defineGetter__("lastComment", ()=>{
+		return this.removedComments[this.removedComments.length-1].value;
+	})
+	this.__defineSetter__("lastComment", (v)=>{
+		var dest = this.removedComments[this.removedComments.length-1];
+		if(dest.line<0) dest.line = this.lineNr;
+		//if(v.startsWith("\r\n")) v=v.substr(2);
+		return dest.value = v;
+	})
+	this.__defineSetter__("lastCommentPos", (v)=>{
+		return this.removedComments[this.removedComments.length-1].pos = v;
+	})
 }
+
 
 Provider.prototype.Clear = function()
 {
@@ -33,8 +47,9 @@ Provider.prototype.Clear = function()
 	this.currentClass = undefined;
 	/** @type {Info?} has value inside a procedure, function or method  */
 	this.currentMethod = undefined;
-	/** @type {string} removed comment*/
-	this.currentComment = "";
+	/** @type {Array<Object>} removed comments */
+	this.removedComments = [];
+	this.resetComments();
 	/** @type {string} file name on the disk (program.prg)*/
 	this.currentDocument = "";
 	/** @type {Array<Group>} An array of current groups*/
@@ -69,6 +84,23 @@ Provider.prototype.Clear = function()
 	 * @type {Array<Array<number>>} 
 	 * */
 	this.cCodeFolder = [];
+}
+
+Provider.prototype.resetComments = function () {
+	this.removedComments=[];
+	this.newComment();
+}
+
+Provider.prototype.newComment = function() {
+	if(this.removedComments.length>0) {
+		var lc = this.removedComments[this.removedComments.length-1];
+		if(lc.line==-1) return;
+	}
+	this.removedComments.push({
+		"line": -1,
+		"pos": 0,
+		"value": ""
+	});
 }
 
 /**
@@ -109,7 +141,7 @@ function Info(name,kind,foundLike,parent,document,startLine,startCol,endLine,end
 	if(comment)
 	{
 		// remove the first newline and replace every character repeated more than 3 times that it is not a space, with 2 of them.
-		this.comment = comment.substr(2).trim().replace(/(\S)\1{2,}/g,"$1$1")
+		this.comment = comment.trim().replace(/(\S)\1{2,}/g,"$1$1")
 	}
 }
 
@@ -126,22 +158,33 @@ Provider.prototype.addInfo = function(name,kind,like,parent, search)
 	{
 		var lines = this.currLine.split("\r\n");
 		var rr = new RegExp('\\b'+name.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&")+'\\b',"i")
+		var prevLen=0;
 		for (var i = 0; i < lines.length; i++) {
 			var line = lines[i];
 			var m=rr.exec(line)
 			if(m)
 			{
+				var thisComment = "";
+				var nextComma = line.indexOf(",",m.index);
+				if(nextComma<0) nextComma=line.indexOf(")",m.index);
+				if(nextComma<0) nextComma=line.length+10;
+				var prevComma = line.lastIndexOf(",",m.index);
+				//if(prevComma<0) prevComma=0;
+				for(var ic=0;ic<this.removedComments.length;ic++) {
+					if(	this.removedComments[ic].line==this.startLine+i && 
+						this.removedComments[ic].pos<nextComma &&
+						this.removedComments[ic].pos>prevComma)
+						thisComment=this.removedComments[ic].value;
+				}
 				var ii = new Info(name,kind,like,parent,this.currentDocument,
-					this.startLine+i,m.index,this.startLine+i,m.index+name.length, this.currentComment);
-				this.currentComment=""
+					this.startLine+i,m.index,this.startLine+i,m.index+name.length, thisComment);
 				this.funcList.push(ii);
 				return ii;
-			}			
+			}
 		}
 	}
 	var ii = new Info(name,kind,like,parent,this.currentDocument,
-		this.startLine,0,this.lineNr,1000, this.currentComment);
-	this.currentComment=""
+		this.startLine,0,this.lineNr,1000, this.lastComment);
 	this.funcList.push(ii);
 	return ii;
 }
@@ -187,16 +230,21 @@ Provider.prototype.linePP = function(line)
 		var eC = line.indexOf("*/");
 		if(eC==-1)
 		{
-			this.currentComment += "\r\n"+line;
+			this.lastComment += "\r\n"+line;
 			return;
 		}
-		this.currentComment += "\r\n" + line.substr(0,eC)
+		this.lastComment += "\r\n" + line.substr(0,eC)
 		line = line.substr(0,eC+2).replace(/[^\s]/g," ") + line.substr(eC+2);
 		this.comment = false;
 	}
-	if(this.cont)
-		this.currLine += "\r\n"+line;
-	else
+	if(this.cont) {
+		if(!this.currLine.endsWith("\r\n")) {
+			if(this.currLine.endsWith("\n")||this.currLine.endsWith("\r"))
+				this.currLine.substr(0,this.currLine.length-1);
+			this.currLine+="\r\n";
+		}
+		this.currLine += line;
+	} else
 	{
 		this.startLine = this.lineNr;
 		this.currLine = line;
@@ -212,17 +260,18 @@ Provider.prototype.linePrepare = function(line)
 	if(this.currLine.trim().length == 0)
 	{
 		if(line.trim().length == 0)
-			this.currentComment="";
+			this.resetComments()
 		this.currLine="";
 		return;
 	}
 	if(!this.cMode && this.currLine.trim().match(/^NOTE\s/i))
 	{
-		this.currentComment += "\r\n"+this.currLine.trim().substr(4);
+		this.lastComment += "\r\n"+this.currLine.trim().substr(4);
 		this.currLine="";
 		if(this.firstLineCommment<0) this.firstLineCommment = this.lineNr;
 		return;
 	}
+	var lineStart=0;
 	for(var i=0;i<this.currLine.length;i++)
 	{
 		precC = c;
@@ -232,6 +281,7 @@ Provider.prototype.linePrepare = function(line)
 		{
 			justStart = (precC==" "||precC=='\t');
 		}
+		if(c=="\n" || precC=="\r") lineStart=i+1;
 		// already in string
 		if(string.length!=0)
 		{
@@ -252,16 +302,20 @@ Provider.prototype.linePrepare = function(line)
 				var endC = this.currLine.indexOf("*/",i+1)
 				if(endC>0)
 				{
-					this.currentComment="\r\n"+this.currLine.substr(i+1,endC-i-1)
+					if(!precJustStart) this.newComment()
+					this.lastComment="\r\n"+this.currLine.substr(i+1,endC-i-1)
+					this.lastCommentPos = i-lineStart;
+					this.newComment();
 					this.currLine = this.currLine.substr(0,i-1) + 
 							" ".repeat(endC-i+3) +
 							this.currLine.substr(endC+2);
 					continue;
 				} else
 				{
-					if(!justStart)
-						this.currentComment=""
-					this.currentComment+="\r\n"+this.currLine.substr(i+1)
+					if(!precJustStart)
+						this.newComment();
+					this.lastComment+="\r\n"+this.currLine.substr(i+1)
+					this.lastCommentPos = i-lineStart;
 					this.comment = true;
 					this.currLine = this.currLine.substr(0,i-1)
 					if(this.firstLineCommment<0) this.firstLineCommment=this.lineNr;
@@ -271,7 +325,7 @@ Provider.prototype.linePrepare = function(line)
 			if(justStart && !this.cMode)
 			{
 				// commented line: skip
-				this.currentComment+="\r\n"+this.currLine.substr(i+1)
+				this.lastComment+="\r\n"+this.currLine.substr(i+1)
 				this.currLine="";
 				if(this.firstLineCommment<0) this.firstLineCommment=this.lineNr;
 				return;
@@ -280,8 +334,9 @@ Provider.prototype.linePrepare = function(line)
 		if((c=="/" && precC=="/")||(c=="&" && precC=="&" && !this.cMode))
 		{
 			if(!precJustStart)
-				this.currentComment=""
-			this.currentComment+="\r\n"+this.currLine.substr(i+1)
+				this.newComment();
+			this.lastComment+="\r\n"+this.currLine.substr(i+1)
+			this.lastCommentPos = i+1-lineStart;
 			this.currLine = this.currLine.substr(0,i-1)
 			this.cont = this.currLine.trim().endsWith(";");
 			if(precJustStart && this.firstLineCommment<0)
@@ -347,7 +402,7 @@ Provider.prototype.parseDeclareList = function(list,kind,parent)
 	//list=list.replace(/\s+/g,"").split(",");
 	list=list.split(",");
 	//return list.split(",");
-	if(list.length>1) this.currentComment = ""
+	//if(list.length>1) this.lastComment = ""
 	for (var i = 0; i < list.length; i++) 
 	{
 		var m = list[i].trim().split(/\s+/g)[0];
@@ -534,7 +589,7 @@ Provider.prototype.parseC = function()
 Provider.prototype.parse = function(line)
 {
 	this.linePP(line);
-	if(this.comment || this.cont) return;
+	if(this.comment ) return;
 	this.linePrepare(line);
 	if(this.currLine.trim().length==0 || this.cont) return;
 	/** @type{string[]} */
@@ -567,6 +622,7 @@ Provider.prototype.parse = function(line)
 	}
 	if(code)
 		this.lastCodeLine = this.lineNr;
+	this.resetComments();
 }
 
 /**

@@ -384,7 +384,8 @@ connection.onDocumentSymbol((param)=>
             var selRange =server.Range.create(info.startLine,info.startCol, info.endLine,info.endCol);
             if(info.endLine!=info.startLine)
                 selRange.end = server.Position.create(info.startLine,1000);
-            var docSym = server.DocumentSymbol.create(info.name,info.name,
+            var docSym = server.DocumentSymbol.create(info.name,
+                    (info.comment && info.comment.length>0?info.comment.replace(/[\r\n]+/g," "):""),
                     kindTOVS(info.kind),
                     server.Range.create(info.startLine,info.startCol,
                         info.endLine,info.endCol), selRange,undefined);
@@ -782,6 +783,45 @@ function getWorkspaceSignatures(word, doc, className, nC)
 {
     var signatures = [];
     var thisDone = false;
+    function GetSignatureFromInfo(pp,info) {
+        var s = {}                
+        if (info.kind.startsWith("method"))
+            if(info.parent)
+            {
+                s["label"] = info.parent.name+":"+info.name;
+                if(className && className!=info.parent.nameCmp) return undefined;
+            }
+            else
+            {
+                s["label"] = "??:"+info.name;
+                if(className) return undefined;
+            }
+        else
+            s["label"] = info.name;
+        s["label"] += "("
+        var subParams = [];
+        for (var iParam=iSign+1;iParam<pp.funcList.length;iParam++)
+        {
+            /** @type {provider.Info} */
+            var subinfo = pp.funcList[iParam];
+            if(subinfo.parent==info && subinfo.kind=="param")
+            {
+                var pInfo = {"label":subinfo.name}
+                if(subinfo.comment && subinfo.comment.trim().length>0)
+                    pInfo["documentation"]="<"+subinfo.name+"> "+subinfo.comment 
+                subParams.push(pInfo)
+                if(!s.label.endsWith("("))
+                    s.label += ", "
+                s.label+=subinfo.name
+            } else
+                break;
+        }
+        s["label"] += ")"
+        s["parameters"]=subParams;
+        if(info.comment && info.comment.trim().length>0)
+            s["documentation"]=info.comment 
+        return s;
+    }
     for (var file in files) //if (files.hasOwnProperty(file)) 
     {
         if(file==doc.uri) thisDone = true;
@@ -796,42 +836,8 @@ function getWorkspaceSignatures(word, doc, className, nC)
                 continue;
             if(info.kind.endsWith("*") && file!=doc.uri)
                 continue;
-            var s = {}
-            if (info.kind.startsWith("method"))
-                if(info.parent)
-                {
-                    s["label"] = info.parent.name+":"+info.name;
-                    if(className && className!=info.parent.nameCmp)
-                        continue;
-                }
-                else
-                {
-                    s["label"] = "??:"+info.name;
-                    if(className)
-                        continue;
-                }
-            else
-                s["label"] = info.name;
-            s["label"] += "("
-            var subParams = [];
-            for (var iParam=iSign+1;iParam<pp.funcList.length;iParam++)
-            {
-                /** @type {provider.Info} */
-                var subinfo = pp.funcList[iParam];
-                if(subinfo.parent==info && subinfo.kind=="param")
-                {
-                    subParams.push({"label":subinfo.name})
-                    if(!s.label.endsWith("("))
-                        s.label += ", "
-                    s.label+=subinfo.name
-                } else
-                    break;
-            }
-            s["label"] += ")"
-            s["parameters"]=subParams;
-            if(info.comment && info.comment.trim().length>0)
-                s["documentation"]=info.comment 
-            if(subParams.length>=nC)
+            var s = GetSignatureFromInfo(pp,info);
+            if(s && s["parameters"].length>=nC)
                 signatures.push(s);
         }
     }
@@ -846,44 +852,10 @@ function getWorkspaceSignatures(word, doc, className, nC)
                 continue;
             if(info.nameCmp != word)
                 continue;
-            var s = {}                
-            if (info.kind.startsWith("method"))
-                if(info.parent)
-                {
-                    s["label"] = info.parent.name+":"+info.name;
-                    if(className && className!=info.parent.nameCmp)
-                        continue;
-                }
-                else
-                {
-                    s["label"] = "??:"+info.name;
-                    if(className)
-                        continue;
-                }
-            else
-                s["label"] = info.name;
-            s["label"] += "("
-            var subParams = [];
-            for (var iParam=iSign+1;iParam<pp.funcList.length;iParam++)
-            {
-                /** @type {provider.Info} */
-                var subinfo = pp.funcList[iParam];
-                if(subinfo.parent==info && subinfo.kind=="param")
-                {
-                    subParams.push({"label":subinfo.name})
-                    if(!s.label.endsWith("("))
-                        s.label += ", "
-                    s.label+=subinfo.name
-                } else
-                    break;
-            }
-            s["label"] += ")"
-            s["parameters"]=subParams;
-            if(info.comment && info.comment.trim().length>0)
-                s["documentation"]=info.comment 
-            if(subParams.length>nC)
+            var s = GetSignatureFromInfo(pp,info);
+            if(s && s["parameters"].length>=nC)
                 signatures.push(s);
-        }
+            }
 
     }
     return signatures;
