@@ -779,11 +779,11 @@ function CountParameter(txt, position)
     return (txt.substr(0,position).match(/,/g) || []).length
 }
 
-function getWorkspaceSignatures(word, doc, className, nC)
-{
+function getWorkspaceSignatures(word, doc, className, nC) {
     var signatures = [];
     var thisDone = false;
     function GetSignatureFromInfo(pp,info) {
+        if("hDocIdx" in info) return GetHelpFromDoc(pp.harbourDocs[info.hDocIdx]);
         var s = {}                
         if (info.kind.startsWith("method"))
             if(info.parent)
@@ -861,6 +861,22 @@ function getWorkspaceSignatures(word, doc, className, nC)
     return signatures;
 }
 
+function GetHelpFromDoc(doc) {
+    var s = {};
+    s["label"] = doc.label;
+    s["documentation"] = doc.documentation;
+    var subParams = [];
+    for (var iParam = 0; iParam < doc.arguments.length; iParam++)
+    {
+        subParams.push({
+            "label": doc.arguments[iParam].label,
+            "documentation": doc.arguments[iParam].documentation
+        });
+    }
+    s["parameters"] = subParams;
+    return s;
+}
+
 function getStdHelp(word, nC)
 {
     var signatures = [];
@@ -868,19 +884,7 @@ function getStdHelp(word, nC)
     {
         if (docs[i].name.toLowerCase() == word)
         {
-            var s = {};
-            s["label"] = docs[i].label;
-            s["documentation"] = docs[i].documentation;
-            var subParams = [];
-            for (var iParam = 0; iParam < docs[i].arguments.length; iParam++)
-            {
-                subParams.push({
-                    "label": docs[i].arguments[iParam].label,
-                    "documentation": docs[i].arguments[iParam].documentation
-                });
-            }
-            s["parameters"] = subParams;
-            signatures.push(s);
+            signatures.push(GetHelpFromDoc(docs[i]));
         }
     }
     return signatures;
@@ -1444,6 +1448,65 @@ connection.onRequest("groupAtPosition",(params)=>{
         }
     }
     return [];
+})
+
+connection.onRequest("docSnippet",(params)=>{
+    var doc = documents.get(params.textDocument.uri);
+    var pp = getDocumentProvider(doc);
+    /** @type{provider.Info} */
+    var funcInfo,iSign;
+    for (let i = 0; i < pp.funcList.length; i++) {
+        /** @type{provider.Info} */
+        const info = pp.funcList[i];
+        if( !info.kind.startsWith("procedure") && 
+            !info.kind.startsWith("function"))
+            continue;
+        if(info.startLine>params.sel[0].line) {
+            funcInfo=info;
+            iSign=i;
+            break;
+        }
+    }
+    if(!funcInfo) return undefined;
+    if("hDocIdx" in funcInfo) return undefined;
+    var subParams = [];
+    for (var iParam=iSign+1;iParam<pp.funcList.length;iParam++)
+    {
+        /** @type {provider.Info} */
+        var subinfo = pp.funcList[iParam];
+        if(subinfo.parent==funcInfo && subinfo.kind=="param")
+        {
+            subParams.push(subinfo);
+        } else
+            break;
+    }
+
+    var snipppet = "/* \\$DOC\\$\r\n";
+    snipppet+="\t\\$TEMPLATE\\$\r\n\t\t"+funcInfo.kind+"\r\n";
+    snipppet+="\t\\$ONELINER\\$\r\n\t\t$1\r\n"
+    snipppet+="\t\\$SYNTAX\\$\r\n\t\t"+funcInfo.name+"("
+    for (let iParam = 0; iParam < subParams.length; iParam++) {
+        const param = subParams[iParam];
+        snipppet+="<"+param.name+">";
+        if(iParam!=subParams.length-1) snipppet+=", "
+    }
+    if(funcInfo.kind.startsWith("function"))
+        snipppet+=") --> ${2:retValue}\r\n"
+    else
+        snipppet+=")\r\n"
+    snipppet+="\t\\$ARGUMENTS\\$\r\n"
+    var nTab=3;
+    for (let iParam = 0; iParam < subParams.length; iParam++) {
+        const param = subParams[iParam];
+        snipppet+="\t\t<"+param.name+"> $"+nTab+"\r\n";
+        nTab++;
+    }
+    if(funcInfo.kind.startsWith("function")) {
+        snipppet += "\t\\$RETURNS\\$\r\n"
+        snipppet += "\t\t${2:retValue} $"+nTab+"\r\n"
+    }
+    snipppet += "\t\\$END\\$ */"
+    return snipppet;
 })
 
 connection.listen();

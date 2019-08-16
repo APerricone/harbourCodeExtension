@@ -84,6 +84,9 @@ Provider.prototype.Clear = function()
 	 * @type {Array<Array<number>>} 
 	 * */
 	this.cCodeFolder = [];
+	/** list of docs defined with $DOC$
+	 */
+	this.harbourDocs = [];
 }
 
 Provider.prototype.resetComments = function () {
@@ -581,8 +584,108 @@ Provider.prototype.parseC = function()
 			close=this.currLine.indexOf("}",close+1)
 		}
 	}
-	
 }
+Provider.prototype.AddMultilineComment = function(startLine,endLine) {
+	this.multilineComments.push([startLine,endLine]);
+	/** @type{string|undefined} */
+	var mComment; 
+	for (let i = 0; i < this.removedComments.length; i++) {
+		const comm = this.removedComments[i];
+		if(comm.line==startLine) {
+			mComment = comm.value;
+			break;
+		}
+	}
+	if(!mComment) return;
+	if(mComment.indexOf("$DOC$")<0) return;
+	var lines = mComment.split("\r\n");
+	var docInfo,lastSpecifyLine;
+	for (let i = 0; i < lines.length; i++) {
+		const line = lines[i].trim();
+		if(line.length==0) continue;
+		if(line.startsWith("$")) {
+			lastSpecifyLine=line;
+			switch(lastSpecifyLine) {
+				case "$DOC$":
+					docInfo = {}
+					break;
+				case "$END$":
+					if(docInfo) this.harbourDocs.push(docInfo);
+					docInfo = undefined;
+					break;
+			}
+			continue;
+		}
+		switch(lastSpecifyLine) {
+			case "$TEMPLATE$":
+				var currTemplate=line.toLowerCase();
+				if(currTemplate=="function" || currTemplate=="procedure")
+				{
+					docInfo = {};
+					docInfo["label"] = undefined;
+					docInfo["documentation"] = undefined;
+					docInfo["arguments"] = [];
+					docInfo["template"] = currTemplate;
+				}						
+				break;
+			case "$ONELINER$":
+				if(docInfo)
+				{
+					if(docInfo["documentation"])
+						docInfo["documentation"] += " " +line;
+					else
+						docInfo["documentation"] = line;
+				}
+				break;
+			case "$SYNTAX$":
+				if(docInfo) {
+					if(docInfo["label"])
+						docInfo["label"] += " " + line;
+					else {
+						var p = line.indexOf("(");
+						if(p<0) break;
+						var name = line.substring(0,p)
+						if(name.indexOf(" ")>0) {
+							docInfo = undefined;
+							break;
+						}
+						docInfo["name"] = name;
+						docInfo["label"] = line;
+					}					
+				}
+				break;
+			case "$ARGUMENTS$":
+				if(docInfo) {
+					var ck = /<[^>]+>/;
+					var mm = line.match(ck);
+					if(mm) {
+						var arg = {};
+						arg["label"] = mm[0];
+						arg["documentation"] = line;
+						docInfo.arguments.push(arg);
+					} else if(docInfo.arguments.length>0)
+						docInfo.arguments[docInfo.arguments.length-1].documentation += " " + line;
+				}
+				break;
+			case "$RETURNS$":
+				if(docInfo) {
+					var ck = /<[^>]+>/;
+					var mm = line.match(ck);
+					if(mm)
+					{
+						var arg = {};
+						arg["name"] = mm[0];
+						arg["help"] = line.replace(mm[0],"").trim();
+						docInfo.return = arg;
+					}else
+					if(docInfo.return)
+						docInfo.return.help += " " + line;
+				}
+				break;	
+		}
+	}
+}
+
 /**
  * @param {string} line
  */
@@ -596,7 +699,7 @@ Provider.prototype.parse = function(line)
 	if(this.firstLineCommment>=0)
 	{
 		if(this.firstLineCommment<this.startLine-1) 
-			this.multilineComments.push([this.firstLineCommment,this.startLine-1])
+			this.AddMultilineComment(this.firstLineCommment,this.startLine-1);
 		this.firstLineCommment=-1;
 	}
 	if(this.cMode) {
@@ -631,8 +734,7 @@ Provider.prototype.parse = function(line)
  * @param {string} docName the uri of the file of the incoming text 
  * @param {[boolean=false]}  cMode if true it is considered a c file (not harbour)
  */
-Provider.prototype.parseString = function(txt,docName,cMode)
-{
+Provider.prototype.parseString = function(txt,docName,cMode) {
 	this.Clear();
 	this.currentDocument=docName;
 	if(cMode != undefined)
@@ -644,12 +746,23 @@ Provider.prototype.parseString = function(txt,docName,cMode)
 	this.endParse();
 }
 
-Provider.prototype.endParse = function()
-{
+Provider.prototype.endParse = function() {
 	if(this.currentMethod) this.currentMethod.endLine = this.lastCodeLine;
 	this.currentMethod = undefined;
 	if(this.firstLineCommment>0 && this.firstLineCommment<this.lineNr-1) 
-		this.multilineComments.push([this.firstLineCommment,this.lineNr-1])
+		this.AddMultilineComment(this.firstLineCommment,this.lineNr-1);
+	for(let i=0;i<this.harbourDocs.length;i++) {
+		var doc=this.harbourDocs[i];
+		var lCmp = doc.name.toLowerCase()
+		for (let j = 0; j < this.funcList.length; j++) {
+			const info = this.funcList[j];
+			if(info.nameCmp == lCmp)
+			{
+				info.hDocIdx = i;
+				break;
+			}
+		}
+	}
 }
 
 /**

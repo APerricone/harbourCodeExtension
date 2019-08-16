@@ -150,8 +150,7 @@ parseFile.prototype.parseLine = function(line)
 					}
 					this.doc["name"] = name;
 					this.doc["label"] = line;
-				}
-					
+				}					
 			}
 			break;
 		case "$ARGUMENTS$":
