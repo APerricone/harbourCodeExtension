@@ -519,7 +519,7 @@ Provider.prototype.parseHarbour = function(words)
 			var r = procRegEx.exec(this.currLine);
 			if(r)
 			{
-				var kind = r[1].startsWith('p')? "procedure" : "function";
+				var kind = r[1].startsWith('p') || r[1].startsWith('P')? "procedure" : "function";
 				if(words[0].startsWith("stat")) kind+="*"; 
 				if(this.currentMethod) this.currentMethod.endLine = this.lastCodeLine;
 				this.currentMethod = this.addInfo(r[2],kind,"definition");
