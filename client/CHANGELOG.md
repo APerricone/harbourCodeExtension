@@ -4,7 +4,8 @@ All notable changes to the "Harbour and xHarbour" extension will be documented i
 # 0.9.4
  - **server** added Folder provider
  - **decorator** use of server
- - **server* better performance
+ - **server** better performance
+ - **syntax** minor fixes
 
 # 0.9.3
  - **server** fixed wordBasedSuggestions for methods and fields

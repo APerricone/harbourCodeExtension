@@ -19,3 +19,11 @@ bin
 obj
 *.ilk
 settings.json
+*.vsix
+*.bak
+buildLib*.bat
+test/.vscode/c_cpp_properties.json
+test/operators.prg
+test/minimal.prg
+test/test30.inc
+test/test30.prg
