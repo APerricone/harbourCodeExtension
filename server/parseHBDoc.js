@@ -80,8 +80,8 @@ function createDoc()
 	fs.writeFile("src/hbdocs.missing",	msg, (err)=>{if(err) console.error(err);});
 	fs.writeFile("src/hbdocs.json",	JSON.stringify(docs,undefined,1),(err)=>{if(err) console.error(err);});
 }
+
 /**
- * 
  * @param {String} line 
  */
 parseFile.prototype.parseLine = function(line)
@@ -150,8 +150,7 @@ parseFile.prototype.parseLine = function(line)
 					}
 					this.doc["name"] = name;
 					this.doc["label"] = line;
-				}
-					
+				}					
 			}
 			break;
 		case "$ARGUMENTS$":

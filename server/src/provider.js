@@ -12,7 +12,21 @@ function Provider(light)
 	this.doGroups = false; 
 
 	this.Clear();
+
+	this.__defineGetter__("lastComment", ()=>{
+		return this.removedComments[this.removedComments.length-1].value;
+	})
+	this.__defineSetter__("lastComment", (v)=>{
+		var dest = this.removedComments[this.removedComments.length-1];
+		if(dest.line<0) dest.line = this.lineNr;
+		//if(v.startsWith("\r\n")) v=v.substr(2);
+		return dest.value = v;
+	})
+	this.__defineSetter__("lastCommentPos", (v)=>{
+		return this.removedComments[this.removedComments.length-1].pos = v;
+	})
 }
+
 
 Provider.prototype.Clear = function()
 {
@@ -33,8 +47,9 @@ Provider.prototype.Clear = function()
 	this.currentClass = undefined;
 	/** @type {Info?} has value inside a procedure, function or method  */
 	this.currentMethod = undefined;
-	/** @type {string} removed comment*/
-	this.currentComment = "";
+	/** @type {Array<Object>} removed comments */
+	this.removedComments = [];
+	this.resetComments();
 	/** @type {string} file name on the disk (program.prg)*/
 	this.currentDocument = "";
 	/** @type {Array<Group>} An array of current groups*/
@@ -69,6 +84,26 @@ Provider.prototype.Clear = function()
 	 * @type {Array<Array<number>>} 
 	 * */
 	this.cCodeFolder = [];
+	/** list of docs defined with $DOC$
+	 */
+	this.harbourDocs = [];
+}
+
+Provider.prototype.resetComments = function () {
+	this.removedComments=[];
+	this.newComment();
+}
+
+Provider.prototype.newComment = function() {
+	if(this.removedComments.length>0) {
+		var lc = this.removedComments[this.removedComments.length-1];
+		if(lc.line==-1) return;
+	}
+	this.removedComments.push({
+		"line": -1,
+		"pos": 0,
+		"value": ""
+	});
 }
 
 /**
@@ -109,7 +144,7 @@ function Info(name,kind,foundLike,parent,document,startLine,startCol,endLine,end
 	if(comment)
 	{
 		// remove the first newline and replace every character repeated more than 3 times that it is not a space, with 2 of them.
-		this.comment = comment.substr(2).trim().replace(/(\S)\1{2,}/g,"$1$1")
+		this.comment = comment.trim().replace(/(\S)\1{2,}/g,"$1$1")
 	}
 }
 
@@ -126,22 +161,33 @@ Provider.prototype.addInfo = function(name,kind,like,parent, search)
 	{
 		var lines = this.currLine.split("\r\n");
 		var rr = new RegExp('\\b'+name.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&")+'\\b',"i")
+		var prevLen=0;
 		for (var i = 0; i < lines.length; i++) {
 			var line = lines[i];
 			var m=rr.exec(line)
 			if(m)
 			{
+				var thisComment = "";
+				var nextComma = line.indexOf(",",m.index);
+				if(nextComma<0) nextComma=line.indexOf(")",m.index);
+				if(nextComma<0) nextComma=line.length+10;
+				var prevComma = line.lastIndexOf(",",m.index);
+				//if(prevComma<0) prevComma=0;
+				for(var ic=0;ic<this.removedComments.length;ic++) {
+					if(	this.removedComments[ic].line==this.startLine+i && 
+						this.removedComments[ic].pos<nextComma &&
+						this.removedComments[ic].pos>prevComma)
+						thisComment=this.removedComments[ic].value;
+				}
 				var ii = new Info(name,kind,like,parent,this.currentDocument,
-					this.startLine+i,m.index,this.startLine+i,m.index+name.length, this.currentComment);
-				this.currentComment=""
+					this.startLine+i,m.index,this.startLine+i,m.index+name.length, thisComment);
 				this.funcList.push(ii);
 				return ii;
-			}			
+			}
 		}
 	}
 	var ii = new Info(name,kind,like,parent,this.currentDocument,
-		this.startLine,0,this.lineNr,1000, this.currentComment);
-	this.currentComment=""
+		this.startLine,0,this.lineNr,1000, this.lastComment);
 	this.funcList.push(ii);
 	return ii;
 }
@@ -187,16 +233,21 @@ Provider.prototype.linePP = function(line)
 		var eC = line.indexOf("*/");
 		if(eC==-1)
 		{
-			this.currentComment += "\r\n"+line;
+			this.lastComment += "\r\n"+line;
 			return;
 		}
-		this.currentComment += "\r\n" + line.substr(0,eC)
+		this.lastComment += "\r\n" + line.substr(0,eC)
 		line = line.substr(0,eC+2).replace(/[^\s]/g," ") + line.substr(eC+2);
 		this.comment = false;
 	}
-	if(this.cont)
-		this.currLine += "\r\n"+line;
-	else
+	if(this.cont) {
+		if(!this.currLine.endsWith("\r\n")) {
+			if(this.currLine.endsWith("\n")||this.currLine.endsWith("\r"))
+				this.currLine.substr(0,this.currLine.length-1);
+			this.currLine+="\r\n";
+		}
+		this.currLine += line;
+	} else
 	{
 		this.startLine = this.lineNr;
 		this.currLine = line;
@@ -212,17 +263,18 @@ Provider.prototype.linePrepare = function(line)
 	if(this.currLine.trim().length == 0)
 	{
 		if(line.trim().length == 0)
-			this.currentComment="";
+			this.resetComments()
 		this.currLine="";
 		return;
 	}
 	if(!this.cMode && this.currLine.trim().match(/^NOTE\s/i))
 	{
-		this.currentComment += "\r\n"+this.currLine.trim().substr(4);
+		this.lastComment += "\r\n"+this.currLine.trim().substr(4);
 		this.currLine="";
 		if(this.firstLineCommment<0) this.firstLineCommment = this.lineNr;
 		return;
 	}
+	var lineStart=0;
 	for(var i=0;i<this.currLine.length;i++)
 	{
 		precC = c;
@@ -232,6 +284,7 @@ Provider.prototype.linePrepare = function(line)
 		{
 			justStart = (precC==" "||precC=='\t');
 		}
+		if(c=="\n" || precC=="\r") lineStart=i+1;
 		// already in string
 		if(string.length!=0)
 		{
@@ -252,16 +305,20 @@ Provider.prototype.linePrepare = function(line)
 				var endC = this.currLine.indexOf("*/",i+1)
 				if(endC>0)
 				{
-					this.currentComment="\r\n"+this.currLine.substr(i+1,endC-i-1)
+					if(!precJustStart) this.newComment()
+					this.lastComment="\r\n"+this.currLine.substr(i+1,endC-i-1)
+					this.lastCommentPos = i-lineStart;
+					this.newComment();
 					this.currLine = this.currLine.substr(0,i-1) + 
 							" ".repeat(endC-i+3) +
 							this.currLine.substr(endC+2);
 					continue;
 				} else
 				{
-					if(!justStart)
-						this.currentComment=""
-					this.currentComment+="\r\n"+this.currLine.substr(i+1)
+					if(!precJustStart)
+						this.newComment();
+					this.lastComment+="\r\n"+this.currLine.substr(i+1)
+					this.lastCommentPos = i-lineStart;
 					this.comment = true;
 					this.currLine = this.currLine.substr(0,i-1)
 					if(this.firstLineCommment<0) this.firstLineCommment=this.lineNr;
@@ -271,7 +328,7 @@ Provider.prototype.linePrepare = function(line)
 			if(justStart && !this.cMode)
 			{
 				// commented line: skip
-				this.currentComment+="\r\n"+this.currLine.substr(i+1)
+				this.lastComment+="\r\n"+this.currLine.substr(i+1)
 				this.currLine="";
 				if(this.firstLineCommment<0) this.firstLineCommment=this.lineNr;
 				return;
@@ -280,8 +337,9 @@ Provider.prototype.linePrepare = function(line)
 		if((c=="/" && precC=="/")||(c=="&" && precC=="&" && !this.cMode))
 		{
 			if(!precJustStart)
-				this.currentComment=""
-			this.currentComment+="\r\n"+this.currLine.substr(i+1)
+				this.newComment();
+			this.lastComment+="\r\n"+this.currLine.substr(i+1)
+			this.lastCommentPos = i+1-lineStart;
 			this.currLine = this.currLine.substr(0,i-1)
 			this.cont = this.currLine.trim().endsWith(";");
 			if(precJustStart && this.firstLineCommment<0)
@@ -347,7 +405,7 @@ Provider.prototype.parseDeclareList = function(list,kind,parent)
 	//list=list.replace(/\s+/g,"").split(",");
 	list=list.split(",");
 	//return list.split(",");
-	if(list.length>1) this.currentComment = ""
+	//if(list.length>1) this.lastComment = ""
 	for (var i = 0; i < list.length; i++) 
 	{
 		var m = list[i].trim().split(/\s+/g)[0];
@@ -526,22 +584,122 @@ Provider.prototype.parseC = function()
 			close=this.currLine.indexOf("}",close+1)
 		}
 	}
-	
 }
+Provider.prototype.AddMultilineComment = function(startLine,endLine) {
+	this.multilineComments.push([startLine,endLine]);
+	/** @type{string|undefined} */
+	var mComment; 
+	for (let i = 0; i < this.removedComments.length; i++) {
+		const comm = this.removedComments[i];
+		if(comm.line==startLine) {
+			mComment = comm.value;
+			break;
+		}
+	}
+	if(!mComment) return;
+	if(mComment.indexOf("$DOC$")<0) return;
+	var lines = mComment.split("\r\n");
+	var docInfo,lastSpecifyLine;
+	for (let i = 0; i < lines.length; i++) {
+		const line = lines[i].trim();
+		if(line.length==0) continue;
+		if(line.startsWith("$")) {
+			lastSpecifyLine=line;
+			switch(lastSpecifyLine) {
+				case "$DOC$":
+					docInfo = {}
+					break;
+				case "$END$":
+					if(docInfo) this.harbourDocs.push(docInfo);
+					docInfo = undefined;
+					break;
+			}
+			continue;
+		}
+		switch(lastSpecifyLine) {
+			case "$TEMPLATE$":
+				var currTemplate=line.toLowerCase();
+				if(currTemplate=="function" || currTemplate=="procedure")
+				{
+					docInfo = {};
+					docInfo["label"] = undefined;
+					docInfo["documentation"] = undefined;
+					docInfo["arguments"] = [];
+					docInfo["template"] = currTemplate;
+				}						
+				break;
+			case "$ONELINER$":
+				if(docInfo)
+				{
+					if(docInfo["documentation"])
+						docInfo["documentation"] += " " +line;
+					else
+						docInfo["documentation"] = line;
+				}
+				break;
+			case "$SYNTAX$":
+				if(docInfo) {
+					if(docInfo["label"])
+						docInfo["label"] += " " + line;
+					else {
+						var p = line.indexOf("(");
+						if(p<0) break;
+						var name = line.substring(0,p)
+						if(name.indexOf(" ")>0) {
+							docInfo = undefined;
+							break;
+						}
+						docInfo["name"] = name;
+						docInfo["label"] = line;
+					}					
+				}
+				break;
+			case "$ARGUMENTS$":
+				if(docInfo) {
+					var ck = /<[^>]+>/;
+					var mm = line.match(ck);
+					if(mm) {
+						var arg = {};
+						arg["label"] = mm[0];
+						arg["documentation"] = line;
+						docInfo.arguments.push(arg);
+					} else if(docInfo.arguments.length>0)
+						docInfo.arguments[docInfo.arguments.length-1].documentation += " " + line;
+				}
+				break;
+			case "$RETURNS$":
+				if(docInfo) {
+					var ck = /<[^>]+>/;
+					var mm = line.match(ck);
+					if(mm)
+					{
+						var arg = {};
+						arg["name"] = mm[0];
+						arg["help"] = line.replace(mm[0],"").trim();
+						docInfo.return = arg;
+					}else
+					if(docInfo.return)
+						docInfo.return.help += " " + line;
+				}
+				break;	
+		}
+	}
+}
+
 /**
  * @param {string} line
  */
 Provider.prototype.parse = function(line)
 {
 	this.linePP(line);
-	if(this.comment || this.cont) return;
+	if(this.comment ) return;
 	this.linePrepare(line);
 	if(this.currLine.trim().length==0 || this.cont) return;
 	/** @type{string[]} */
 	if(this.firstLineCommment>=0)
 	{
 		if(this.firstLineCommment<this.startLine-1) 
-			this.multilineComments.push([this.firstLineCommment,this.startLine-1])
+			this.AddMultilineComment(this.firstLineCommment,this.startLine-1);
 		this.firstLineCommment=-1;
 	}
 	if(this.cMode) {
@@ -567,6 +725,7 @@ Provider.prototype.parse = function(line)
 	}
 	if(code)
 		this.lastCodeLine = this.lineNr;
+	this.resetComments();
 }
 
 /**
@@ -575,8 +734,7 @@ Provider.prototype.parse = function(line)
  * @param {string} docName the uri of the file of the incoming text 
  * @param {[boolean=false]}  cMode if true it is considered a c file (not harbour)
  */
-Provider.prototype.parseString = function(txt,docName,cMode)
-{
+Provider.prototype.parseString = function(txt,docName,cMode) {
 	this.Clear();
 	this.currentDocument=docName;
 	if(cMode != undefined)
@@ -588,12 +746,23 @@ Provider.prototype.parseString = function(txt,docName,cMode)
 	this.endParse();
 }
 
-Provider.prototype.endParse = function()
-{
+Provider.prototype.endParse = function() {
 	if(this.currentMethod) this.currentMethod.endLine = this.lastCodeLine;
 	this.currentMethod = undefined;
 	if(this.firstLineCommment>0 && this.firstLineCommment<this.lineNr-1) 
-		this.multilineComments.push([this.firstLineCommment,this.lineNr-1])
+		this.AddMultilineComment(this.firstLineCommment,this.lineNr-1);
+	for(let i=0;i<this.harbourDocs.length;i++) {
+		var doc=this.harbourDocs[i];
+		var lCmp = doc.name.toLowerCase()
+		for (let j = 0; j < this.funcList.length; j++) {
+			const info = this.funcList[j];
+			if(info.nameCmp == lCmp)
+			{
+				info.hDocIdx = i;
+				break;
+			}
+		}
+	}
 }
 
 /**

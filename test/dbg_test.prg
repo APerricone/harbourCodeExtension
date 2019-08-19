@@ -129,7 +129,9 @@ proc TestLibInside2(v)
 	LOCAL arr := {4,3,2,1}
 	? a,v
 
-proc testLotParameter(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r)
+proc testLotParameter(a/*a param*/,b/*b param*/,c/*c param*/,;
+			d/*d param*/,e/*e param*/,f ; //f param
+			,g,h,i,j,k,l,m,n,o,p,q,r)
 return 
 
 #pragma -B-

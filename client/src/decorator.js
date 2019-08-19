@@ -25,7 +25,7 @@ function showGroups(evt)
 	var section = vscode.workspace.getConfiguration('harbour');
 	if(!section.decorator) return;
 
-	var editor = vscode.window.activeTextEditor
+	var editor = evt.textEditor
 	if(!editor) return;
 	if(!editor.document) return;
 	if(editor.document.languageId!="harbour") return;

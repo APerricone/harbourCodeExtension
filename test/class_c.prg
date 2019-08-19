@@ -34,7 +34,11 @@ return
 #include <hbapicls.h>
 #include <hbapiitm.h>
 #include <stdio.h>
+#if _STACK
 #include <hbstack.h>
+#endif
+// this code explain how to
+// code a harbour's class with c code 
 
 #define CLASSNAME "CLASSTEST"
 struct CLASSTESTDATA
@@ -50,8 +54,7 @@ struct CLASSTESTDATA
    PHB_SYMB Test;
 } ClassTestData = {0};
 
-void Init_ClassTest()
-{
+void Init_ClassTest() { int i=0;
    if(ClassTestData.classId == 0)
    {
       ClassTestData.classId   = hb_clsFindClass(CLASSNAME, NULL);
