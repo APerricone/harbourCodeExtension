@@ -381,6 +381,8 @@ connection.onDocumentSymbol((param)=>
         //if (p.funcList.hasOwnProperty(fn)) {
             /** @type {provider.Info} */
             var info = p.funcList[fn];
+            if(info.kind=="field") continue;
+            if(info.kind=="memvar") continue;
             var selRange =server.Range.create(info.startLine,info.startCol, info.endLine,info.endCol);
             if(info.endLine!=info.startLine)
                 selRange.end = server.Position.create(info.startLine,1000);
@@ -653,8 +655,7 @@ connection.onDefinition((params)=>
     return dest;
 })
 
-connection.onSignatureHelp((params)=>
-{
+connection.onSignatureHelp((params)=> {
     var doc = documents.get(params.textDocument.uri);
     var pos = doc.offsetAt(params.position)-1;
     /** @type {string} */

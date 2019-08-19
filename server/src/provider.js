@@ -186,8 +186,16 @@ Provider.prototype.addInfo = function(name,kind,like,parent, search)
 			}
 		}
 	}
+	var comment = this.lastComment;
+	if(this.removedComments.length>0) for (let i = 0; i < this.removedComments.length; i++) {
+		const comm = this.removedComments[i];
+		if(comm.line<this.startLine) 
+			comment=comm.value;
+		else
+			break;
+	}
 	var ii = new Info(name,kind,like,parent,this.currentDocument,
-		this.startLine,0,this.lineNr,1000, this.lastComment);
+		this.startLine,0,this.lineNr,1000, comment);
 	this.funcList.push(ii);
 	return ii;
 }
