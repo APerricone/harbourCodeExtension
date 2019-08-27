@@ -4,8 +4,10 @@ All notable changes to the "Harbour and xHarbour" extension will be documented i
 # 0.9.4
  - **server** added Folder provider
  - **decorator** use of server
- - **server** better performance
+ - **server** better performance, stability + some fixes ([#32](https://github.com/APerricone/harbourCodeExtension/issues/28))
  - **syntax** minor fixes
+ - **server** Added harbourDoc support
+ - **client** Added auto harbourDoc generation on **/&ast; $DOC$**
 
 # 0.9.3
  - **server** fixed wordBasedSuggestions for methods and fields
