@@ -92,7 +92,7 @@ func AltraFunzione( )
 	memvar test,test2,hh
 	public test := {"non io"}
 	public hh := {'pp'=>3,'pi'=>3.14,4=>{1,2}}
-	private test2 := {"altro"}
+	private test2 := {"altro"} //unused
 	a[{^ 2018/12/22 }] := 'date with expressions'
 	Called()
 	? p
