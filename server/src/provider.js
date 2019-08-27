@@ -161,7 +161,6 @@ Provider.prototype.addInfo = function(name,kind,like,parent, search)
 	{
 		var lines = this.currLine.split("\r\n");
 		var rr = new RegExp('\\b'+name.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&")+'\\b',"i")
-		var prevLen=0;
 		for (var i = 0; i < lines.length; i++) {
 			var line = lines[i];
 			var m=rr.exec(line)
@@ -174,9 +173,11 @@ Provider.prototype.addInfo = function(name,kind,like,parent, search)
 				var prevComma = line.lastIndexOf(",",m.index);
 				//if(prevComma<0) prevComma=0;
 				for(var ic=0;ic<this.removedComments.length;ic++) {
-					if(	this.removedComments[ic].line==this.startLine+i && 
-						this.removedComments[ic].pos<nextComma &&
-						this.removedComments[ic].pos>prevComma)
+					if(	this.removedComments[ic].line==this.startLine+i && ( //same line
+						(this.removedComments[ic].pos<nextComma && //inside this elements commas
+						this.removedComments[ic].pos>prevComma) ||
+						(this.removedComments[ic].pos>=line.length &&  // the comment is at end of line
+							line.indexOf(",",nextComma+1)<0))) // it is the last elemen in the line
 						thisComment=this.removedComments[ic].value;
 				}
 				var ii = new Info(name,kind,like,parent,this.currentDocument,
