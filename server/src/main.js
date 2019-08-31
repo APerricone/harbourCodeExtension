@@ -74,7 +74,8 @@ connection.onInitialize(params =>
         workspaceRoots = [];
         for(var i=0;i<params.workspaceFolders.length;i++)
         {
-            workspaceRoots.push(params.workspaceFolders[i].uri)
+            if(params.workspaceFolders[i].uri)
+                workspaceRoots.push(params.workspaceFolders[i].uri)
         }
     } else {
         workspaceRoots = [params.rootUri];
@@ -85,6 +86,7 @@ connection.onInitialize(params =>
             else
                 workspaceRoots = ["file://"+encodeURI(params.rootPath)];
         }
+        if(!workspaceRoots[0]) workspaceRoots=[];
     }
     fs.readFile(path.join(__dirname, 'hbdocs.json'), "utf8",(err,data) =>
     {
@@ -263,7 +265,7 @@ function AddIncludes(startPath, includesArray) {
     {
         //var ext= path.extname(ff[fi]).toLowerCase();
         //if( ext != '.ch') return
-        if(!path.isAbsolute(dir))
+        if(startPath && !path.isAbsolute(dir))
             dir = path.join(startPath,dir);
         if(!fs.existsSync(dir)) return false;
         if(fileName.length<1)
@@ -311,7 +313,7 @@ function ParseInclude(startPath, includeName, addGlobal) {
         return includes[includeName];
     function FindInclude(dir)
     {
-        if(!path.isAbsolute(dir))
+        if(startPath && !path.isAbsolute(dir))
             dir = path.join(startPath,dir);
         if(!fs.existsSync(dir)) return undefined;
         var test = path.join(dir,includeName);
@@ -1159,7 +1161,7 @@ function completitionFiles(word, startPath)
     if(startPath) startPath = startPath.toLowerCase();
     function CheckDir(dir)
     {
-        if(!path.isAbsolute(dir))
+        if(startPath && !path.isAbsolute(dir))
             dir = path.join(startPath,dir);
         if(!fs.existsSync(dir)) return;
         
@@ -1212,7 +1214,7 @@ function definitionFiles(fileName, startPath, origin)
     if(startPath) startPath = startPath.toLowerCase();
     function DefDir(dir)
     {
-        if(!path.isAbsolute(dir))
+        if(startPath && !path.isAbsolute(dir))
             dir = path.join(startPath,dir);
         if(!fs.existsSync(dir)) return;
         if(startPath && dir.toLowerCase()==startPath) startDone=true;
