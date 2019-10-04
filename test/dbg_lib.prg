@@ -683,8 +683,17 @@ return
 static function IsValidStopLine(cModule,nLine)
 	LOCAL iModule
 	LOCAL t_oDebugInfo := __DEBUGITEM()
-	local nIdx, nInfo, tmp
-	cModule := lower(alltrim(cModule))
+   	local nIdx, nInfo, tmp
+	#ifdef __PLATFORM__WINDOWS
+		// case insensitive
+		cModule := lower(alltrim(cModule))
+	#else
+		cModule := alltrim(cModule)
+	#endif
+	nIdx := rat(hb_ps(), cModule)
+	if nIdx>0
+		cModule:=substr(cModule,nIdx+1)
+	endif
 	iModule := aScan(t_oDebugInfo['aModules'],{|v| v[1]=cModule})
 	if iModule=0
 		return -1
@@ -860,10 +869,19 @@ static procedure AddModule(aInfo)
 		fFileModules := fopen("modules.dbg",1+64)
 		fSeek(fFileModules,0,2)
 	#endif
-	for i:=1 to len(aInfo)
-		aInfo[i,1] := lower(alltrim(aInfo[i,1]))
+   	for i:=1 to len(aInfo)
+		#ifdef __PLATFORM__WINDOWS
+			// case insensitive
+			aInfo[i,1] := lower(alltrim(aInfo[i,1]))
+		#else
+			aInfo[i,1] := alltrim(aInfo[i,1])
+		#endif
 		if len(aInfo[i,1])=0
 			loop
+		endif
+		idx := rat(hb_ps(), cModule)
+		if idx>0
+			cModule:=substr(cModule,idx+1)
 		endif
 		idx := aScan(t_oDebugInfo['aModules'], {|v| aInfo[i,1]=v[1]})
 		if idx=0
