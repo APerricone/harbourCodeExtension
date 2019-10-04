@@ -31,16 +31,18 @@ function validate(textDocument)
 	if(!section.validating)
 		return;
 	var args = ["-s", "-q0", "-m", "-n0", "-w"+section.warningLevel, textDocument.fileName ];
-	for (var i = 0; i < section.extraIncludePaths.length; i++) 
-	{
-		args.push("-i"+section.extraIncludePaths[i]);
-	}
-	args = args.concat(section.extraOptions.split(" ").filter(function(el) {return el.length != 0}));
 	var file_cwd = vscode.workspace.rootPath;
-	if(!file_cwd)
-	{
+	if(!file_cwd) {
 		file_cwd=path.dirname(textDocument.fileName);
 	}
+	for (var i = 0; i < section.extraIncludePaths.length; i++) {
+		var pathVal = section.extraIncludePaths[i];
+		if(pathVal.indexOf("${workspaceFolder}")>=0) {
+			pathVal=pathVal.replace("${workspaceFolder}",file_cwd)
+		}
+		args.push("-I"+pathVal);
+	}
+	args = args.concat(section.extraOptions.split(" ").filter(function(el) {return el.length != 0}));
 	var process = cp.spawn(section.compilerExecutable,args, { cwd: file_cwd });
 	process.on("error", e=>
 	{

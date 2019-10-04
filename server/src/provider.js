@@ -667,6 +667,7 @@ Provider.prototype.AddMultilineComment = function(startLine,endLine) {
 				if(docInfo) {
 					var ck = /<[^>]+>/;
 					var mm = line.match(ck);
+					if(!docInfo["arguments"]) docInfo["arguments"]=[];
 					if(mm) {
 						var arg = {};
 						arg["label"] = mm[0];
