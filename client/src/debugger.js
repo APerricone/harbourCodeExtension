@@ -364,8 +364,7 @@ function getRealPath(filePath) {
     }
 }
 
-harbourDebugSession.prototype.sendStack = function(line)
-{
+harbourDebugSession.prototype.sendStack = function(line) {
 	var nStack = parseInt(line.substring(6));
 	var frames = [];
 	frames.length = nStack;
@@ -376,7 +375,7 @@ harbourDebugSession.prototype.sendStack = function(line)
 		for(i=0;i<infos.length;i++) infos[i]=infos[i].replace(";",":")
 		var completePath = infos[0]
 		var found = false;
-		if(fs.existsSync(infos[0]))
+		if(path.isAbsolute(infos[0]) && fs.existsSync(infos[0]))
 		{
 			completePath = getRealPath(infos[0]);
 			found=true;
@@ -390,7 +389,7 @@ harbourDebugSession.prototype.sendStack = function(line)
 					break;
 				}
 			}
-		if(found) infos[0]=path.basename(infos[0]);
+		if(found) infos[0]=path.basename(completePath);
 		frames[j] = new debugadapter.StackFrame(j,infos[2],
 			new debugadapter.Source(infos[0],completePath),
 			parseInt(infos[1]));

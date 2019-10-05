@@ -1,8 +1,6 @@
 :start
 hbmk2 %1 %2 %3 %4 %5 %6 %7 %8 %9
-IF %ERRORLEVEL% GTR 1000 goto setup
-goto :eof
-:setup
+IF %ERRORLEVEL% LSS 1000 goto :eof
 set HB_INSTALL_PREFIX=C:\harbour32
 SET CD_SRC=%CD%
 :: I use visual studio 2017 x86 on a win64 system.

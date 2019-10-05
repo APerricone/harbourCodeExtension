@@ -1,10 +1,14 @@
 # Change Log
 All notable changes to the "Harbour and xHarbour" extension will be documented in this file.
 
+# 0.9.5
+ - **debugger** resolved breakpoint invalid on far source, fix ([#35](https://github.com/APerricone/harbourCodeExtension/issues/35))
+ - **debugger** resolved file not found on relative path, fix ([#36](https://github.com/APerricone/harbourCodeExtension/issues/36))
+
 # 0.9.4
  - **server** added Folder provider
  - **decorator** use of server
- - **server** better performance, stability + some fixes ([#32](https://github.com/APerricone/harbourCodeExtension/issues/28))
+ - **server** better performance, stability + some fixes ([#32](https://github.com/APerricone/harbourCodeExtension/issues/32))
  - **syntax** minor fixes
  - **server** Added harbourDoc support
  - **client** Added auto harbourDoc generation on **/&ast; $DOC$**

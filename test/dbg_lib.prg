@@ -283,7 +283,7 @@ static procedure sendStack()
 		line			:= aStack[i,HB_DBG_CS_LINE]
 		module			:= aStack[i,HB_DBG_CS_MODULE]
 		functionName	:= aStack[i,HB_DBG_CS_FUNCTION]		
-		? i," DEBUG ", module,":",alltrim(str(line)),":",functionName,aStack[i,HB_DBG_CS_LEVEL],len(aStack[i,HB_DBG_CS_LOCALS]),len(aStack[i,HB_DBG_CS_LOCALS])
+		//? i," DEBUG ", module,":",alltrim(str(line)),":",functionName,aStack[i,HB_DBG_CS_LEVEL],len(aStack[i,HB_DBG_CS_LOCALS]),len(aStack[i,HB_DBG_CS_LOCALS])
 	next
 #endif
 return
@@ -679,39 +679,32 @@ static procedure sendCoumpoundVar(req, cParams )
 	hb_inetSend(t_oDebugInfo['socket'],"END"+CRLF)
 return
 
-// returns -1 if the module is not valid, 0 if the line is not valid, 1 in case of valid line
-static function IsValidStopLine(cModule,nLine)
-	LOCAL iModule
-	LOCAL t_oDebugInfo := __DEBUGITEM()
-   	local nIdx, nInfo, tmp
-	#ifdef __PLATFORM__WINDOWS
-		// case insensitive
-		cModule := lower(alltrim(cModule))
-	#else
-		cModule := alltrim(cModule)
-	#endif
-	nIdx := rat(hb_ps(), cModule)
-	if nIdx>0
-		cModule:=substr(cModule,nIdx+1)
-	endif
+static function IsValidFileName(cModule) 
+	LOCAL iModule, t_oDebugInfo := __DEBUGITEM()
+	//? "IsValidFileName: ", cModule
+	cModule := ExtractFileName(cModule)
 	iModule := aScan(t_oDebugInfo['aModules'],{|v| v[1]=cModule})
-	if iModule=0
-		return -1
-	endif
+	//? cModule, iif(iModule=0," not found","found")
+return iModule
+
+
+static function IsValidStopLine(iModule,nLine)
+	LOCAL t_oDebugInfo := __DEBUGITEM()
+	local nIdx, nInfo, tmp
 	if nLine<t_oDebugInfo['aModules'][iModule,2]
-		return 0
+		return .F.
 	endif
 	nIdx := nLine - t_oDebugInfo['aModules'][iModule,2]
 	tmp := Int(nIdx/8)
 	if tmp>=len(t_oDebugInfo['aModules'][iModule,3])
-		return 0
+		return .F.
 	endif
 	nInfo = Asc(SubStr(t_oDebugInfo['aModules'][iModule,3],tmp+1,1))
-return HB_BITAND(HB_BITSHIFT(nInfo, -(nIdx-tmp*8)),1)
+return HB_BITAND(HB_BITSHIFT(nInfo, -(nIdx-tmp*8)),1)=1
 
 static procedure setBreakpoint(cInfo)
 	LOCAL aInfos := hb_aTokens(cInfo,":"), idLine
-	local nReq, nLine, nReason, nExtra
+	local nReq, nLine, lFound, nExtra, iModule
 	LOCAL t_oDebugInfo := __DEBUGITEM()
 	//? " BRAEK - ", cInfo
 	nReq := val(aInfos[3])
@@ -734,30 +727,29 @@ static procedure setBreakpoint(cInfo)
 		//? "BREAK:"+aInfos[2]+":"+aInfos[3]+":-1:invalid request"
 		return
 	endif
+	iModule := IsValidFileName(@aInfos[2])
+	if iModule==0
+		hb_inetSend(t_oDebugInfo['socket'],"BREAK:"+aInfos[2]+":"+aInfos[3]+":-1:not found"+CRLF)
+		return
+	endif
 	nLine := nReq
-	while (nReason:=IsValidStopLine(aInfos[2],nLine))!=1
+	while .not. (lFound:=IsValidStopLine(iModule,nLine))
 		nLine++
 		if (nLine-nReq)>2
 			exit
 		endif
 	enddo
-	if nReason!=1
+	if !lFound
 		nLine := nReq - 1
-		while (nReason:=IsValidStopLine(aInfos[2],nLine))!=1
+		while .not. (lFound:=IsValidStopLine(iModule,nLine))
 			nLine--
 			if (nReq-nLine)>2
 				exit
 			endif
 		enddo
 	endif
-	if nReason!=1
-		if nReason==0
-			hb_inetSend(t_oDebugInfo['socket'],"BREAK:"+aInfos[2]+":"+aInfos[3]+":-1:invalid"+CRLF)
-			//? "BREAK:"+aInfos[2]+":"+aInfos[3]+":-1:invalid"
-		else
-			hb_inetSend(t_oDebugInfo['socket'],"BREAK:"+aInfos[2]+":"+aInfos[3]+":-1:not found"+CRLF)
-			//? "BREAK:"+aInfos[2]+":"+aInfos[3]+":-1:not found"
-		endif
+	if !lFound
+		hb_inetSend(t_oDebugInfo['socket'],"BREAK:"+aInfos[2]+":"+aInfos[3]+":-1:invalid"+CRLF)
 		return
 	endif
 	if .not. hb_HHasKey(t_oDebugInfo['aBreaks'],aInfos[2])
@@ -790,7 +782,7 @@ return
 static function inBreakpoint()
 	LOCAL aBreaks := __DEBUGITEM()['aBreaks']
 	LOCAL nLine := procLine(3), aBreakInfo
-	local idLine, cFile := lower(procFile(3)), nExtra := 2
+	local idLine, cFile := ExtractFileName(procFile(3)), nExtra := 2
 	LOCAL ck
 	if .not. hb_HHasKey(aBreaks,cFile)
 		return .F.
@@ -860,6 +852,23 @@ static procedure BreakLog(cMessage)
 	hb_inetSend(__DEBUGITEM()['socket'],"LOG:"+cResponse+CRLF)
 return
 
+static function ExtractFileName(cFileName)
+	LOCAL idx
+	//? "ExtractFileName before",cFileName
+	#ifdef __PLATFORM__WINDOWS
+		// case insensitive
+		cFileName := lower(alltrim(cFileName))
+	#else
+		cFileName := alltrim(cFileName)
+	#endif
+	idx := rat(hb_ps(), cFileName)
+	if idx>0
+		cFileName:=substr(cFileName,idx+1)
+	endif
+	//? "ExtractFileName after ",cFileName
+return cFileName
+
+
 //#define SAVEMODULES
 static procedure AddModule(aInfo)
 	LOCAL t_oDebugInfo := __DEBUGITEM()
@@ -869,19 +878,10 @@ static procedure AddModule(aInfo)
 		fFileModules := fopen("modules.dbg",1+64)
 		fSeek(fFileModules,0,2)
 	#endif
-   	for i:=1 to len(aInfo)
-		#ifdef __PLATFORM__WINDOWS
-			// case insensitive
-			aInfo[i,1] := lower(alltrim(aInfo[i,1]))
-		#else
-			aInfo[i,1] := alltrim(aInfo[i,1])
-		#endif
+	   for i:=1 to len(aInfo)		
+		aInfo[i,1] := ExtractFileName(aInfo[i,1])
 		if len(aInfo[i,1])=0
 			loop
-		endif
-		idx := rat(hb_ps(), cModule)
-		if idx>0
-			cModule:=substr(cModule,idx+1)
 		endif
 		idx := aScan(t_oDebugInfo['aModules'], {|v| aInfo[i,1]=v[1]})
 		if idx=0
