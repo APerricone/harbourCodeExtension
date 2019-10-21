@@ -448,7 +448,8 @@ Provider.prototype.parseHarbour = function(words)
 	{
 		if(words[0]=='#include')
 		{
-			this.includes.push(words[1].substr(1,words[1].length-2));
+			//TODO: check if words1 first and last letter are "" or <>
+			this.includes.push(words1.substr(1,words1.length-2));
 		} else
 		if(words[0]=='#define')
 		{
@@ -594,6 +595,7 @@ Provider.prototype.parseC = function()
 		}
 	}
 }
+
 Provider.prototype.AddMultilineComment = function(startLine,endLine) {
 	this.multilineComments.push([startLine,endLine]);
 	/** @type{string|undefined} */
@@ -763,6 +765,7 @@ Provider.prototype.endParse = function() {
 		this.AddMultilineComment(this.firstLineCommment,this.lineNr-1);
 	for(let i=0;i<this.harbourDocs.length;i++) {
 		var doc=this.harbourDocs[i];
+		if(!doc.name) continue;
 		var lCmp = doc.name.toLowerCase()
 		for (let j = 0; j < this.funcList.length; j++) {
 			const info = this.funcList[j];
