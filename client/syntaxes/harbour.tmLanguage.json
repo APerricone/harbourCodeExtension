@@ -596,7 +596,7 @@
 						"include": "#comments"
 					},
 					{
-						"begin": "(?i)^\\s*((?:create\\s*)?class)\\s*([a-z_]\\w*)\\b",
+						"begin": "(?i)^\\s*((?:create\\s*)?class)\\s+([a-z_]\\w*)\\b",
 						"beginCaptures": {
 							"1": {
 								"name": "keyword.class.class.harbour"
@@ -661,7 +661,7 @@
 					},
 					{
 						"name": "meta.field.declaration.harbour",
-						"begin": "(?i)^\\s*(?:class\\s*)?(data|var)\\b",
+						"begin": "(?i)^\\s*(?:class)?(data|var)\\b",
 						"beginCaptures": {
 							"0": {
 								"name": "storage.type.field.harbour"
