@@ -3,7 +3,7 @@ var readline = require("readline");
 
 var procRegEx = /\s*((?:proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?)|func(?:t(?:i(?:o(?:n)?)?)?)?)\s+([a-z_][a-z0-9_]*)\s*(?:\(([^\)]*)\))?/i;
 var methodRegEx = /\s*(meth(?:o(?:d)?)?)\s+(?:(?:(?:proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?)|func(?:t(?:i(?:o(?:n)?)?)?)?)\s+)?([a-z_][a-z0-9_]*)\s*(?:\(([^\)]*)\))?(?:\s*class\s+([a-z_][a-z0-9_]*))?(\s+inline)?/i
-var defineRegEx = /\s*(#define)\s+([^\s\(]+)(?:\(([^\)]*)\))?\s+(.*)/i;
+var defineRegEx = /\s*(#\s*define)\s+([^\s\(]+)(?:\(([^\)]*)\))?\s+(.*)/i;
 var hb_funcRegEx = /HB_FUNC\s*\(\s*([A-Z0-9_]+)\s*\)/
 function Provider(light)
 {
@@ -33,7 +33,9 @@ Provider.prototype.Clear = function()
 	// *********** data used during the parsing
 	/** @type {boolean} is for multi line comments */
 	this.comment=false;
-	/** @type {string} current line parsing, without comments */
+	/** @type {string} current line parsing, with string and comments */
+	this.currLinePreProc = "";
+	/** @type {string} current line parsing, without string and comments */
 	this.currLine = "";
 	/** @type {number} current line number */
 	this.lineNr = -1;
@@ -236,6 +238,7 @@ Group.prototype.addRange = function(line,startCol,endCol)
 
 Provider.prototype.linePP = function(line)
 {
+	var oriLine = line;
 	this.lineNr++;
 	if(this.comment)
 	{
@@ -254,12 +257,15 @@ Provider.prototype.linePP = function(line)
 			if(this.currLine.endsWith("\n")||this.currLine.endsWith("\r"))
 				this.currLine.substr(0,this.currLine.length-1);
 			this.currLine+="\r\n";
+			this.currLinePreProc += "\r\n";
 		}
 		this.currLine += line;
+		this.currLinePreProc += oriLine;
 	} else
 	{
 		this.startLine = this.lineNr;
 		this.currLine = line;
+		this.currLinePreProc += oriLine;
 	}
 	this.cont = line.trim().endsWith(";") && !this.cMode;
 }
@@ -274,6 +280,7 @@ Provider.prototype.linePrepare = function(line)
 		if(line.trim().length == 0)
 			this.resetComments()
 		this.currLine="";
+		this.currLinePreProc="";
 		return;
 	}
 	if(!this.cMode && this.currLine.trim().match(/^NOTE\s/i))
@@ -422,7 +429,21 @@ Provider.prototype.parseDeclareList = function(list,kind,parent)
 			this.addInfo(m,kind,"definition",parent,true);
 	}
 }
+/*
+String.prototype.right = function(n) { return this.substring(this.length-n); }
 
+Provider.prototype.parseCommand = function() {
+	var pos=this.currLine.match(/\s+/);
+	var commandResult = {}
+	commandResult.activationString = ""
+	pos=pos[0].index+pos[0].length;
+	while(pos<this.currLine.length && ["<","["].indexOf(this.currLine.charAt(pos))==-1) {
+		commandResult.activationString+=this.currLine.charAt(pos);
+		pos++;
+	}
+	
+}
+*/
 Provider.prototype.parseHarbour = function(words)
 {
 	if(this.currLine.indexOf("#pragma")>=0 && this.currLine.indexOf("BEGINDUMP")>=0)
@@ -436,24 +457,18 @@ Provider.prototype.parseHarbour = function(words)
 		return;
 	}
 	var words1 = "";
-	if(words.length>1)
-	{
+	if(words.length>1) {
 		words1 = words[1];
 		words[1] = words[1].toLowerCase(); 
-	} else
-	{
+	} else {
 		words[1] = "";
 	}
-	if(words[0][0]=='#')
-	{
-		if(words[0]=='#include')
-		{
+	if(words[0][0]=='#') {
+		if(words[0]=='#include') {
 			//TODO: check if words1 first and last letter are "" or <>
 			this.includes.push(words1.substr(1,words1.length-2));
-		} else
-		if(words[0]=='#define')
-		{
-			var r = defineRegEx.exec(this.currLine);
+		} else if(words[0]=='#define') {
+			var r = defineRegEx.exec(this.currLinePreProc);
 			if(r)
 			{
 				var define = this.addInfo(r[2],'define',"definition",undefined,true);
@@ -461,6 +476,8 @@ Provider.prototype.parseHarbour = function(words)
 				if(r[3] && r[3].length)
 					this.parseDeclareList(r[3],"param",define);
 			}
+		//} else if(words[0].right(7)=='command' || words[0].right(9)=='translate') {
+		//	this.parseCommand();
 		}
 	} else
 	if(this.currentClass && (words[0] == "endclass" || (words[0]=="end" && words[1]=="class")))
