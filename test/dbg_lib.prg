@@ -20,7 +20,11 @@
 
 //#define _DEBUGDEBUG
 #ifdef _DEBUGDEBUG
+#ifdef INAPACHE
+#command ? [<explist,...>] => AP_RPuts( <explist>, "<br>" )
+#else
 #command ? [<explist,...>] => dbgQOut( <explist> )
+#endif
 #else
 #command ? [<explist,...>] =>
 #endif
@@ -62,7 +66,11 @@ static procedure CheckSocket(lStopSent)
 			tmp := "NO"
 		else
 			//QOut("connected") //server found, send my exeName and my processId
+#ifdef INAPACHE
+			hb_inetSend(t_oDebugInfo['socket'],GetAppName()+CRLF+str(__PIDNum())+CRLF)
+#else
 			hb_inetSend(t_oDebugInfo['socket'],HB_ARGV(0)+CRLF+str(__PIDNum())+CRLF)
+#endif
 			do while hb_inetDataReady(t_oDebugInfo['socket']) != 1 //waiting for response
 				hb_idleSleep(0.2)
 			end do
@@ -272,9 +280,13 @@ static procedure sendStack()
 	//? "send stack---", start,d, t_oDebugInfo['__dbgEntryLevel']
 	hb_inetSend(t_oDebugInfo['socket'],"STACK " + alltrim(str(d-start+1))+CRLF)
 	for i:=start to d
-		line			:= procLine(i)
-		module			:= strTran(procFile(i),":",";")
-		functionName	:= strTran(ProcName(i),":",";")
+		line := procLine(i)
+#ifdef INAPACHE
+		module := strTran(FixProcFile(ProcFile(i)),":",";")
+#else
+		module := strTran(procFile(i),":",";")
+#endif
+		functionName := strTran(ProcName(i),":",";")
 		hb_inetSend(t_oDebugInfo['socket'], module+":"+alltrim(str(line))+":"+functionName+CRLF)
 	next
 	//? "---"
@@ -782,7 +794,13 @@ return
 static function inBreakpoint()
 	LOCAL aBreaks := __DEBUGITEM()['aBreaks']
 	LOCAL nLine := procLine(3), aBreakInfo
-	local idLine, cFile := ExtractFileName(procFile(3)), nExtra := 2
+	local idLine
+	#ifdef INAPACHE
+	local cFile := ExtractFileName(FixProcFile(ProcFile(3)))
+	#else
+	local cFile := ExtractFileName(ProcFile(3))
+	#endif
+	local nExtra := 2
 	LOCAL ck
 	if .not. hb_HHasKey(aBreaks,cFile)
 		return .F.
@@ -1183,12 +1201,39 @@ STATIC PROCEDURE ErrorBlockCode( e )
 	endif
 return
 
+#ifdef INAPACHE
+static function GetAppName()
+	local cAppName := HB_ArgV( 0 )
+  do case
+	case "Darwin" $ OS()
+		 cAppName = "/System/Library/CoreServices/Dock.app/Contents/MacOS/Dock"
+	case "Linux" $ OS()
+		 cAppName = "..."	 
+  endcase
+return cAppName	
+
+static function FixProcFile( cProcFile,lRemoveDriveLetter )
+	local cResult := cProcFile
+	if ("{SOURCE}" $ upper(cResult)) .or. ("pcode.hrb" $ lower(cResult))
+		cResult := AP_FileName()
+		if hb_DefaultValue(lRemoveDriveLetter,.f.)
+			cResult := SubStr( cResult, At( ":", cResult ) + 1 )
+	  endif
+	endif
+return cResult
+#endif
+
 PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 	local tmp, i
 	LOCAL t_oDebugInfo
 	if nMode = HB_DBG_GETENTRY
 		return
 	endif
+	#ifdef INAPACHE
+	if nMode == HB_DBG_VMQUIT
+		return
+	endif
+	#endif
 	t_oDebugInfo := __DEBUGITEM()
 	switch nMode
 		case HB_DBG_MODULENAME
@@ -1223,6 +1268,16 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 
 			i := rat(":",uParam1)
 			tmp := Array(HB_DBG_CS_LEN)
+
+#ifdef INAPACHE
+			if i=0
+				tmp[HB_DBG_CS_MODULE] := FixProcFile(uParam1)
+				tmp[HB_DBG_CS_FUNCTION] := procName(1) 
+			else
+				tmp[HB_DBG_CS_MODULE] := FixProcFile(left(uParam1,i-1),.t.)
+				tmp[HB_DBG_CS_FUNCTION] := substr(uParam1,i+1)
+			endif
+#else
 			if i=0
 				tmp[HB_DBG_CS_MODULE] := uParam1
 				tmp[HB_DBG_CS_FUNCTION] := procName(1)
@@ -1230,6 +1285,8 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 				tmp[HB_DBG_CS_MODULE] := left(uParam1,i-1)
 				tmp[HB_DBG_CS_FUNCTION] := substr(uParam1,i+1)
 			endif
+#endif
+
 			tmp[HB_DBG_CS_LINE] := procLine(1) // line
 			tmp[HB_DBG_CS_LEVEL] := __dbgProcLevel()-1 // level
 			tmp[HB_DBG_CS_LOCALS] := {} // locals
@@ -1417,5 +1474,14 @@ HB_FUNC( ISBEGSEQ )
 {
    hb_retl( hb_stackGetRecoverBase() != 0 );
 }
+
+#ifdef INAPACHE
+#include <hbapicls.h>
+HB_FUNC( __DBGSENDMSG )
+{
+   hb_dbg_objSendMessage( hb_parnl( 1 ), hb_param( 2, HB_IT_ANY ),
+                          hb_param( 3, HB_IT_ANY ), 4 );
+}
+#endif
 
 #pragma ENDDUMP
