@@ -261,9 +261,6 @@ return
 static procedure sendStack()
 	local i,d, line, module, functionName, start := 3
 	LOCAL t_oDebugInfo := __DEBUGITEM()
-#ifdef _DEBUGDEBUG
-	local aStack := t_oDebugInfo['aStack']
-#endif
 	if t_oDebugInfo['inError']
 		start := 4
 	endif
@@ -277,15 +274,6 @@ static procedure sendStack()
 		functionName	:= strTran(ProcName(i),":",";")
 		hb_inetSend(t_oDebugInfo['socket'], module+":"+alltrim(str(line))+":"+functionName+CRLF)
 	next
-	//? "---"
-#ifdef _DEBUGDEBUG
-	for i:=1 to len(aStack)
-		line			:= aStack[i,HB_DBG_CS_LINE]
-		module			:= aStack[i,HB_DBG_CS_MODULE]
-		functionName	:= aStack[i,HB_DBG_CS_FUNCTION]		
-		//? i," DEBUG ", module,":",alltrim(str(line)),":",functionName,aStack[i,HB_DBG_CS_LEVEL],len(aStack[i,HB_DBG_CS_LOCALS]),len(aStack[i,HB_DBG_CS_LOCALS])
-	next
-#endif
 return
 
 static function format(value)
@@ -861,7 +849,7 @@ static function ExtractFileName(cFileName)
 	#else
 		cFileName := alltrim(cFileName)
 	#endif
-	idx := rat(hb_ps(), cFileName)
+	idx := rat(hb_osPathSeparator(), cFileName)
 	if idx>0
 		cFileName:=substr(cFileName,idx+1)
 	endif
@@ -1309,7 +1297,7 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			t_oDebugInfo['bInitLines'] := .F.
 			exit
 		case HB_DBG_SHOWLINE
-			//? "show line:" + procFile(1) + "("+alltrim(str(uParam1))+")", len(t_oDebugInfo['aStack'])
+			? "show line:" + procFile(1) + "("+alltrim(str(uParam1))+")", __dbgProcLevel()
 			//for i:= 1 to len(t_oDebugInfo['aStack'])
 			//	? i,t_oDebugInfo['aStack',i,HB_DBG_CS_FUNCTION],t_oDebugInfo['aStack',i,HB_DBG_CS_LINE]
 			//next
@@ -1409,6 +1397,8 @@ HB_FUNC( __PIDNUM )
    hb_retnint( getpid() );
 #endif
 }
+
+#ifndef __XHARBOUR__
 #if !defined( _HB_API_INTERNAL_ ) && !defined( _HB_STACK_MACROS_ )
 extern HB_EXPORT HB_ISIZ     hb_stackGetRecoverBase( void );
 #endif
@@ -1417,5 +1407,17 @@ HB_FUNC( ISBEGSEQ )
 {
    hb_retl( hb_stackGetRecoverBase() != 0 );
 }
+#else
+
+HB_FUNC( ISBEGSEQ )
+{
+#ifndef _HB_API_INTERNAL_
+	hb_retl( HB_FALSE );
+#else
+   hb_retl( HB_VM_STACK.lRecoverBase!=0 );
+#endif
+}
+
+#endif
 
 #pragma ENDDUMP
