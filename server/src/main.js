@@ -415,7 +415,10 @@ connection.onDocumentSymbol((param)=>
                         parent = parent.children;
                     }
                 }
-            }
+            } else
+                if(info.kind=="method")
+                    docSym.name = info.parent.name+":"+info.name
+
             parent.push(docSym);
         //}        
     };
@@ -1440,9 +1443,7 @@ connection.onRequest("groupAtPosition",(params)=>{
     for(var iGroup=0;iGroup<pp.groups.length;iGroup++) {
         /** @type {Array<provider.KeywordPos>} */
         var poss = pp.groups[iGroup].positions;
-        var intesect = false;
         for(var i=0;i<poss.length;i++) {
-            var rr = {};
             if( params.sel.active.line == poss[i].line && 
                 params.sel.active.character >= poss[i].startCol && 
                 params.sel.active.character <= poss[i].endCol) {
