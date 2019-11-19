@@ -843,17 +843,12 @@ var preproc_keywords = [
 function GroupManagement(dest,destStack, keywords,checkString,pos,lineNr) {
 	var currKeywords;
 	var currGroup;
-	if(destStack.length>0) {
-		currGroup = destStack[destStack.length-1];
-		currKeywords = keywords.find(v=> v[0]==currGroup.type);
-	}
 	for(var i=0;i<keywords.length;i++) {
 		var m;
 		if((m=checkString.match(keywords[i][1])) && m.index==0) {
 			currGroup = new Group(keywords[i][0]);
 			destStack.push(currGroup);	
 			currGroup.addRange(lineNr,pos,pos+m[0].length);
-			currKeywords=keywords[i];
 			return
 		}
 	}
@@ -866,10 +861,10 @@ function GroupManagement(dest,destStack, keywords,checkString,pos,lineNr) {
 				currGroup.addRange(lineNr,pos,pos+m[0].length);
 				if(i==currKeywords.length-1) {
 					dest.push(destStack.pop());
-					if(destStack.length>0) {
-						currGroup = destStack[destStack.length-1];
-						currKeywords = keywords.find(v=> v[0]==currGroup.type);
-					}
+					//if(destStack.length>0) {
+					//	currGroup = destStack[destStack.length-1];
+					//	currKeywords = keywords.find(v=> v[0]==currGroup.type);
+					//}
 				}
 				return
 			}

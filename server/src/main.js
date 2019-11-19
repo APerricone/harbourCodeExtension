@@ -394,13 +394,17 @@ connection.onDocumentSymbol((param)=>
                     server.Range.create(info.startLine,info.startCol,
                         info.endLine,info.endCol), selRange,undefined);
             var parent = dest;
-            if(info.parent && info.startLine<info.parent.endLine)
+            if(info.parent && info.startLine<=info.parent.endLine)
             {
                 var pp = info.parent;
                 var names = [];
                 while(pp)
                 {
-                    names.push(pp.name);
+                    if(pp.kind=="method" && pp.foundLike=="definition") {
+                        names.push(pp.parent.name+":"+pp.name);
+                        break;
+                    } else
+                        names.push(pp.name);
                     pp=pp.parent;
                 }
                 while(names.length>0)
