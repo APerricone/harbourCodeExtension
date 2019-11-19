@@ -108,10 +108,10 @@
                     "xBase"
                 ],
                 "extensions": [
-                    "prg",
-                    "ch",
-                    "hbx",
-                    "hb"
+                    ".prg",
+                    ".ch",
+                    ".hbx",
+                    ".hb"
                 ],
                 "configuration": "./syntaxes/language-configuration.json"
             }
