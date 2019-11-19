@@ -1,6 +1,13 @@
 # Change Log
 All notable changes to the "Harbour and xHarbour" extension will be documented in this file.
 
+# 0.9.6
+ - **server** [better outline and breadcump](https://github.com/APerricone/harbourCodeExtension/raw/master/images/0_9_6.png)
+ - **debugger** fixed compilation with xHarbour, see #38 
+ - **server** better group nearest support
+ - **syntax** fixed classdata syntax highlight
+ - **server** better define support
+
 # 0.9.5
  - **debugger** resolved breakpoint invalid on far source, fix ([#35](https://github.com/APerricone/harbourCodeExtension/issues/35))
  - **debugger** resolved file not found on relative path, fix ([#36](https://github.com/APerricone/harbourCodeExtension/issues/36))
