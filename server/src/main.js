@@ -400,7 +400,7 @@ connection.onDocumentSymbol((param)=>
                 var names = [];
                 while(pp)
                 {
-                    if(pp.kind=="method" && pp.foundLike=="definition") {
+                    if(pp.kind=="method" && pp.foundLike=="definition" && (!pp.parent || pp.startLine>pp.parent.endLine)) {
                         names.push(pp.parent.name+":"+pp.name);
                         break;
                     } else
