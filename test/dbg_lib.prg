@@ -268,24 +268,42 @@ return
 
 static procedure sendStack()
 	local i,d, line, module, functionName, start := 3
-	LOCAL t_oDebugInfo := __DEBUGITEM()
+	LOCAL t_oDebugInfo := __DEBUGITEM(), n, nLevel
+	local aStack := t_oDebugInfo['aStack']
 	if t_oDebugInfo['inError']
 		start := 4
 	endif
 	//start := 0
-	d := __dbgProcLevel()-1
+	nLevel := __dbgProcLevel()
+	d := nLevel-1
 	//? "send stack---", start,d, t_oDebugInfo['__dbgEntryLevel']
 	hb_inetSend(t_oDebugInfo['socket'],"STACK " + alltrim(str(d-start+1))+CRLF)
 	for i:=start to d
 		line := procLine(i)
+		module := ProcFile(i)
+		if (n:=aScan(aStack,{|x| (nLevel-x[HB_DBG_CS_LEVEL])==i}))>0
+			module := aStack[n,HB_DBG_CS_MODULE]
+		endif
 #ifdef INAPACHE
-		module := strTran(FixProcFile(ProcFile(i)),":",";")
+		module := strTran(FixProcFile(module),":",";")
 #else
-		module := strTran(procFile(i),":",";")
+		module := strTran(module,":",";")
 #endif
 		functionName := strTran(ProcName(i),":",";")
 		hb_inetSend(t_oDebugInfo['socket'], module+":"+alltrim(str(line))+":"+functionName+CRLF)
 	next
+
+	//? "send stack---", t_oDebugInfo['__dbgEntryLevel'], nLevel
+	//for i:=len(aStack) to 1 step -1
+	//	? "memoStack",i,aStack[i,HB_DBG_CS_LEVEL],(nLevel-aStack[i,HB_DBG_CS_LEVEL]),aStack[i,HB_DBG_CS_MODULE],aStack[i,HB_DBG_CS_LINE]
+	//next
+	//for i:=start to d
+	//	if (n:=aScan(aStack,{|x| (nLevel-x[HB_DBG_CS_LEVEL])==i}))>0
+	//		? "sendStack",i,aStack[n,HB_DBG_CS_MODULE], ProcLine(i), "*"
+	//	else
+	//		? "sendStack",i,procFile(i), ProcLine(i)
+	//	endif
+	//next
 return
 
 static function format(value)
@@ -1213,7 +1231,7 @@ return cResult
 
 PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 	local tmp, i
-	LOCAL t_oDebugInfo
+	LOCAL t_oDebugInfo, lAdd
 	if nMode = HB_DBG_GETENTRY
 		return
 	endif
@@ -1252,10 +1270,16 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 					fclose(fcreate("modules.dbg"))
 				#endif
 			endif
-			//? "moduleName",uParam1,t_oDebugInfo['maxLevel'], t_oDebugInfo['__dbgEntryLevel']
 
 			i := rat(":",uParam1)
-			tmp := Array(HB_DBG_CS_LEN)
+			tmp := ATail(t_oDebugInfo['aStack'])
+			lAdd := (empty(tmp) .or. __dbgProcLevel()-1!=tmp[HB_DBG_CS_LEVEL])
+			lAdd := lAdd .or. t_oDebugInfo['bInitStatics'] 
+			lAdd := lAdd .or. t_oDebugInfo['bInitGlobals']
+			lAdd := lAdd .or. t_oDebugInfo['bInitLines']
+			if lAdd
+				tmp := Array(HB_DBG_CS_LEN)
+			endif
 
 #ifdef INAPACHE
 			if i=0
@@ -1274,6 +1298,7 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 				tmp[HB_DBG_CS_FUNCTION] := substr(uParam1,i+1)
 			endif
 #endif
+			? "moduleName",uParam1,t_oDebugInfo['maxLevel'], t_oDebugInfo['__dbgEntryLevel'], procFile(1), __dbgProcLevel()-1, lAdd
 
 			tmp[HB_DBG_CS_LINE] := procLine(1) // line
 			tmp[HB_DBG_CS_LEVEL] := __dbgProcLevel()-1 // level
@@ -1293,13 +1318,15 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			elseif at("_INITLINES", tmp[HB_DBG_CS_FUNCTION])<>0
 				t_oDebugInfo['bInitLines'] := .T.
 			endif
-			aAdd(t_oDebugInfo['aStack'], tmp)
+			if lAdd
+				aAdd(t_oDebugInfo['aStack'], tmp)
+			endif
 			exit
 		case HB_DBG_LOCALNAME
 			if t_oDebugInfo['bInitGlobals']
 				//? "LOCALNAME - bInitGlobals", uParam1, uParam2, uParam3, valtype(uParam1), valtype(uParam2), valtype(uParam3),  __dbgProcLevel()-1,procLine(__dbgProcLevel()-1)
 			else
-				aAdd(t_oDebugInfo['aStack'][len(t_oDebugInfo['aStack'])][HB_DBG_CS_LOCALS], {uParam2, uParam1, "L", __dbgProcLevel()-1})
+				aAdd(aTail(t_oDebugInfo['aStack'])[HB_DBG_CS_LOCALS], {uParam2, uParam1, "L", __dbgProcLevel()-1})
 			endif
 			exit
 		case HB_DBG_STATICNAME
@@ -1322,7 +1349,7 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			else
 				//? "STATICNAME", uParam1, uParam2, uParam3, valtype(uParam1), valtype(uParam2), valtype(uParam3),  __dbgProcLevel()
 				//aEval(uParam1,{|x,n| QOut(n,valtype(x),x)})
-				aAdd(t_oDebugInfo['aStack'][len(t_oDebugInfo['aStack'])][HB_DBG_CS_STATICS], {uParam3, uParam2, "S", uParam1})
+				aAdd(aTail(t_oDebugInfo['aStack'])[HB_DBG_CS_STATICS], {uParam3, uParam2, "S", uParam1})
 			endif
 			exit
 		case HB_DBG_ENDPROC
@@ -1339,12 +1366,12 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			if t_oDebugInfo['bInitLines']
 				// I don't like this hack, shoud be better if in case of HB_DBG_ENDPROC
 				// uParam1 is the returned value, it allow to show it in watch too...
-				// * Harbour is 12
-				// * xHarbur is 13
+				// * Harbour is 13
+				// * xHarbur is 14
 				#ifdef __XHARBOUR__
-					tmp := __GETLASTRETURN(13) //; ? 13,valtype(tmp),tmp
+					tmp := __GETLASTRETURN(14) //; ? 14,valtype(tmp),tmp
 				#else
-					tmp := __GETLASTRETURN(12) //; ? 12,valtype(tmp),tmp
+					tmp := __GETLASTRETURN(13) //; ? 13,valtype(tmp),tmp
 				#endif
 				AddModule(tmp)
 			endif
@@ -1385,7 +1412,7 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			#endif
 			t_oDebugInfo['error'] := nil
 			t_oDebugInfo['inError'] := .F.
-			t_oDebugInfo['aStack'][len(t_oDebugInfo['aStack'])][HB_DBG_CS_LINE] := uParam1
+			t_oDebugInfo['aStack',len(t_oDebugInfo['aStack']),HB_DBG_CS_LINE] := uParam1
 			CheckSocket()
 			__dbgInvokeDebug(.F.)
 			exit
