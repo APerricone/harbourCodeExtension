@@ -37,5 +37,13 @@ p.parseFile("..\\test\\minimal.prg").then(()=> {
         const folder = p.cCodeFolder[i];
         console.log(`cFolder from ${folder[0]}-${folder[1]} to ${folder[2]}-${folder[3]}`);
     }
+    for (let i = 0; i < p.commands.length; i++) {
+        const command = p.commands[i];
+        console.log(`Comand ${command.name} defined from line ${command.startLine} to line ${command.endLine} found if ${command.regEx}`);
+        for (let j = 0; j < command.length; j++) {
+            const snippet = command[j];
+            console.log(`   snippet ${snippet.fixed?"fixed   ":"optional"} ${snippet.repeatable?"repeatable":"          "}: ${snippet.text}`);
+        }
+    }
     process.exit();
 });
