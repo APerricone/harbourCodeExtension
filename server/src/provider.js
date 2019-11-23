@@ -211,7 +211,7 @@ Provider.prototype.addInfo = function(name,kind,like,parent, search)
  * @param {number} startCol 
  * @param {number} endCol 
  */
-function KeywordPos(line,startCol,endCol)
+function KeywordPos(line,startCol,endCol,text)
 {
 	/** @type {number} */
 	this.line = line;
@@ -219,6 +219,8 @@ function KeywordPos(line,startCol,endCol)
 	this.startCol = startCol;
 	/** @type {number} */
 	this.endCol = endCol;
+	/** @type {string} */
+	this.text = text;
 }
 
 /**
@@ -233,9 +235,9 @@ function Group(type)
 }
 
 
-Group.prototype.addRange = function(line,startCol,endCol)
+Group.prototype.addRange = function(line,startCol,endCol,text)
 {
-	this.positions.push(new KeywordPos(line,startCol,endCol));
+	this.positions.push(new KeywordPos(line,startCol,endCol,text));
 }
 
 Provider.prototype.linePP = function(line)
@@ -957,7 +959,7 @@ function GroupManagement(dest,destStack, keywords,checkString,pos,lineNr) {
 		if((m=checkString.match(keywords[i][1])) && m.index==0) {
 			currGroup = new Group(keywords[i][0]);
 			destStack.push(currGroup);	
-			currGroup.addRange(lineNr,pos,pos+m[0].length);
+			currGroup.addRange(lineNr,pos,pos+m[0].length,m);
 			return
 		}
 	}
@@ -967,7 +969,7 @@ function GroupManagement(dest,destStack, keywords,checkString,pos,lineNr) {
 		for(var i=2;i<currKeywords.length;i++) {
 			var m;
 			if((m=checkString.match(currKeywords[i])) && m.index==0) {
-				currGroup.addRange(lineNr,pos,pos+m[0].length);
+				currGroup.addRange(lineNr,pos,pos+m[0].length,m);
 				if(i==currKeywords.length-1) {
 					dest.push(destStack.pop());
 					//if(destStack.length>0) {

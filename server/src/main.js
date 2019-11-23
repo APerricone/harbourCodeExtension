@@ -8,6 +8,7 @@ var connection = server.createConnection(
         new server.IPCMessageReader(process), 
         new server.IPCMessageWriter(process));
 
+
 /** @type {Array<string>} */
 var workspaceRoots;
 /** @type {Array<string>} */
@@ -964,8 +965,7 @@ function getDocumentProvider(doc,checkGroup) {
     return pp;
 }
 
-connection.onCompletion((param, cancelled)=> 
-{
+connection.onCompletion((param, cancelled)=>  {
     var doc = documents.get(param.textDocument.uri);
     var line = doc.getText(server.Range.create(param.position.line,0,param.position.line,1000));
     var include = line.match(/^\s*#include\s+[<"]([^>"]*)/i);
@@ -981,7 +981,10 @@ connection.onCompletion((param, cancelled)=>
         {
             startPath = path.dirname(Uri.parse(param.textDocument.uri).fsPath)
         }
-        return completitionFiles(include[1], startPath);
+        var includePos = line.lastIndexOf(include[1]);
+        return completitionFiles(include[1], startPath,
+            server.Range.create(server.Position.create(param.position.line, includePos),
+                                server.Position.create(param.position.line, includePos+include[1].length-1)));
     }
     var allText = doc.getText();
     var completitions = [];
@@ -1159,37 +1162,66 @@ connection.onCompletion((param, cancelled)=>
  * 
  * @param {string} word 
  * @param {string} startPath 
+ * @param {server.Range} includeRange
  */
-function completitionFiles(word, startPath)
-{
+function completitionFiles(word, startPath,includeRange) {
     var completitons = [];
-    word = word.replace("\r","").replace("\n","").toLowerCase()
+    word = word.replace("\r","").replace("\n","");
+    if(process.platform.startsWith("win"))
+        word = word.toLowerCase();
     var startDone = false;
     if(startPath) startPath = startPath.toLowerCase();
-    function CheckDir(dir)
-    {
+    var deltaPath = ""
+    var lastSlash = Math.max(word.lastIndexOf("\\"),word.lastIndexOf("/"))
+    if(lastSlash>0) {        
+        deltaPath = word.substr(0,lastSlash);
+        word = word.substr(lastSlash+1);
+    }
+    var dirDone = [];
+    function CheckDir(dir) {
         if(startPath && !path.isAbsolute(dir))
             dir = path.join(startPath,dir);
+        dir = path.join(dir,deltaPath);
+        if(process.platform.startsWith("win")) {
+            if(dirDone.indexOf(dir.toLowerCase())>=0)
+                return;
+            dirDone.push(dir.toLowerCase());
+        } else {
+            if(dirDone.indexOf(dir)>=0)
+                return;
+            dirDone.push(dir);
+        }
         if(!fs.existsSync(dir)) return;
         
         if(startPath && dir.toLowerCase()==startPath) startDone=true;
         var ff = fs.readdirSync(dir)
+        /** @type {Array<String>} */
+        var subfiles;
+        var extRE = /\.c?h$/i;
         for(var fi=0;fi<ff.length;fi++)
         {
-            var fileName = ff[fi].toLowerCase();
-            var ext = path.extname(fileName);
-            if(ext!=".h" && ext!=".ch")
+            var fileName = ff[fi];
+            if(process.platform.startsWith("win"))
+                fileName = fileName.toLowerCase();
+            var completePath = path.join(dir,ff[fi]);
+            var info = fs.statSync(completePath);
+            if(info.isDirectory()) {                
+                subfiles = fs.readdirSync(completePath);
+                if(subfiles.findIndex( (v) => extRE.test(v) )==-1)
+                    continue;
+            } else if(!extRE.test(ff[fi]))
                 continue;
             var sortText = undefined;
-            if(word.length != 0)
-            {
+            if(word.length != 0) {
                 sortText = IsInside(word, fileName);
                 if(!sortText)
                     continue;
             }
-            var c = server.CompletionItem.create(ff[fi]);
-            c.kind = server.CompletionItemKind.File;
-            c.sortText = sortText? sortText : fileName;
+            var c = server.CompletionItem.create(path.join(deltaPath,ff[fi]));
+            c.kind = info.isDirectory() ? server.CompletionItemKind.Folder : server.CompletionItemKind.File;
+            c.sortText = sortText? sortText : ff[fi];
+            c.detail = dir;
+            c.textEdit = server.TextEdit.replace(includeRange,path.join(deltaPath,ff[fi]).replace("\\","/"));
             completitons.push(c);
         }
     }
@@ -1390,7 +1422,7 @@ connection.onFoldingRanges((params) => {
     for(let iGroup=0;iGroup<pp.groups.length;iGroup++) {
         /** @type {provider.KeywordPos[]} */
         var poss = pp.groups[iGroup].positions;
-        if(["if","try","sequence"].indexOf(pp.groups[iGroup].type)<0) {
+        if(["if","try","sequence","case"].indexOf(pp.groups[iGroup].type)<0) {
             var rr = {};
             var i=poss.length-1;
             rr.startLine=poss[0].line;
@@ -1399,13 +1431,17 @@ connection.onFoldingRanges((params) => {
             rr.endCharacter=poss[i].startCol;
             ranges.push(rr);
         } else
+            var prec=0;
             for(let i=1;i<poss.length;i++) {
-                var rr = {};
-                rr.startLine=poss[i-1].line;
-                rr.endLine=poss[i].line-deltaLine;
-                rr.startCharacter=poss[i-1].endCol;
-                rr.endCharacter=poss[i].startCol;
-                ranges.push(rr);
+                if(poss[i].text!="exit") {
+                    var rr = {};
+                    rr.startLine=poss[prec].line;
+                    rr.endLine=poss[i].line-deltaLine;
+                    rr.startCharacter=poss[prec].endCol;
+                    rr.endCharacter=poss[i].startCol;
+                    ranges.push(rr);
+                    prec=i;
+                }
             }
     }
     for(var iGroup=0;iGroup<pp.preprocGroups.length;iGroup++) {
@@ -1516,5 +1552,7 @@ connection.onRequest("docSnippet",(params)=>{
     snipppet += "\t\\$END\\$ */"
     return snipppet;
 })
+
+//connection.onDocumentFormatting =
 
 connection.listen();

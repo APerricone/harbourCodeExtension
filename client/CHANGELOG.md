@@ -7,6 +7,7 @@ All notable changes to the "Harbour and xHarbour" extension will be documented i
  - **server** better group nearest support
  - **syntax** fixed classdata syntax highlight
  - **server** better define support
+ - **server** better "case" folding
 
 # 0.9.5
  - **debugger** resolved breakpoint invalid on far source, fix ([#35](https://github.com/APerricone/harbourCodeExtension/issues/35))
