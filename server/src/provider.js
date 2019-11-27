@@ -532,30 +532,30 @@ Provider.prototype.parseHarbour = function (words) {
 }
 
 Provider.prototype.parseC = function () {
-    if (this.currLine.indexOf("pragma") >= 0 && this.currLine.indexOf("ENDDUMP") >= 0)
+    if (this.currLine.indexOf("pragma") >= 0 && this.currLine.indexOf("ENDDUMP") >= 0) {
         // && /\^s*#pragma\s+ENDDUMP\s*$/.test(this.currLine) {
         this.cMode = false;
-    return;
-}
-if (this.currLine.indexOf("HB_FUNC") >= 0) {
-    var r = hb_funcRegEx.exec(this.currLine);
-    if (r) {
-        this.addInfo(r[1], 'C-FUNC', "definition");
+        return;
     }
-}
-var open = this.currLine.indexOf("{"), close = this.currLine.indexOf("}");
-while (open >= 0 || close >= 0) {
-    if (open >= 0 && (open < close || close < 0)) {
-        this.cCodeFolder.push([this.lineNr, open]);
-        open = this.currLine.indexOf("{", open + 1);
-    } else
+    if (this.currLine.indexOf("HB_FUNC") >= 0) {
+        var r = hb_funcRegEx.exec(this.currLine);
+        if (r) {
+            this.addInfo(r[1], 'C-FUNC', "definition");
+        }
+    }
+    var open = this.currLine.indexOf("{"), close = this.currLine.indexOf("}");
+    while (open >= 0 || close >= 0) {
+        if (open >= 0 && (open < close || close < 0)) {
+            this.cCodeFolder.push([this.lineNr, open]);
+            open = this.currLine.indexOf("{", open + 1);
+        } else
         /*if(close>=0 && (close<open || open<0)) */ {
-        var idx = this.cCodeFolder.length - 1;
-        while (idx >= 0 && this.cCodeFolder[idx].length > 2) idx--;
-        if (idx >= 0) this.cCodeFolder[idx].push(this.lineNr, close);
-        close = this.currLine.indexOf("}", close + 1)
+            var idx = this.cCodeFolder.length - 1;
+            while (idx >= 0 && this.cCodeFolder[idx].length > 2) idx--;
+            if (idx >= 0) this.cCodeFolder[idx].push(this.lineNr, close);
+            close = this.currLine.indexOf("}", close + 1)
+        }
     }
-}
 }
 
 Provider.prototype.AddMultilineComment = function (startLine, endLine) {
@@ -778,12 +778,12 @@ Provider.prototype.findDBReferences = function () {
 }
 
 var group_keywords = [
-    ["if", "if", /else(?:if)?/, /end\s*(?:if)?/],
+    ["if", "if", /else(?:if)?/, /end(?:\b|\s*if)/],
     ["for", /for(?:\s+each)?/, "loop", "exit", "next"],
     ["case", /(switch|do\s+case)/, "case", "otherwise", "default", "exit", /end\s*(?:switch|case)?/],
-    ["while", /(?:do\s*)?while/, "loop", "exit", /end\s*(?:do)?/],
+    ["while", /(?:do\s*)?while/, "loop", "exit", /end(?:\b|\s*do)/],
     ["try", "try", "catch", /end\s*(?:do)?/],
-    ["sequence", /begin\s+sequence/, "recover", /end\s*(?:sequence)?/],
+    ["sequence", /begin\s+sequence/, "recover", /end(?:\b|\s*sequence)?/],
     ["dump", /#pragma\s+begindump/, /#pragma\s+enddump/],
 ];
 //it can be mixed with other groups
