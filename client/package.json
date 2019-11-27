@@ -29,6 +29,9 @@
         "vscode-languageclient": "^5.2.1",
         "vscode-nls": "^4.1.1"
     },
+    "scripts": {
+        "vscode:prepublish": "node copy.js"
+    },
     "contributes": {
         "problemMatchers": [
             {
