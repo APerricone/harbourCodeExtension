@@ -3,7 +3,7 @@ var readline = require("readline");
 
 var procRegEx = /\s*((?:proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?)|func(?:t(?:i(?:o(?:n)?)?)?)?)\s+([a-z_][a-z0-9_]*)\s*(?:\(([^\)]*)\))?/i;
 var methodRegEx = /\s*(meth(?:o(?:d)?)?)\s+(?:(?:(?:proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?)|func(?:t(?:i(?:o(?:n)?)?)?)?)\s+)?([a-z_][a-z0-9_]*)\s*(?:\(([^\)]*)\))?(?:\s*class\s+([a-z_][a-z0-9_]*))?(\s+inline)?/i
-var defineRegEx = /\s*(#\s*define)\s+([^\s\(]+)(?:\(([^\)]*)\))?\s+(.*)/i;
+var defineRegEx = /\s*(#\s*define)\s+([^\s\(]+)(?:\(([^\)]*)\))?(\s+.*)?/i;
 var hb_funcRegEx = /HB_FUNC\s*\(\s*([A-Z0-9_]+)\s*\)/
 function Provider(light) {
     // *********** options
@@ -253,7 +253,7 @@ Provider.prototype.linePP = function (line) {
     } else {
         this.startLine = this.lineNr;
         this.currLine = line;
-        this.currLinePreProc += oriLine;
+        this.currLinePreProc = oriLine;
     }
     this.cont = line.trim().endsWith(";") && !this.cMode;
 }
@@ -272,6 +272,7 @@ Provider.prototype.linePrepare = function (line) {
     if (!this.cMode && this.currLine.trim().match(/^NOTE\s/i)) {
         this.lastComment += "\r\n" + this.currLine.trim().substr(4);
         this.currLine = "";
+        this.currLinePreProc = "";
         if (this.firstLineCommment < 0) this.firstLineCommment = this.lineNr;
         return;
     }

@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to the "Harbour and xHarbour" extension will be documented in this file.
 
+# 0.9.8
+ - fix crash
+
 # 0.9.7
  - missing files
  
