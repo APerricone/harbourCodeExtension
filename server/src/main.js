@@ -1288,17 +1288,18 @@ connection.onFoldingRanges((params) => {
             rr.startCharacter = poss[0].endCol;
             rr.endCharacter = poss[i].startCol;
             ranges.push(rr);
-        } else
+        } else {
             var prec = 0;
-        for (let i = 1; i < poss.length; i++) {
-            if (poss[i].text != "exit") {
-                var rr = {};
-                rr.startLine = poss[prec].line;
-                rr.endLine = poss[i].line - deltaLine;
-                rr.startCharacter = poss[prec].endCol;
-                rr.endCharacter = poss[i].startCol;
-                ranges.push(rr);
-                prec = i;
+            for (let i = 1; i < poss.length; i++) {
+                if (poss[i].text != "exit") {
+                    var rr = {};
+                    rr.startLine = poss[prec].line;
+                    rr.endLine = poss[i].line - deltaLine;
+                    rr.startCharacter = poss[prec].endCol;
+                    rr.endCharacter = poss[i].startCol;
+                    ranges.push(rr);
+                    prec = i;
+                }
             }
         }
     }
