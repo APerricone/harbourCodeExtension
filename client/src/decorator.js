@@ -10,12 +10,10 @@ function activate(context,_client)
 {
 	client=_client;
 	decoration = vscode.window.createTextEditorDecorationType({
-		light: {
-			border: 'solid 1px darkblue',
-		},
-		dark: {
-			border: 'solid 1px lightblue',
-		}
+		borderStyle: 'solid',
+		borderWidth: '1px',
+		borderColor: new vscode.ThemeColor("editorBracketMatch.border"),
+		backgroundColor: new vscode.ThemeColor("editorBracketMatch.background")
 	});
 	vscode.window.onDidChangeTextEditorSelection((e) => showGroups(e) );
 }
