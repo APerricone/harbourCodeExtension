@@ -2,7 +2,7 @@
     "name": "harbour",
     "displayName": "Harbour and xHarbour",
     "description": "Harbour and xHarbour languages support for visual studio code",
-    "version": "0.9.6",
+    "version": "0.9.8",
     "publisher": "aperricone",
     "icon": "harbourIcon.png",
     "main": "./src/extension",
@@ -28,6 +28,9 @@
         "vscode-debugprotocol": "^1.35.0",
         "vscode-languageclient": "^5.2.1",
         "vscode-nls": "^4.1.1"
+    },
+    "scripts": {
+        "vscode:prepublish": "node copy.js"
     },
     "contributes": {
         "problemMatchers": [
