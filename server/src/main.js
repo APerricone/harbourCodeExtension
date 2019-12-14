@@ -384,7 +384,7 @@ connection.onDocumentSymbol((param) => {
                 }
             }
         } else
-            if (info.kind == "method")
+            if (info.kind == "method" && info.parent)
                 docSym.name = info.parent.name + ":" + info.name
 
         parent.push(docSym);

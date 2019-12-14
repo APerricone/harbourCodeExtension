@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to the "Harbour and xHarbour" extension will be documented in this file.
 
+# 0.9.9
+ - **server** fixed error message "cannot read property" [#43](https://github.com/APerricone/harbourCodeExtension/issues/43)
+ - **server** restored define "go to definition"
+ - **validation** trying to solve problem of wrong file name
+
 # 0.9.8
  - fix crash
 
