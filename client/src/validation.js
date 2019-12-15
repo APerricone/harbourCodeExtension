@@ -31,10 +31,7 @@ function validate(textDocument)
 	if(!section.validating)
 		return;
 	var args = ["-s", "-q0", "-m", "-n0", "-w"+section.warningLevel, textDocument.fileName ];
-	var file_cwd = vscode.workspace.rootPath;
-	if(!file_cwd) {
-		file_cwd=path.dirname(textDocument.fileName);
-	}
+	var file_cwd = path.dirname(textDocument.fileName);
 	for (var i = 0; i < section.extraIncludePaths.length; i++) {
 		var pathVal = section.extraIncludePaths[i];
 		if(pathVal.indexOf("${workspaceFolder}")>=0) {

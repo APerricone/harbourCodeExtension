@@ -7,7 +7,8 @@
             "type": "extensionHost",
             "request": "launch",
             "runtimeExecutable": "${execPath}",
-            "args": ["--extensionDevelopmentPath=${workspaceRoot}" ]
+			"args": ["--extensionDevelopmentPath=${workspaceRoot}" ],
+			"preLaunchTask": "prelanch"
         },
 		{
 			"type": "node",
@@ -16,8 +17,7 @@
 			"cwd": "${workspaceRoot}",
 			"program": "${workspaceRoot}/src/debugger.js",
 			"args": [ "--server=4711" ]
-        }
-    ],
+        }],
 	"compounds": [
 		{
 			"name": "Extension + Debugger",

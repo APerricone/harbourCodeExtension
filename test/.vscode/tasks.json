@@ -3,6 +3,22 @@
     // for the documentation about the tasks.json format
     "version": "2.0.0",
     "type": "shell",
+    "problemMatcher": [
+        {
+            "owner": "cpp",
+            "fileLocation": [
+                "relative",
+                "${workspaceRoot}"
+            ],
+            "pattern": {
+                "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                "file": 1,
+                "line": 2,
+                "column": 3,
+                "severity": 4,
+                "message": 5
+            }
+        }, "$harbour"],
     "tasks": [
         {
             "label": "build",
@@ -14,47 +30,12 @@
                 "kind": "build",
                 "isDefault": true
             },
-            "args": [ "-lcode_dbg", "-L.", "${relativeFile}", "-gtcgi", "-w", "-ql", "-b", "-gc3", "-winuni", "-debug"],
-            "problemMatcher": [
-            {
-                "owner": "cpp",
-                "fileLocation": [
-                    "relative",
-                    "${workspaceRoot}"
-                ],
-                "pattern": {
-                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
-                    "file": 1,
-                    "line": 2,
-                    "column": 3,
-                    "severity": 4,
-                    "message": 5
-                }
-            }, "$harbour"]
+            "args": [ "-lcode_dbg", "-L.", "${relativeFile}", "-gtcgi", "-w", "-ql", "-b", "-gc3", "-winuni", "-debug"]
         },
         {
-            "label": "build_noLib",
-            "command": "hbmk2",
-            "windows": {
-                "command": "myBuild.bat"
-            },
-            "args": [ "${relativeFile}", "-gtcgi", "-w", "-ql", "-debug", "-inc" ],
-            "problemMatcher": [
-            {
-                "owner": "cpp",
-                "fileLocation": [
-                    "relative",
-                    "${workspaceRoot}"
-                ],
-                "pattern": {
-                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
-                    "file": 1,
-                    "line": 2,
-                    "column": 3,
-                    "severity": 4,
-                    "message": 5
-                }
-            }, "$harbour"]
+            "label": "buildX",
+            "command": "myBuildX.bat",
+            "args": [ "${fileBasenameNoExtension}"]
         },
         {
             "label": "createLibrary",
@@ -62,44 +43,11 @@
             "windows": {
                 "command": "myBuild.bat"
             },
-            "args": [ "dbg_lib", "-w3", "-es2", "-ql", "-ocode_dbg","-gc3", "-hblib","-inc","-winuni"],
-            "problemMatcher": [
-            {
-                "owner": "cpp",
-                "fileLocation": [
-                    "relative",
-                    "${workspaceRoot}"
-                ],
-                "pattern": {
-                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
-                    "file": 1,
-                    "line": 2,
-                    "column": 3,
-                    "severity": 4,
-                    "message": 5
-                }
-            }, "$harbour"]
+            "args": [ "dbg_lib", "-w3", "-es2", "-ql", "-ocode_dbg","-gc3", "-hblib","-inc","-winuni"]
         },
         {
             "label": "createLibraryX",
-            "command": "myBuildX.bat",
-            "args": [ "dbg_lib", "-ocode_dbgX", "-gc3", "-hblib","-inc","-winuni"],
-            "problemMatcher": [
-            {
-                "owner": "cpp",
-                "fileLocation": [
-                    "relative",
-                    "${workspaceRoot}"
-                ],
-                "pattern": {
-                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
-                    "file": 1,
-                    "line": 2,
-                    "column": 3,
-                    "severity": 4,
-                    "message": 5
-                }
-            }, "$harbour"]
+            "command": "build_libX.bat"
         }
     ]
 }

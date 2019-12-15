@@ -2,3 +2,7 @@
 debugger.md
 *.svg
 copy.*
+.gitignore
+node_modules
+src
+webpack.config.js

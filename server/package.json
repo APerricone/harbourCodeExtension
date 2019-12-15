@@ -1,9 +1,9 @@
 {
   "name": "harbour-lang-server",
   "description": "Server part of Harbour language support for visual studio code.",
-  "version": "0.0.3",
+  "version": "0.5.0",
   "author": "aperricone",
-  "main": "src/main.js",
+  "main": "dist/hb_server.js",
   "license": "GPL",
   "repository": {
     "url": "https://github.com/APerricone/harbourCodeExtension"
@@ -16,7 +16,13 @@
     "vscode-uri": "^1.0.8"
   },
   "devDependencies": {
-    "@types/node": "^6.0.112"
+    "@types/node": "^6.0.112",
+    "copy-webpack-plugin": "^5.1.1",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10"
   },
-  "scripts": {}
+  "scripts": {
+    "webpack": "webpack --mode development",
+    "webpack2": "webpack --mode production"
+  }
 }

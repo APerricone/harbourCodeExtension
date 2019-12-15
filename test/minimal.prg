@@ -1,5 +1,6 @@
-#xcommand [<nTest>] CMD [<nPart2>] => <nTest> := <nPart2>
-
+//#xtranslate ( <!name!>{ [<p,...>] } => (<name>():New(<p>))
+//
+//#xcommand [<nTest>] CMD [<nPart2>] => <nTest> := <nPart2>
 #xcommand @ <nRow>, <nCol> COMBOBOX [ <oCbx> VAR ] <cVar> ;
 [ <it: PROMPTS, ITEMS> <aItems> ] ;
 [ SIZE <nWidth>, <nHeight> ] ;
@@ -10,9 +11,9 @@
 [ <color: COLOR,COLORS> <nClrText> [,<nClrBack>] ] ;
 [ <pixel: PIXEL> ] ;
 [ FONT <oFont> ] ;
-[ <update: UPDATE> ] ;
-[ MESSAGE <cMsg> ] ;
-[ WHEN <uWhen> ] ;
+[ <update: UPDATE> ] ; //PROVA
+[ MESSAGE <cMsg> ] ; && PROVA2
+[ WHEN <uWhen> ] ; /*CIAO*/
 [ <design: DESIGN> ] ;
 [ BITMAPS <acBitmaps> ] ;
 [ ON DRAWITEM <uBmpSelect> ] ;
