@@ -2,10 +2,10 @@
     "name": "harbour",
     "displayName": "Harbour and xHarbour",
     "description": "Harbour and xHarbour languages support for visual studio code",
-    "version": "0.9.8",
+    "version": "0.9.9",
     "publisher": "aperricone",
     "icon": "harbourIcon.png",
-    "main": "./src/extension",
+    "main": "./dist/extension",
     "repository": {
         "url": "https://github.com/APerricone/harbourCodeExtension"
     },
@@ -30,7 +30,9 @@
         "vscode-nls": "^4.1.1"
     },
     "scripts": {
-        "vscode:prepublish": "node copy.js"
+        "vscode:prepublish": "node copy.js",
+        "prelanch": "webpack --mode development",
+        "webpack2": "webpack --mode production"
     },
     "contributes": {
         "problemMatchers": [
@@ -279,5 +281,9 @@
                 "path": "src/harbour.code-snippets"
             }
         ]
+    },
+    "devDependencies": {
+        "webpack": "^4.41.2",
+        "webpack-cli": "^3.3.10"
     }
 }

@@ -87,6 +87,8 @@ Provider.prototype.Clear = function () {
     /** list of docs defined with $DOC$
      */
     this.harbourDocs = [];
+    // command definitions
+    this.commands = [];
 }
 
 Provider.prototype.resetComments = function () {
@@ -395,21 +397,111 @@ Provider.prototype.parseDeclareList = function (list, kind, parent) {
             this.addInfo(m, kind, "definition", parent, true);
     }
 }
-/*
-String.prototype.right = function(n) { return this.substring(this.length-n); }
 
-Provider.prototype.parseCommand = function() {
-    var pos=this.currLine.match(/\s+/);
-    var commandResult = {}
-    commandResult.activationString = ""
-    pos=pos[0].index+pos[0].length;
-    while(pos<this.currLine.length && ["<","["].indexOf(this.currLine.charAt(pos))==-1) {
-        commandResult.activationString+=this.currLine.charAt(pos);
-        pos++;
+String.prototype.right = function (n) { return this.substring(this.length - n); }
+const commandPartsingEnabled = false;
+
+Provider.prototype.parseCommand = function () {
+    if (!commandPartsingEnabled)
+        return;
+    var pos = this.currLine.match(/\s+/);
+    pos = pos.index + pos[0].length;
+    var endDefine = this.currLine.indexOf("=>");
+    if (endDefine < 0) return; // incomplete code
+    var definePart = this.currLine.substring(pos, endDefine).replace(/;\s+/g, "");
+    var resultPart = this.currLine.substring(endDefine + 2).replace(/;\s+/g, "");
+    var commandResult = [];
+    // SplitDefinePart
+    pos = 0;
+    while (pos < definePart.length) {
+        while (pos < definePart.length && [" ", "\t", "\r", "\n"].indexOf(definePart.charAt(pos)) >= 0)
+            pos++;
+        var nextChar = definePart.charAt(pos);
+        var end;
+        if (nextChar == "[") {
+            end = definePart.indexOf("]", pos);
+            if (end < 0) return; // incomplete
+            var open = definePart.indexOf("[", pos + 1);
+            if (open < end && open > pos) {
+                var nPar = 2;
+                end = open + 1;
+                while (nPar != 0 && end < definePart.length) {
+                    switch (definePart.charAt(end)) {
+                        case "[": nPar++; break;
+                        case "]": nPar--; break;
+                    }
+                    end++;
+                }
+                if (end == definePart.length) return; // incomplete
+                end--;
+            }
+            commandResult.push({ text: definePart.substring(pos + 1, end), fixed: false });
+            pos = end + 1;
+            continue;
+        }
+        end = definePart.indexOf("[", pos);
+        if (end >= 0) {
+            commandResult.push({ text: definePart.substring(pos, end), fixed: true });
+            pos = end;
+            continue;
+        } else {
+            if (pos < definePart.length)
+                commandResult.push({ text: definePart.substring(pos), fixed: true });
+            break;
+        }
     }
-
+    // create a neme from first part
+    var i = 0;
+    while (!commandResult[i].fixed) i++;
+    commandResult.name = commandResult[i].text.trim().replace(/<[^>]+>/g, "").replace(/[,]+/g, "").replace(/\s+/g, " ");
+    if (commandResult.name.length <= 0) return; //circular command
+    var commandRecognizer = commandResult[i].text.trim();
+    // https://stackoverflow.com/a/3561711/854279
+    commandRecognizer = commandRecognizer.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    commandRecognizer = (i > 0 ? "" : "$") + "\\s*" + commandRecognizer
+    commandRecognizer = commandRecognizer.replace(".", "\\.")
+    commandRecognizer = commandRecognizer.replace(/\s+/g, "\\s*");
+    commandRecognizer = commandRecognizer.replace(/<[^>]+>/g, ".*");
+    commandResult.regEx = new RegExp(commandRecognizer, "i");
+    // convert define parts in snippets
+    for (var i = 0; i < commandResult.length; ++i) {
+        commandResult[i].text = commandResult[i].text.trim();
+        var nextVar = commandResult[i].text.indexOf("<");
+        var idx = 1;
+        commandResult[i].repeatable = !commandResult[i].fixed;
+        while (nextVar >= 0) {
+            var endVar = commandResult[i].text.indexOf(">", nextVar);
+            if (endVar < 0) return; //incomplete
+            var currVar = commandResult[i].text.substring(nextVar + 1, endVar);
+            var colonPos = currVar.indexOf(":");
+            var snippetResult = "${" + idx;
+            if (colonPos < 0) {
+                snippetResult += `:${currVar}`
+            } else {
+                var names = currVar.substr(colonPos + 1).split(",");
+                for (let i = 0; i < names.length; i++) {
+                    snippetResult += `|${names[i].trim()}`
+                }
+                currVar = currVar.substr(0, colonPos).trim();
+            }
+            if (commandResult[i].repeatable) {
+                var matches;
+                var varRegEx = new RegExp("(\\[[^\\]]*)?<.?\\b" + currVar + "\\b.?>", "ig");
+                while (matches = varRegEx.exec(resultPart)) {
+                    commandResult[i].repeatable = commandResult[i].repeatable && Boolean(matches[1]);
+                }
+            }
+            snippetResult += "}"
+            commandResult[i].text = commandResult[i].text.substr(0, nextVar) + snippetResult + commandResult[i].text.substr(endVar + 1);
+            nextVar = commandResult[i].text.indexOf("<");
+            idx++;
+        }
+    }
+    commandResult.startLine = this.startLine
+    commandResult.endLine = this.lineNr
+    this.commands.push(commandResult);
 }
-*/
+
 Provider.prototype.parseHarbour = function (words) {
     if (this.currLine.indexOf("#pragma") >= 0 && this.currLine.indexOf("BEGINDUMP") >= 0)
     /* && /\^s*#pragma\s+BEGINDUMP\s*$/.test(this.currLine)*/ {
@@ -435,12 +527,12 @@ Provider.prototype.parseHarbour = function (words) {
             var r = defineRegEx.exec(this.currLinePreProc);
             if (r) {
                 var define = this.addInfo(r[2], 'define', "definition", undefined, true);
-                define.body = r[4].trim();
+                define.body = r[4] ? r[4].trim() : "";
                 if (r[3] && r[3].length)
                     this.parseDeclareList(r[3], "param", define);
             }
-            //} else if(words[0].right(7)=='command' || words[0].right(9)=='translate') {
-            //    this.parseCommand();
+        } else if (words[0].right(7) == 'command' || words[0].right(9) == 'translate') {
+            this.parseCommand();
         }
     } else
         if (this.currentClass && (words[0] == "endclass" || (words[0] == "end" && words[1] == "class"))) {

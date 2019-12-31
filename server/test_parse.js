@@ -2,7 +2,10 @@ var provider = require('./src/provider.js');
 
 var p = new provider.Provider();
 p.doGroups = true;
-p.parseFile("..\\test\\minimal.prg").then(()=> {
+var src = "..\\test\\minimal.prg";
+//src = "c:\\fwh\\include\\fivewin.ch"       
+//src="C:\\Harbour32\\tests\\hbpp\\hbpptest.prg"
+p.parseFile(src).then(()=> {
     for (var fn in p.funcList) {
         if (p.funcList.hasOwnProperty(fn)) {
             var info = p.funcList[fn];
@@ -36,6 +39,14 @@ p.parseFile("..\\test\\minimal.prg").then(()=> {
     for (let i = 0; i < p.cCodeFolder.length; i++) {
         const folder = p.cCodeFolder[i];
         console.log(`cFolder from ${folder[0]}-${folder[1]} to ${folder[2]}-${folder[3]}`);
+    }
+    for (let i = 0; i < p.commands.length; i++) {
+        const command = p.commands[i];
+        console.log(`Comand ${command.name} defined from line ${command.startLine} to line ${command.endLine} found if ${command.regEx}`);
+        for (let j = 0; j < command.length; j++) {
+            const thisPart = command[j];
+            console.log(`   snippet ${thisPart.fixed?"fixed   ":"optional"} ${thisPart.repeatable?"repeatable":"          "}: ${thisPart.text} => ${thisPart.snippet} found if ${thisPart.regEx}`);
+        }
     }
     process.exit();
 });

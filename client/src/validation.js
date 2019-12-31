@@ -31,10 +31,7 @@ function validate(textDocument)
 	if(!section.validating)
 		return;
 	var args = ["-s", "-q0", "-m", "-n0", "-w"+section.warningLevel, textDocument.fileName ];
-	var file_cwd = vscode.workspace.rootPath;
-	if(!file_cwd) {
-		file_cwd=path.dirname(textDocument.fileName);
-	}
+	var file_cwd = path.dirname(textDocument.fileName);
 	for (var i = 0; i < section.extraIncludePaths.length; i++) {
 		var pathVal = section.extraIncludePaths[i];
 		if(pathVal.indexOf("${workspaceFolder}")>=0) {
@@ -43,17 +40,13 @@ function validate(textDocument)
 		args.push("-I"+pathVal);
 	}
 	args = args.concat(section.extraOptions.split(" ").filter(function(el) {return el.length != 0}));
-	var process = cp.spawn(section.compilerExecutable,args, { cwd: file_cwd });
-	process.on("error", e=>
-	{
-		vscode.window.showWarningMessage(localize("harbour.validation.NoExe",section.compilerExecutable));
-	});
 	var diagnostics = {};
 	diagnostics[textDocument.fileName] = [];
 	var errorLines = "";
 	function parseData(data)
 	{
 		errorLines += data.toString();
+		errorLines = errorLines.replace(/[\r\n]/g,"\n")
 		var p;
 		while((p=errorLines.indexOf("\n"))>=0)
 		{
@@ -98,6 +91,11 @@ function validate(textDocument)
 			}
 		}
 	}
+	var process = cp.spawn(section.compilerExecutable,args, { cwd: file_cwd });
+	process.on("error", e=>
+	{
+		vscode.window.showWarningMessage(localize("harbour.validation.NoExe",section.compilerExecutable));
+	});
 	process.stderr.on('data', parseData);
 	process.stdout.on('data', parseData);
 	process.on("exit",function(code)

@@ -8,5 +8,10 @@
 		"**/.DS_Store": true,
 		"**/.hbmk": true
 	},
-	"harbour.warningLevel": 3
+	"harbour.warningLevel": 3,
+	"terminal.integrated.shell.windows": "cmd.exe",
+    "terminal.integrated.shellArgs.windows": [
+        "/k",
+        "c:\\harbour32\\start.bat"
+    ]
 }
