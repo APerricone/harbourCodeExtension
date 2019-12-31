@@ -391,49 +391,18 @@
 			]
 		},
 		"variable-field-declaration": {
-			"name": "meta.definition.variable.field.harbour",
-			"begin": "(?i)^\\s*(fiel(?:d)?)\\b",
-			"beginCaptures": {
-				"0": {
+			"match": "(?i)^\\s*(fiel(?:d)?)\\s*(->)\\s*([a-z0-9_]+)",
+			"captures": {
+				"1": {
 					"name": "storage.type.field.harbour"
+				},
+				"2": {
+					"name": "keyword.accessor.harbour"
+				}, 
+				"3": {
+					"name": "meta.definition.variable.field.harbour"
 				}
-			},
-			"end": "(?m:$)",
-			"patterns": [{
-					"include": "#continue-expression"
-				},
-				{
-					"include": "#comments"
-				},
-				{
-					"begin": "(?i)\\bin\\b",
-					"beginCaptures": {
-						"0": {
-							"name": "keyword.control.in.harbour"
-						}
-					},
-					"end": "(?i)\\b([A-Z_]\\w*)\\b",
-					"endCaptures": {
-						"0": {
-							"name": "variable.other.readwrite.field.harbour"
-						}
-					},
-					"patterns": [{
-							"include": "#continue-expression"
-						},
-						{
-							"include": "#comments"
-						}
-					]
-				},
-				{
-					"name": "variable.other.readwrite.field.harbour",
-					"match": "(?i)\\b([A-Z_]\\w*)\\b"
-				},
-				{
-					"include": "#punctuation-comma"
-				}
-			]
+			}
 		},
 		"variable-local-declaration": {
 			"name": "meta.definition.variable.local.harbour",
