@@ -140,7 +140,7 @@
             {
                 "type": "harbour-dbg",
                 "label": "Harbour",
-                "program": "./src/debugger.js",
+                "program": "./dist/debugger.js",
                 "runtime": "node",
                 "languages": [
                     "harbour"
@@ -278,7 +278,7 @@
         "snippets": [
             {
                 "language": "harbour",
-                "path": "src/harbour.code-snippets"
+                "path": "harbour.code-snippets"
             }
         ]
     },

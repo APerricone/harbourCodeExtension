@@ -16,7 +16,8 @@
 			"name": "Debugger",
 			"cwd": "${workspaceRoot}",
 			"program": "${workspaceRoot}/src/debugger.js",
-			"args": [ "--server=4711" ]
+			"args": [ "--server=4711" ],
+			"preLaunchTask": "prelanch"
         }],
 	"compounds": [
 		{
