@@ -246,6 +246,10 @@
 				},
 				{
 					"include": "#parameter-comma"
+				},
+				{
+					"name": "keyword.operator.epsilon.harbour",
+					"match": "\\.\\.\\."
 				}
 			]
 		},
@@ -328,7 +332,7 @@
 			"patterns": [
 				{
 					"name": "keyword.type.harbour",
-					"match": "\\b(?i:as\\s+(?:character|numeric|date|logical|codeblock|array|nil))\\b"
+					"match": "\\b(?i:as\\s+((?:anyt(?:y(?:pe?)?)?)|(?:array?)|(?:block?)|(?:char(?:a(?:c(?:t(?:er?)?)?)?)?)|(?:class?)|(?:code(?:b(?:l(?:o(?:ck?)?)?)?)?)|(?:date)|(?:datet(?:i(?:me?)?)?)|(?:hash)|(?:logi(?:c(?:al?)?)?)|(?:nume(?:r(?:ic?)?)?)|(?:obje(?:ct?)?)|(?:poin(?:t(?:er?)?)?)|(?:stri(?:ng?)?)|(?:symb(?:ol?)?)|(?:time(?:s(?:t(?:a(?:mp?)?)?)?)?)|(?:usual?)))\\b"
 				}
 			]
 		},
@@ -386,14 +390,14 @@
 			]
 		},
 		"variable-field-declaration": {
-			"match": "(?i)^\\s*(fiel(?:d)?)\\s*(->)\\s*([a-z0-9_]+)",
+			"match": "(?i)^\\s*(_?field?)\\s*(->)\\s*([a-z0-9_]+)",
 			"captures": {
 				"1": {
 					"name": "storage.type.field.harbour"
 				},
 				"2": {
 					"name": "keyword.accessor.harbour"
-				}, 
+				},
 				"3": {
 					"name": "meta.definition.variable.field.harbour"
 				}
@@ -961,15 +965,58 @@
 			}]
 		},
 		"keywords": {
-			"patterns": [{
-					"name": "keyword.control.harbour",
-					"match": "\\b(?i:if|ELSEIF|ELSE|end\\s*(?:if|while|case|do|switch|class|sequence|with)?|for(?:\\s*each)?|to|step|descend|next|do|while|switch|case|endcase|otherwise|exit|loop|begin\\s+sequence?|recover(?:\\s+using)?|break)\\b"
-				},
-				{
-					"name": "keyword.function.harbour",
-					"match": "\\b(?i:static|retu(rn?)?)\\b"
-				},
-				{
+			"patterns": [
+				{ "name": "keyword.always.harbour", "match": "\\b(?i:alwa(?:ys?)?)\\b" },
+				{ "name": "keyword.announce.harbour", "match": "\\b(?i:anno(?:u(?:n(?:ce?)?)?)?)\\b" },
+				{ "name": "keyword.begin.harbour", "match": "\\b(?i:begin?)\\b" },
+				{ "name": "keyword.break.harbour", "match": "\\b(?i:break?)\\b" },
+				{ "name": "keyword.case.harbour", "match": "\\b(?i:case)\\b" },
+				{ "name": "keyword.declare.harbour", "match": "\\b(?i:decl(?:a(?:re?)?)?)\\b" },
+				{ "name": "keyword.descend.harbour", "match": "\\b(?i:descend)\\b" },
+				{ "name": "keyword.do.harbour", "match": "\\b(?i:do)\\b" },
+				{ "name": "keyword.dynamic.harbour", "match": "\\b(?i:dynamic)\\b" },
+				{ "name": "keyword.else.harbour", "match": "\\b(?i:else)\\b" },
+				{ "name": "keyword.elseif.harbour", "match": "\\b(?i:elseif?)\\b" },
+				{ "name": "keyword.endcase.harbour", "match": "\\b(?i:end(?:\\s+case|c(?:a(?:se?)?)?))\\b" },
+				{ "name": "keyword.enddo.harbour", "match": "\\b(?i:end(?:\\s+do|do?))\\b" },
+				{ "name": "keyword.endif.harbour", "match": "\\b(?i:end(?:\\s+if|if?))\\b" },
+				{ "name": "keyword.endsequence.harbour", "match": "\\b(?i:end(?:\\s+sequ(?:e(?:n(?:ce?)?)?)?|seq(?:u(?:e(?:n(?:ce?)?)?)?)?))\\b" },
+				{ "name": "keyword.endswitch.harbour", "match": "\\b(?i:end(?:\\s+swit(?:ch?)?|sw(?:i(?:t(?:ch?)?)?)?))\\b" },
+				{ "name": "keyword.endwith.harbour", "match": "\\b(?i:end(?:\\s+with|w(?:i(?:th?)?)?))\\b" },
+				{ "name": "keyword.end.harbour", "match": "\\b(?i:end)\\b" },
+				{ "name": "keyword.exit.harbour", "match": "\\b(?i:exit)\\b" },
+				{ "name": "keyword.external.harbour", "match": "\\b(?i:exte(?:r(?:n(?:al?)?)?)?)\\b" },
+				{ "name": "keyword.for.harbour", "match": "\\b(?i:for)\\b" },
+				{ "name": "keyword.function.harbour", "match": "\\b(?i:func(?:t(?:i(?:on?)?)?)?)\\b" },
+				{ "name": "keyword.if.harbour", "match": "\\b(?i:if)\\b" },
+				{ "name": "keyword.iif.harbour", "match": "\\b(?i:iif)\\b" },
+				{ "name": "keyword.in.harbour", "match": "\\b(?i:in)\\b" },
+				{ "name": "keyword.init.harbour", "match": "\\b(?i:init)\\b" },
+				{ "name": "keyword.local.harbour", "match": "\\b(?i:local?)\\b" },
+				{ "name": "keyword.loop.harbour", "match": "\\b(?i:loop)\\b" },
+				{ "name": "keyword.memvar.harbour", "match": "\\b(?i:memv(?:ar?)?)\\b" },
+				{ "name": "keyword.next.harbour", "match": "\\b(?i:next)\\b" },
+				{ "name": "keyword.nil.harbour", "match": "\\b(?i:nil)\\b" },
+				{ "name": "keyword.optional.harbour", "match": "\\b(?i:opti(?:o(?:n(?:al?)?)?)?)\\b" },
+				{ "name": "keyword.otherwise.harbour", "match": "\\b(?i:othe(?:r(?:w(?:i(?:se?)?)?)?)?)\\b" },
+				{ "name": "keyword.parameters.harbour", "match": "\\b(?i:para(?:m(?:e(?:t(?:e(?:rs?)?)?)?)?)?)\\b" },
+				{ "name": "keyword.private.harbour", "match": "\\b(?i:priv(?:a(?:te?)?)?)\\b" },
+				{ "name": "keyword.procedure.harbour", "match": "\\b(?i:proc(?:e(?:d(?:u(?:re?)?)?)?)?)\\b" },
+				{ "name": "keyword.public.harbour", "match": "\\b(?i:publ(?:ic?)?)\\b" },
+				{ "name": "keyword.qself.harbour", "match": "\\b(?i:qself)\\b" },
+				{ "name": "keyword.recover.harbour", "match": "\\b(?i:reco(?:v(?:er?)?)?)\\b" },
+				{ "name": "keyword.return.harbour", "match": "\\b(?i:retu(?:rn?)?)\\b" },
+				{ "name": "keyword.static.harbour", "match": "\\b(?i:stat(?:ic?)?)\\b" },
+				{ "name": "keyword.step.harbour", "match": "\\b(?i:step)\\b" },
+				{ "name": "keyword.switch.harbour", "match": "\\b(?i:swit(?:ch?)?)\\b" },
+				{ "name": "keyword.thread.harbour", "match": "\\b(?i:thre(?:ad?)?)\\b" },
+				{ "name": "keyword.to.harbour", "match": "\\b(?i:to)\\b" },
+				{ "name": "keyword.while.harbour", "match": "\\b(?i:while?)\\b" },
+				{ "name": "keyword.with.harbour", "match": "\\b(?i:with)\\b" },
+				{ "name": "keyword._hb_class.harbour", "match": "\\b(?i:_hb_class)\\b" },
+				{ "name": "keyword._hb_member.harbour", "match": "\\b(?i:_hb_member)\\b" },
+				{ "name": "keyword._procreq_.harbour", "match": "\\b(?i:_procreq_)\\b" },
+							{
 					"name": "variable.language.self.harbour",
 					"match": "(?i)\\b(self)\\b"
 				},
@@ -979,7 +1026,7 @@
 				},
 				{
 					"name": "keyword.operator.logical.harbour",
-					"match": "(?i)(\\.(and|or|not)\\.)"
+					"match": "(?i)(\\.(and|or|not)\\.|!)"
 				},
 				{
 					"name": "keyword.getters.harbour",
@@ -991,19 +1038,19 @@
 				},
 				{
 					"name": "keyword.operator.logical.harbour",
-					"match": "!(?!=)"
+					"match": "!"
 				},
 				{
 					"name": "keyword.operator.assignment.harbour",
-					"match": ":=|=(?!=)"
+					"match": ":="
 				},
 				{
 					"name": "keyword.operator.assignment.augmented.harbour",
-					"match": "[\\+\\-\\*/%^]="
+					"match": "(?:[\\+\\-\\*/%^]|\\*\\*)="
 				},
 				{
 					"name": "keyword.operator.comparison.harbour",
-					"match": "[=!<>]=|<>|<|>|\\#|\\$"
+					"match": "[=!<>]?=|<>|<|>|\\#|\\$"
 				},
 				{
 					"name": "constant.character.format.placeholder.other.harbour",
@@ -1011,7 +1058,7 @@
 				},
 				{
 					"name": "keyword.operator.arithmetic.harbour",
-					"match": "\\-\\-|\\+\\+|/|%|\\*|\\+|\\-"
+					"match": "\\-\\-?|\\+\\+?|\\*\\*?|[\\/%^]"
 				},
 				{
 					"match": ";",
@@ -1039,7 +1086,7 @@
 				{
 					"name": "variable.values.field.harbour",
 					"match": "(?<=->)(?i:\\s*[a-z_][a-z0-9_]*)"
-				},	
+				},
 				{
 					"match": "(::)\\s*(?=[a-zA-Z_])",
 					"captures": {
@@ -1403,7 +1450,7 @@
 					"name": "meta.command.match.harbour",
 					"begin": "(?i)(<)(\\w+)(:)",
 					"beginCaptures": {
-						"0": { "name": "entity.name.match.harbour" } 
+						"0": { "name": "entity.name.match.harbour" }
 					},
 					"end": ">",
 					"endCaptures": {
