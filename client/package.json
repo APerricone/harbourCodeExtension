@@ -2,7 +2,7 @@
     "name": "harbour",
     "displayName": "Harbour and xHarbour",
     "description": "Harbour and xHarbour languages support for visual studio code",
-    "version": "0.9.9",
+    "version": "0.9.10",
     "publisher": "aperricone",
     "icon": "harbourIcon.png",
     "main": "./dist/extension",
@@ -15,7 +15,7 @@
         "workspaceContains:**/*.prg"
     ],
     "engines": {
-        "vscode": "^1.11.0"
+        "vscode": "^1.40.0"
     },
     "categories": [
         "Programming Languages",

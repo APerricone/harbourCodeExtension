@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to the "Harbour and xHarbour" extension will be documented in this file.
 
+# 0.9.10
+ - **server** added completition and go to definition on #pragma include [#45](https://github.com/APerricone/harbourCodeExtension/issues/45)
+ - **syntax** better operator and keyworld list
+ - **debugger** better case check using externali library
+ - **general** updated used libraries
+
 # 0.9.9
  - **server** fixed error message "cannot read property" [#43](https://github.com/APerricone/harbourCodeExtension/issues/43)
  - **server** restored define "go to definition"
