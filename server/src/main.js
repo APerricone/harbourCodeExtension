@@ -2,7 +2,9 @@ var provider = require('./provider.js');
 var server = require('vscode-languageserver')
 var fs = require("fs");
 var path = require("path");
-var Uri = require("vscode-uri").default;
+var Uri = require("vscode-uri").URI;
+var trueCase = require("true-case-path")
+var server_textdocument = require("vscode-languageserver-textdocument")
 
 var connection = server.createConnection(
     new server.IPCMessageReader(process),
@@ -249,7 +251,7 @@ function AddIncludes(startPath, includesArray) {
             return false;
         var completePath = path.join(dir, fileName);
         if (!fs.existsSync(completePath)) return false;
-        var fileUri = Uri.file(completePath);
+        var fileUri = Uri.file(trueCase.trueCasePathSync(completePath));
         var pp = new provider.Provider(true);
         pp.parseFile(completePath, fileUri.toString(), false).then(
             prov => {
@@ -486,7 +488,7 @@ function GetWord(params, withPrec) {
 connection.onDefinition((params) => {
     var doc = documents.get(params.textDocument.uri);
     var line = doc.getText(server.Range.create(params.position.line, 0, params.position.line, 100));
-    var include = /^\s*#include\s+[<"]([^>"]*)/i.exec(line);
+    var include = /^\s*#(?:pragma\s+__(?:c|binary)?stream)?include\s+[<"]([^>"]*)/i.exec(line);
     if (include !== null) {
         var startPath = undefined;
         if (params.textDocument.uri && params.textDocument.uri.startsWith("file")) {
@@ -819,7 +821,7 @@ function getStdHelp(word, nC) {
     return signatures;
 }
 
-var documents = new server.TextDocuments();
+var documents = new server.TextDocuments(server_textdocument.TextDocument);
 documents.listen(connection);
 
 documents.onDidChangeContent((e) => {
@@ -884,7 +886,7 @@ function getDocumentProvider(doc, checkGroup) {
 connection.onCompletion((param, cancelled) => {
     var doc = documents.get(param.textDocument.uri);
     var line = doc.getText(server.Range.create(param.position.line, 0, param.position.line, 1000));
-    var include = line.match(/^\s*#include\s+[<"]([^>"]*)/i);
+    var include = /^\s*#(pragma\s+__(?:c|binary)?stream)?include\s+[<"]([^>"]*)/i.exec(line);
     var precLetter = doc.getText(server.Range.create(server.Position.create(param.position.line, param.position.character - 1), param.position));
     if (include !== null) {
         if (precLetter == '>') {
@@ -894,10 +896,10 @@ connection.onCompletion((param, cancelled) => {
         if (param.textDocument.uri && param.textDocument.uri.startsWith("file")) {
             startPath = path.dirname(Uri.parse(param.textDocument.uri).fsPath)
         }
-        var includePos = line.lastIndexOf(include[1]);
-        return completitionFiles(include[1], startPath,
+        var includePos = line.lastIndexOf(include[2]);
+        return completitionFiles(include[2], startPath, include[1]!=undefined,
             server.Range.create(server.Position.create(param.position.line, includePos),
-                server.Position.create(param.position.line, includePos + include[1].length - 1)));
+                server.Position.create(param.position.line, includePos + include[2].length - 1)));
     }
     var allText = doc.getText();
     var completitions = [];
@@ -1052,7 +1054,7 @@ connection.onCompletion((param, cancelled) => {
  * @param {string} startPath
  * @param {server.Range} includeRange
  */
-function completitionFiles(word, startPath, includeRange) {
+function completitionFiles(word, startPath, allFiles, includeRange) {
     var completitons = [];
     word = word.replace("\r", "").replace("\n", "");
     if (process.platform.startsWith("win"))
@@ -1094,9 +1096,9 @@ function completitionFiles(word, startPath, includeRange) {
             var info = fs.statSync(completePath);
             if (info.isDirectory()) {
                 subfiles = fs.readdirSync(completePath);
-                if (subfiles.findIndex((v) => extRE.test(v)) == -1)
+                if (!allFiles && subfiles.findIndex((v) => extRE.test(v)) == -1)
                     continue;
-            } else if (!extRE.test(ff[fi]))
+            } else if (!allFiles && !extRE.test(ff[fi]))
                 continue;
             var sortText = undefined;
             if (word.length != 0) {
@@ -1129,6 +1131,28 @@ function completitionFiles(word, startPath, includeRange) {
     return server.CompletionList.create(completitons, false);
 }
 
+/** https://stackoverflow.com/questions/33086985/how-to-obtain-case-exact-path-of-a-file-in-node-js-on-windows
+ * @param {string} filePath
+ * @returns {string|undefined}
+ */
+function getRealPath(filePath) {
+	if(!process.platform.startsWith("win")) return filePath;
+    /** @type {number} */
+    var i;
+    /** @type {string} */
+    var dirname = path.dirname(filePath);
+    /** @type {string} */
+    var lowerFileName = path.basename(filePath).toLowerCase();
+    /** @type {Array.<string>} */
+    var fileNames = fs.readdirSync(dirname);
+
+    for (i = 0; i < fileNames.length; i += 1) {
+        if (fileNames[i].toLowerCase() === lowerFileName) {
+            return path.join(dirname, fileNames[i]);
+        }
+    }
+}
+
 function definitionFiles(fileName, startPath, origin) {
     var dest = [];
     fileName = fileName.toLowerCase();
@@ -1139,15 +1163,15 @@ function definitionFiles(fileName, startPath, origin) {
             dir = path.join(startPath, dir);
         if (!fs.existsSync(dir)) return;
         if (startPath && dir.toLowerCase() == startPath) startDone = true;
-        var ff = fs.readdirSync(dir)
-        for (var fi = 0; fi < ff.length; fi++) {
-            if (ff[fi].toLowerCase() == fileName) {
-                var fileUri = Uri.file(path.join(dir, ff[fi])).toString();
-                if (canLocationLink)
-                    dest.push(server.LocationLink.create(fileUri, server.Range.create(0, 0, 0, 0), server.Range.create(0, 0, 0, 0), origin));
-                else
-                    dest.push(server.Location.create(fileUri, server.Range.create(0, 0, 0, 0)));
-            }
+        if(fs.existsSync(path.join(dir, fileName))) {
+            var fileUri = path.join(dir, fileName);
+            fileUri = trueCase.trueCasePathSync(fileUri);
+            fileUri = Uri.file(fileUri);
+            fileUri = fileUri.toString();
+            if (canLocationLink)
+                dest.push(server.LocationLink.create(fileUri, server.Range.create(0, 0, 0, 0), server.Range.create(0, 0, 0, 0), origin));
+            else
+                dest.push(server.Location.create(fileUri, server.Range.create(0, 0, 0, 0)));
         }
     }
     for (var i = 0; i < workspaceRoots.length; i++) {

@@ -24,9 +24,9 @@
         "Snippets"
     ],
     "dependencies": {
-        "vscode-debugadapter": "^1.35.0",
-        "vscode-debugprotocol": "^1.35.0",
-        "vscode-languageclient": "^5.2.1",
+        "vscode-debugadapter": "^1.37.1",
+        "vscode-debugprotocol": "^1.37.0",
+        "vscode-languageclient": "^6.1.0",
         "vscode-nls": "^4.1.1"
     },
     "scripts": {
@@ -195,12 +195,14 @@
                             },
                             "program": {
                                 "type": "string",
-                                "description": "%harbour.launch.program%"
+                                "description": "%harbour.launch.program%",
+                                "required": true
                             },
                             "workingDir": {
                                 "type": "string",
                                 "description": "%harbour.launch.workingDir%",
-                                "default": "${workspaceFolder}/"
+                                "default": "${workspaceFolder}/",
+                                "required": true
                             },
                             "arguments": {
                                 "type": "array",
@@ -283,7 +285,7 @@
         ]
     },
     "devDependencies": {
-        "webpack": "^4.41.2",
+        "webpack": "^4.41.5",
         "webpack-cli": "^3.3.10"
     }
 }
