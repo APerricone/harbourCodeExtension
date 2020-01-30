@@ -24,6 +24,7 @@
         "Snippets"
     ],
     "dependencies": {
+        "true-case-path": "^2.2.1",
         "vscode-debugadapter": "^1.37.1",
         "vscode-debugprotocol": "^1.37.0",
         "vscode-languageclient": "^6.1.0",

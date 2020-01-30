@@ -1131,28 +1131,6 @@ function completitionFiles(word, startPath, allFiles, includeRange) {
     return server.CompletionList.create(completitons, false);
 }
 
-/** https://stackoverflow.com/questions/33086985/how-to-obtain-case-exact-path-of-a-file-in-node-js-on-windows
- * @param {string} filePath
- * @returns {string|undefined}
- */
-function getRealPath(filePath) {
-	if(!process.platform.startsWith("win")) return filePath;
-    /** @type {number} */
-    var i;
-    /** @type {string} */
-    var dirname = path.dirname(filePath);
-    /** @type {string} */
-    var lowerFileName = path.basename(filePath).toLowerCase();
-    /** @type {Array.<string>} */
-    var fileNames = fs.readdirSync(dirname);
-
-    for (i = 0; i < fileNames.length; i += 1) {
-        if (fileNames[i].toLowerCase() === lowerFileName) {
-            return path.join(dirname, fileNames[i]);
-        }
-    }
-}
-
 function definitionFiles(fileName, startPath, origin) {
     var dest = [];
     fileName = fileName.toLowerCase();
