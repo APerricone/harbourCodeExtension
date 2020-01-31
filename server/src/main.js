@@ -251,6 +251,8 @@ function AddIncludes(startPath, includesArray) {
             return false;
         var completePath = path.join(dir, fileName);
         if (!fs.existsSync(completePath)) return false;
+        var info = fs.statSync(completePath);
+        if (!info.isFile()) return false;
         var fileUri = Uri.file(trueCase.trueCasePathSync(completePath));
         var pp = new provider.Provider(true);
         pp.parseFile(completePath, fileUri.toString(), false).then(
@@ -293,6 +295,8 @@ function ParseInclude(startPath, includeName, addGlobal) {
         if (!fs.existsSync(dir)) return undefined;
         var test = path.join(dir, includeName);
         if (!fs.existsSync(test)) return undefined;
+        var info = fs.statSync(test);
+        if (!info.isFile()) return false;
         var pp = new provider.Provider();
         pp.parseString(fs.readFileSync(test).toString(), Uri.file(test).toString());
         if (addGlobal)
@@ -1055,18 +1059,19 @@ connection.onCompletion((param, cancelled) => {
  * @param {server.Range} includeRange
  */
 function completitionFiles(word, startPath, allFiles, includeRange) {
-    var completitons = [], foundSlash="";
+    var completitons = [], foundSlash=path.sep;
     word = word.replace("\r", "").replace("\n", "");
-    if (process.platform.startsWith("win"))
-        word = word.toLowerCase();
     var startDone = false;
-    if (startPath) startPath = startPath.toLowerCase();
     var deltaPath = ""
     var lastSlash = Math.max(word.lastIndexOf("\\"), word.lastIndexOf("/"))
     if (lastSlash > 0) {
         foundSlash = word.substr(lastSlash,1)
         deltaPath = word.substr(0, lastSlash);
         word = word.substr(lastSlash + 1);
+    }
+    if (process.platform.startsWith("win")) {
+        word = word.toLowerCase();
+        if (startPath) startPath = startPath.toLowerCase();
     }
     var dirDone = [];
     function CheckDir(dir) {
