@@ -1055,7 +1055,7 @@ connection.onCompletion((param, cancelled) => {
  * @param {server.Range} includeRange
  */
 function completitionFiles(word, startPath, allFiles, includeRange) {
-    var completitons = [];
+    var completitons = [], foundSlash="";
     word = word.replace("\r", "").replace("\n", "");
     if (process.platform.startsWith("win"))
         word = word.toLowerCase();
@@ -1064,6 +1064,7 @@ function completitionFiles(word, startPath, allFiles, includeRange) {
     var deltaPath = ""
     var lastSlash = Math.max(word.lastIndexOf("\\"), word.lastIndexOf("/"))
     if (lastSlash > 0) {
+        foundSlash = word.substr(lastSlash,1)
         deltaPath = word.substr(0, lastSlash);
         word = word.substr(lastSlash + 1);
     }
@@ -1106,11 +1107,12 @@ function completitionFiles(word, startPath, allFiles, includeRange) {
                 if (!sortText)
                     continue;
             }
-            var c = server.CompletionItem.create(path.join(deltaPath, ff[fi]));
+            var result = path.join(deltaPath, ff[fi]).replace(new RegExp("\\"+path.sep,"g"),foundSlash);
+            var c = server.CompletionItem.create(result);
             c.kind = info.isDirectory() ? server.CompletionItemKind.Folder : server.CompletionItemKind.File;
             c.sortText = sortText ? sortText : ff[fi];
             c.detail = dir;
-            c.textEdit = server.TextEdit.replace(includeRange, path.join(deltaPath, ff[fi]).replace("\\", "/"));
+            c.textEdit = server.TextEdit.replace(includeRange, result);
             completitons.push(c);
         }
     }
@@ -1144,7 +1146,7 @@ function definitionFiles(fileName, startPath, origin) {
         if(fs.existsSync(path.join(dir, fileName))) {
             var fileUri = path.join(dir, fileName);
             fileUri = trueCase.trueCasePathSync(fileUri);
-            fileUri = Uri.file(fileUri);
+            fiUri = Uri.file(fileUri);
             fileUri = fileUri.toString();
             if (canLocationLink)
                 dest.push(server.LocationLink.create(fileUri, server.Range.create(0, 0, 0, 0), server.Range.create(0, 0, 0, 0), origin));
