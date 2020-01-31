@@ -6,6 +6,7 @@ var fs = require("fs");
 var cp = require("child_process");
 var localize = require("./myLocalize.js").localize;
 var process = require("process")
+var trueCase = require("true-case-path")
 
 /** @requires vscode-debugadapter   */
 /// CLASS DEFINITION
@@ -165,13 +166,14 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
 	var tc=this;
 	this.justStart = true;
 	this.sourcePaths = []; //[path.dirname(args.program)];
-	if("workspaceRoot" in args)
-	{
-		this.sourcePaths.push(args.workspaceRoot); 
+	if("workspaceRoot" in args) {
+		this.sourcePaths.push(args.workspaceRoot);
 	}
-	if("sourcePaths" in args)
-	{
+	if("sourcePaths" in args) {
 		this.sourcePaths = this.sourcePaths.concat(args.sourcePaths);
+	}
+	for (let idx = 0; idx < this.sourcePaths.length; idx++) {
+		this.sourcePaths[idx] = trueCase.trueCasePathSync(this.sourcePaths[idx]);
 	}
 	this.Debugging = !args.noDebug;
 	this.startGo = args.stopOnEntry===false || args.noDebug===true;	
@@ -221,13 +223,14 @@ harbourDebugSession.prototype.attachRequest = function(response, args)
 	var tc=this;
 	this.justStart = true;
 	this.sourcePaths = []; //[path.dirname(args.program)];
-	if("workspaceRoot" in args)
-	{
+	if("workspaceRoot" in args) {
 		this.sourcePaths.push(args.workspaceRoot); 
 	}
-	if("sourcePaths" in args)
-	{
+	if("sourcePaths" in args) {
 		this.sourcePaths = this.sourcePaths.concat(args.sourcePaths);
+	}
+	for (let idx = 0; idx < this.sourcePaths.length; idx++) {
+		this.sourcePaths[idx] = trueCase.trueCasePathSync(this.sourcePaths[idx]);
 	}
 	this.Debugging = !args.noDebug;
 	this.startGo = true;
@@ -342,28 +345,6 @@ harbourDebugSession.prototype.threadsRequest = function(response)
 	this.sendResponse(response)
 }
 
-/** https://stackoverflow.com/questions/33086985/how-to-obtain-case-exact-path-of-a-file-in-node-js-on-windows
- * @param {string} filePath
- * @returns {string|undefined}
- */
-function getRealPath(filePath) {
-	if(!process.platform.startsWith("win")) return filePath;
-    /** @type {number} */
-    var i;
-    /** @type {string} */
-    var dirname = path.dirname(filePath);
-    /** @type {string} */
-    var lowerFileName = path.basename(filePath).toLowerCase();
-    /** @type {Array.<string>} */
-    var fileNames = fs.readdirSync(dirname);
-
-    for (i = 0; i < fileNames.length; i += 1) {
-        if (fileNames[i].toLowerCase() === lowerFileName) {
-            return path.join(dirname, fileNames[i]);
-        }
-    }
-}
-
 harbourDebugSession.prototype.sendStack = function(line) {
 	var nStack = parseInt(line.substring(6));
 	var frames = [];
@@ -375,16 +356,13 @@ harbourDebugSession.prototype.sendStack = function(line) {
 		for(i=0;i<infos.length;i++) infos[i]=infos[i].replace(";",":")
 		var completePath = infos[0]
 		var found = false;
-		if(path.isAbsolute(infos[0]) && fs.existsSync(infos[0]))
-		{
-			completePath = getRealPath(infos[0]);
+		if(path.isAbsolute(infos[0]) && fs.existsSync(infos[0])) {
+			completePath = trueCase.trueCasePathSync(infos[0]);
 			found=true;
 		} else
-			for(i=0;i<this.sourcePaths.length;i++)
-			{
-				if(fs.existsSync(path.join(this.sourcePaths[i],infos[0])))
-				{
-					completePath = getRealPath(path.join(this.sourcePaths[i],infos[0]));
+			for(i=0;i<this.sourcePaths.length;i++) {
+				if(fs.existsSync(path.join(this.sourcePaths[i],infos[0]))) {
+					completePath = trueCase.trueCasePathSync(infos[0],this.sourcePaths[i]);
 					found=true;
 					break;
 				}
