@@ -1146,7 +1146,7 @@ function definitionFiles(fileName, startPath, origin) {
         if(fs.existsSync(path.join(dir, fileName))) {
             var fileUri = path.join(dir, fileName);
             fileUri = trueCase.trueCasePathSync(fileUri);
-            fiUri = Uri.file(fileUri);
+            fileUri = Uri.file(fileUri);
             fileUri = fileUri.toString();
             if (canLocationLink)
                 dest.push(server.LocationLink.create(fileUri, server.Range.create(0, 0, 0, 0), server.Range.create(0, 0, 0, 0), origin));
