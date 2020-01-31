@@ -672,7 +672,7 @@ function findBracket(text, pos, dir, bracket) {
                 case "'": str = "'"; break
                 case '\n':
                     var nSpace = 1;
-                    while (text[pos - nSpace] != '\n') nSpace++;
+                    while((pos - nSpace)>0 && text[pos - nSpace] != '\n') nSpace++;
                     var thisLine = text.substr(pos - nSpace + 1, nSpace)
                     thisLine = thisLine.replace(/\/\/[^\n]*\n/, "\n")
                     thisLine = thisLine.replace(/&&[^\n]*\n/, "\n")

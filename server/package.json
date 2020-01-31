@@ -22,7 +22,7 @@
     "webpack-cli": "^3.3.10"
   },
   "scripts": {
-    "webpack": "webpack --mode development",
+    "prelanch": "webpack --mode development",
     "webpack2": "webpack --mode production"
   }
 }
