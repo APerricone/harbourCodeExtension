@@ -1,6 +1,9 @@
 var fs = require("fs");
 var readline = require("readline");
 
+// beta feature
+const commandPartsingEnabled = false;
+
 var procRegEx = /\s*((?:proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?)|func(?:t(?:i(?:o(?:n)?)?)?)?)\s+([a-z_][a-z0-9_]*)\s*(?:\(([^\)]*)\))?/i;
 var methodRegEx = /\s*(meth(?:o(?:d)?)?)\s+(?:(?:(?:proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?)|func(?:t(?:i(?:o(?:n)?)?)?)?)\s+)?([a-z_][a-z0-9_]*)\s*(?:\(([^\)]*)\))?(?:\s*class\s+([a-z_][a-z0-9_]*))?(\s+inline)?/i
 var defineRegEx = /\s*(#\s*define)\s+([^\s\(]+)(?:\(([^\)]*)\))?(\s+.*)?/i;
@@ -309,6 +312,7 @@ Provider.prototype.linePrepare = function (line) {
                     this.currLine = this.currLine.substr(0, i - 1) +
                         " ".repeat(endC - i + 3) +
                         this.currLine.substr(endC + 2);
+					this.cont = this.currLine.trim().endsWith(";");
                     continue;
                 } else {
                     if (!precJustStart)
@@ -325,6 +329,7 @@ Provider.prototype.linePrepare = function (line) {
                 // commented line: skip
                 this.lastComment += "\r\n" + this.currLine.substr(i + 1)
                 this.currLine = "";
+				this.currLinePreProc = "";
                 if (this.firstLineCommment < 0) this.firstLineCommment = this.lineNr;
                 return;
             }
@@ -353,13 +358,11 @@ Provider.prototype.linePrepare = function (line) {
             stringStart = i;
             continue;
         }
-        if (c == "[") {
-            if (!/[a-zA-Z0-9_\[]/.test(precC)) {
-                string = "]";
-                stringStart = i;
-            }
-            continue;
+        if (c == "[" && /[^a-zA-Z0-9_\[\]]/.test(precC)) {
+            string = "]";
+            stringStart = i;
         }
+        continue;
     }
 }
 
@@ -398,9 +401,6 @@ Provider.prototype.parseDeclareList = function (list, kind, parent) {
     }
 }
 
-String.prototype.right = function (n) { return this.substring(this.length - n); }
-const commandPartsingEnabled = false;
-
 Provider.prototype.parseCommand = function () {
     if (!commandPartsingEnabled)
         return;
@@ -420,7 +420,7 @@ Provider.prototype.parseCommand = function () {
         var end;
         if (nextChar == "[") {
             end = definePart.indexOf("]", pos);
-            if (end < 0) return; // incomplete
+			if (end < 0) return undefined; // incomplete
             var open = definePart.indexOf("[", pos + 1);
             if (open < end && open > pos) {
                 var nPar = 2;
@@ -450,52 +450,101 @@ Provider.prototype.parseCommand = function () {
             break;
         }
     }
-    // create a neme from first part
-    var i = 0;
-    while (!commandResult[i].fixed) i++;
-    commandResult.name = commandResult[i].text.trim().replace(/<[^>]+>/g, "").replace(/[,]+/g, "").replace(/\s+/g, " ");
-    if (commandResult.name.length <= 0) return; //circular command
-    var commandRecognizer = commandResult[i].text.trim();
+	return commandResult;
+}
+
+function CommandPartToRegex(text) {
+	var firstVar = /\s*<([^>]+)>\s*/.exec(text);
+	// it is only variable, then no regex.
+	if (firstVar && firstVar[0] == text)
+		return undefined;
+	var pattern;
     // https://stackoverflow.com/a/3561711/854279
-    commandRecognizer = commandRecognizer.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-    commandRecognizer = (i > 0 ? "" : "$") + "\\s*" + commandRecognizer
-    commandRecognizer = commandRecognizer.replace(".", "\\.")
-    commandRecognizer = commandRecognizer.replace(/\s+/g, "\\s*");
-    commandRecognizer = commandRecognizer.replace(/<[^>]+>/g, ".*");
-    commandResult.regEx = new RegExp(commandRecognizer, "i");
-    // convert define parts in snippets
-    for (var i = 0; i < commandResult.length; ++i) {
-        commandResult[i].text = commandResult[i].text.trim();
-        var nextVar = commandResult[i].text.indexOf("<");
+	// escape all control charecters
+	pattern = text.trim().replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+	//
+	pattern = pattern.replace(/\s+/g, "\\s*");
+	//
+	pattern = pattern.replace(/<[^>]+>/g, ".*");
+	return new RegExp(pattern, "i");
+}
+
+function CommandPartToSnippet(text, fixed, resultPart) {
+	var snippet = text, repeatable = !fixed
+	var variableRegEx = /<!?([^!>]+)!?>/
         var idx = 1;
-        commandResult[i].repeatable = !commandResult[i].fixed;
-        while (nextVar >= 0) {
-            var endVar = commandResult[i].text.indexOf(">", nextVar);
-            if (endVar < 0) return; //incomplete
-            var currVar = commandResult[i].text.substring(nextVar + 1, endVar);
+	var match;
+	while (match = variableRegEx.exec(snippet)) {
+		var currVar = match[1];
             var colonPos = currVar.indexOf(":");
-            var snippetResult = "${" + idx;
+		var snippetPart = "${" + idx;
             if (colonPos < 0) {
-                snippetResult += `:${currVar}`
+			currVar = currVar.trim().replace(/,\s*\.\.\./, "")
+			snippetPart += ":" + currVar
             } else {
                 var names = currVar.substr(colonPos + 1).split(",");
                 for (let i = 0; i < names.length; i++) {
-                    snippetResult += `|${names[i].trim()}`
+				snippetPart += `|${names[i].trim()}`
                 }
                 currVar = currVar.substr(0, colonPos).trim();
             }
-            if (commandResult[i].repeatable) {
-                var matches;
+		if (repeatable) {
+			var resMatch;
+			currVar = currVar.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
                 var varRegEx = new RegExp("(\\[[^\\]]*)?<.?\\b" + currVar + "\\b.?>", "ig");
-                while (matches = varRegEx.exec(resultPart)) {
-                    commandResult[i].repeatable = commandResult[i].repeatable && Boolean(matches[1]);
+			while (repeatable && (resMatch = varRegEx.exec(resultPart))) {
+				repeatable = repeatable && Boolean(resMatch[1]);
                 }
             }
-            snippetResult += "}"
-            commandResult[i].text = commandResult[i].text.substr(0, nextVar) + snippetResult + commandResult[i].text.substr(endVar + 1);
-            nextVar = commandResult[i].text.indexOf("<");
+		snippetPart += "}"
+		snippet = snippet.replace(match[0], snippetPart)
             idx++;
         }
+	return { "snippet": snippet, "repeatable": repeatable };
+}
+
+Provider.prototype.parseCommand = function (translate) {
+	if (!commandPartsingEnabled)
+		return;
+	// find the define part and the result part
+	var pos = this.currLine.match(/^\s*#\w?(?:command|translate)\s+/i);
+	if (!pos) return;
+	pos = pos.index + pos[0].length;
+	var endDefine = this.currLine.indexOf("=>");
+	if (endDefine < 0) return; // incomplete code
+	var definePart = this.currLine.substring(pos, endDefine).replace(/;\s+/g, "");
+	var resultPart = this.currLine.substring(endDefine + 2).replace(/;\s+/g, "");
+	// spli the define part
+	var commandResult = CommandSplitDefinition(definePart);
+	// create a name from first fixed part
+	var i = 0;
+	while (!commandResult[i].fixed) i++;
+	commandResult.name = commandResult[i].text.trim().replace(/<[^>]+>/g, "").replace(/[,]+/g, "").replace(/\s+/g, " ");
+	if (commandResult.name.length <= 0) return; //circular command ?
+	// convert define parts in snippets
+	for (var i = 0; i < commandResult.length; ++i) {
+		commandResult[i].text = commandResult[i].text.trim();
+		commandResult[i].regEx = CommandPartToRegex(commandResult[i].text);
+		commandResult[i].snippet = CommandPartToSnippet(commandResult[i].text, commandResult[i].fixed, resultPart);
+		if (!commandResult[i].snippet) return;
+		commandResult[i].repeatable = commandResult[i].snippet.repeatable;
+		commandResult[i].snippet = commandResult[i].snippet.snippet;
+	}
+	var i = 0;
+	commandResult.regEx = undefined;
+	while (!commandResult.regEx) {
+		if (!commandResult[i].fixed) {
+			i++;
+			continue;
+		}
+		if (!commandResult[i].regEx) {
+			i++;
+			continue;
+		}
+		if (i > 0 || translate)
+			commandResult.regEx = commandResult[i].regEx
+		else
+			commandResult.regEx = new RegExp("^\\s*" + commandResult[i].regEx.source, "i")
     }
     commandResult.startLine = this.startLine
     commandResult.endLine = this.lineNr
@@ -531,8 +580,8 @@ Provider.prototype.parseHarbour = function (words) {
                 if (r[3] && r[3].length)
                     this.parseDeclareList(r[3], "param", define);
             }
-        } else if (words[0].right(7) == 'command' || words[0].right(9) == 'translate') {
-            this.parseCommand();
+		} else if (words[0].endsWith('command') || words[0].endsWith('translate')) {
+			this.parseCommand(words[0].endsWith('translate'));
         }
     } else
         if (this.currentClass && (words[0] == "endclass" || (words[0] == "end" && words[1] == "class"))) {
@@ -769,7 +818,9 @@ Provider.prototype.parse = function (line) {
         this.parseC();
         if (this.doGroups) this.updateGroups(!this.cMode);
     } else {
-        var lines = this.currLine.split(/;(?!\s+[\r\n])/)
+        var lines = [this.currLine];
+        if (! /^\s*#/.test(this.currLine)) // if does not start with #, see #44
+            this.currLine.split(/;(?!\s+[\r\n])/)
         var pre = ""
         var code = false;
         for (var i = 0; i < lines.length; i++) {
@@ -782,7 +833,7 @@ Provider.prototype.parse = function (line) {
             this.findDBReferences();
             this.parseHarbour(words);
             if (this.doGroups) this.updateGroups(true);
-            pre += " ".repeat(lines[i].length);
+            pre += " ".repeat(lines[i].length+1); //add the ; see #44
         }
     }
     if (code)

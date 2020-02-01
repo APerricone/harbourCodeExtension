@@ -1036,6 +1036,7 @@ connection.onCompletion((param, cancelled) => {
             CheckAdd(missing[i], server.CompletionItemKind.Function, "A")
             if (cancelled.isCancellationRequested) return server.CompletionList.create(completitions, false);
         }
+        //AddCommands(param, completitions)
     }
     if (wordBasedSuggestions) {
         var wordRE = /\b[a-z_][a-z0-9_]*\b/gi
@@ -1051,6 +1052,47 @@ connection.onCompletion((param, cancelled) => {
     }
     return server.CompletionList.create(completitions, false);
 })
+
+/**
+ * @param {server.CompletionParams} param
+ * @param {setver.CompletionItem[]} completitions
+ * */
+function AddCommands(param, completitions) {
+    var doc = documents.get(param.textDocument.uri);
+    var line = doc.getText(server.Range.create(param.position.line,0,param.position.line,1000));
+    var nextLine = line;
+    var contTest = /;(\/\*.*\*\/)*((\/\/|&&).*)?[\r\n]{1,2}$/;
+    var startLine=param.position.line;
+    var endLine=param.position.line;
+    var i=1;
+    while((param.position.line-i)>0) {
+        var precLine=doc.getText(server.Range.create(param.position.line-i,0,param.position.line-i,1000));
+        if(precLine.match(contTest)) {
+            line = precLine+line;
+            startLine = param.position.line-i;
+            i++;
+        } else
+            break;
+    }
+    i=1;
+    while(nextLine.match(contTest)) {
+        nextLine = doc.getText(server.Range.create(param.position.line+i,0,param.position.line+i,1000));
+        line += nextLine;
+        endLine = param.position.line+i;
+        i++;
+    }
+    const thisInfo = getDocumentProvider(doc);
+    for(var i=0;i<thisInfo.commands.length;i++) {
+        const thisCommand = thisInfo.commands[i];
+        if(line.match(thisCommand.regEx)) {
+            for(var j=0;thisCommand.length; j++) {
+                const thisPart = thisCommand[j];
+                completitions.
+            }
+        }
+    }
+}
+
 
 /**
  *
