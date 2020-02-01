@@ -1087,7 +1087,7 @@ function AddCommands(param, completitions) {
         if(line.match(thisCommand.regEx)) {
             for(var j=0;thisCommand.length; j++) {
                 const thisPart = thisCommand[j];
-                completitions.
+                //completitions.
             }
         }
     }

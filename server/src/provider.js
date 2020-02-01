@@ -32,8 +32,10 @@ function Provider(light) {
 
 Provider.prototype.Clear = function () {
     // *********** data used during the parsing
-    /** @type {boolean} is for multi line comments */
+    /** @type {boolean} is true for multi line comments */
     this.comment = false;
+    /** @type {boolean} is true for multi line comments */
+    this.pragmaText = false;
     /** @type {string} current line parsing, with string and comments */
     this.currLinePreProc = "";
     /** @type {string} current line parsing, without string and comments */
@@ -246,6 +248,15 @@ Provider.prototype.linePP = function (line) {
         line = line.substr(0, eC + 2).replace(/[^\s]/g, " ") + line.substr(eC + 2);
         this.comment = false;
     }
+    if(this.pragmaText) {
+        this.currLine="";
+        if( /^\s*(?:#\s*pragma\s+__)?endtext/i.test(line) ) {
+            line ="";
+            this.currLinePreProc = oriLine;
+            this.pragmaText = false
+        } else
+            return;
+    }
     if (this.cont) {
         if (!this.currLine.endsWith("\r\n")) {
             if (this.currLine.endsWith("\n") || this.currLine.endsWith("\r"))
@@ -259,7 +270,15 @@ Provider.prototype.linePP = function (line) {
         this.startLine = this.lineNr;
         this.currLine = line;
         this.currLinePreProc = oriLine;
+
+        if( /^\s*#\s*pragma\s+(?:__text|__stream|__cstream)\b/i.test(line) ||
+            /^\s*([cx]?text)\b/i.test(line)) {
+            this.currLine = "";
+            this.pragmaText = true;
+            return;
+        }
     }
+
     this.cont = line.trim().endsWith(";") && !this.cMode;
 }
 
@@ -358,7 +377,7 @@ Provider.prototype.linePrepare = function (line) {
             stringStart = i;
             continue;
         }
-        if (c == "[" && /[^a-zA-Z0-9_\[\]]/.test(precC)) {
+        if (c == "[" && /[^a-zA-Z0-9_\[\]]/.test(precC) && !/^\s*#/.test(this.currLine)) {
             string = "]";
             stringStart = i;
         }
@@ -804,7 +823,7 @@ Provider.prototype.AddMultilineComment = function (startLine, endLine) {
  */
 Provider.prototype.parse = function (line) {
     this.linePP(line);
-    if (this.comment) return;
+    if (this.comment || this.pragmaText) return;
     this.linePrepare(line);
     if (this.currLine.trim().length == 0 || this.cont) return;
     /** @type{string[]} */
