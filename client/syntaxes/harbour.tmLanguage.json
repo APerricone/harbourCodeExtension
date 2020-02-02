@@ -275,7 +275,7 @@
 						"name": "keyword.type.function.harbour"
 					}
 				},
-				"end": "(?m:$)",
+				"end": "(?m:$|;)",
 				"patterns": [{
 						"include": "#continue-expression"
 					},
