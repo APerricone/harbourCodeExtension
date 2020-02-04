@@ -34,7 +34,7 @@ Provider.prototype.Clear = function () {
     // *********** data used during the parsing
     /** @type {boolean} is true for multi line comments */
     this.comment = false;
-    /** @type {boolean} is true for multi line comments */
+    /** @type {boolean} is true for pragma text */
     this.pragmaText = false;
     /** @type {string} current line parsing, with string and comments */
     this.currLinePreProc = "";

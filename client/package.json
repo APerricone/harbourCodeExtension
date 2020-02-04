@@ -283,7 +283,22 @@
                 "language": "harbour",
                 "path": "harbour.code-snippets"
             }
-        ]
+        ],
+        "taskDefinitions": [{
+                "type": "Harbour",
+            "required": ["output"],
+            "properties": {
+                "output": {
+                    "type": "string",
+                    "enum": ["portable","C code"]
+                },
+                "c-type": {
+                    "type": "string",
+                    "enum": ["compact", "normal", "verbose", "real C Code"],
+                    "default": "compact"
+                }
+            }
+        }]
     },
     "devDependencies": {
         "webpack": "^4.41.5",
