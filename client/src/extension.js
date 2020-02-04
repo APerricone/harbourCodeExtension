@@ -1,10 +1,11 @@
-var vscode = require('vscode');
-var path = require('path');
-var validation = require('./validation.js');
-var decorator = require('./decorator.js');
-var docCreator = require('./docCreator.js');
-var client = require('vscode-languageclient');
-var fs = require("fs");
+const vscode = require('vscode');
+const path = require('path');
+const client = require('vscode-languageclient');
+const fs = require("fs");
+const validation = require('./validation.js');
+const decorator = require('./decorator.js');
+const docCreator = require('./docCreator.js');
+const taskProvider = require('./taskProvider.js');
 
 var diagnosticCollection;
 
@@ -37,6 +38,7 @@ function activate(context) {
 	//vscode.languages.registerFoldingRangeProvider(['harbour'], new decorator.HBProvider());
 	decorator.activate(context,cl);
 	docCreator.activate(context,cl);
+	taskProvider.activate();
 }	
 
 function GetDbgCode() {
