@@ -1,11 +1,11 @@
-var vscode = require('vscode');
-var cp = require("child_process");
-var path = require("path");
-var localize = require("./myLocalize.js").localize;
+const vscode = require('vscode');
+const cp = require("child_process");
+const path = require("path");
+const localize = require("./myLocalize.js").localize;
 
 var diagnosticCollection;
 
-function activate(context) 
+function activate(context)
 {
     diagnosticCollection = vscode.languages.createDiagnosticCollection('harbour');
 	context.subscriptions.push(diagnosticCollection);
@@ -84,7 +84,7 @@ function validate(textDocument)
 						diagnostics[r[1]].push(new vscode.Diagnostic(new vscode.Range(lineNr,m.index,lineNr,m.index+subject[0].length),
 							r[4], r[3]=="Warning"? 1 : 0))
 					}
-				} 
+				}
 				if(putAll)
 					diagnostics[r[1]].push(new vscode.Diagnostic(line.range,
 						r[4], r[3]=="Warning"? 1 : 0))
@@ -103,7 +103,7 @@ function validate(textDocument)
 		for (var file in diagnostics) {
 			if (diagnostics.hasOwnProperty(file)) {
 				var infos = diagnostics[file];
-				diagnosticCollection.set(vscode.Uri.file(file), infos);		
+				diagnosticCollection.set(vscode.Uri.file(file), infos);
 			}
 		}
 	});

@@ -1,5 +1,5 @@
-var vscode = require('vscode');
-var client = require('vscode-languageclient');
+const vscode = require('vscode');
+const client = require('vscode-languageclient');
 
 // reuse the bracket-match style
 
@@ -37,9 +37,9 @@ function showGroups(evt)
 		var places = [];
 		for (let k = 0; k < ranges.length; k++) {
 			const rr = ranges[k];
-			places.push({ range: new vscode.Range(rr.line,rr.startCol,rr.line,rr.endCol) });	
+			places.push({ range: new vscode.Range(rr.line,rr.startCol,rr.line,rr.endCol) });
 		}
-		
+
 		evt.textEditor.setDecorations(decoration, places);
 	})
 }

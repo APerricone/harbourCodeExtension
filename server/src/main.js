@@ -1,10 +1,10 @@
-var provider = require('./provider.js');
-var server = require('vscode-languageserver')
-var fs = require("fs");
-var path = require("path");
-var Uri = require("vscode-uri").URI;
-var trueCase = require("true-case-path")
-var server_textdocument = require("vscode-languageserver-textdocument")
+const provider = require('./provider.js');
+const server = require('vscode-languageserver')
+const fs = require("fs");
+const path = require("path");
+const Uri = require("vscode-uri").URI;
+const trueCase = require("true-case-path")
+const server_textdocument = require("vscode-languageserver-textdocument")
 
 var connection = server.createConnection(
     new server.IPCMessageReader(process),
@@ -180,11 +180,10 @@ function ParseWorkspace() {
     includes = {};
     for (var i = 0; i < workspaceRoots.length; i++) {
         // other scheme of uri unsupported
-        if (workspaceRoots[i] == null)
-            continue;
+        if (workspaceRoots[i] == null) continue;
         /** @type {vscode-uri.default} */
         var uri = Uri.parse(workspaceRoots[i]);
-        if (uri.scheme != "file") return;
+        if (uri.scheme != "file") continue;
         ParseDir(uri.fsPath, false, workspaceDepth);
     }
     //for(var i=0;i<includeDirs.length;i++)

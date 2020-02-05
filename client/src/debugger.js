@@ -1,12 +1,12 @@
-var debugadapter = require("vscode-debugadapter");
-var debugprotocol = require("vscode-debugprotocol");
-var net = require("net");
-var path = require("path");
-var fs = require("fs");
-var cp = require("child_process");
-var localize = require("./myLocalize.js").localize;
-var process = require("process")
-var trueCase = require("true-case-path")
+const debugadapter = require("vscode-debugadapter");
+const debugprotocol = require("vscode-debugprotocol");
+const net = require("net");
+const path = require("path");
+const fs = require("fs");
+const cp = require("child_process");
+const localize = require("./myLocalize.js").localize;
+const process = require("process")
+const trueCase = require("true-case-path")
 
 /** @requires vscode-debugadapter   */
 /// CLASS DEFINITION
@@ -108,7 +108,7 @@ harbourDebugSession.prototype.processInput = function(buff)
 			{
 				this.sendVariables(j,line);
 				break;
-			}			
+			}
 		}
 		if(j!=this.variableCommands.length) continue;
 	}
@@ -117,10 +117,10 @@ harbourDebugSession.prototype.processInput = function(buff)
 /// START
 
 /**
- * @param response{debugprotocol.InitializeResponse} 
- * @param args{debugprotocol.InitializeRequestArguments} 
+ * @param response{debugprotocol.InitializeResponse}
+ * @param args{debugprotocol.InitializeRequestArguments}
  */
-harbourDebugSession.prototype.initializeRequest = function (response, args) 
+harbourDebugSession.prototype.initializeRequest = function (response, args)
 {
 	if (args.locale) {
 		require("./myLocalize.js").reInit(args);
@@ -151,7 +151,7 @@ harbourDebugSession.prototype.initializeRequest = function (response, args)
 };
 
 harbourDebugSession.prototype.configurationDoneRequest = function(response, args)
-{	
+{
 	if(this.startGo)
 	{
 		this.command("GO\r\n");
@@ -176,7 +176,7 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
 		this.sourcePaths[idx] = trueCase.trueCasePathSync(this.sourcePaths[idx]);
 	}
 	this.Debugging = !args.noDebug;
-	this.startGo = args.stopOnEntry===false || args.noDebug===true;	
+	this.startGo = args.stopOnEntry===false || args.noDebug===true;
 	// starts the server
 	var server = net.createServer(socket => {
 		tc.evaluateClient(socket, server, args)
@@ -206,10 +206,10 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
 				tc.sendEvent(new debugadapter.TerminatedEvent());
 				return
 			})
-			process.stderr.on('data', data => 
+			process.stderr.on('data', data =>
 				tc.sendEvent(new debugadapter.OutputEvent(data.toString(),"stderr"))
 			);
-			process.stdout.on('data', data => 
+			process.stdout.on('data', data =>
 				tc.sendEvent(new debugadapter.OutputEvent(data.toString(),"stdout"))
 			);
 			break;
@@ -224,7 +224,7 @@ harbourDebugSession.prototype.attachRequest = function(response, args)
 	this.justStart = true;
 	this.sourcePaths = []; //[path.dirname(args.program)];
 	if("workspaceRoot" in args) {
-		this.sourcePaths.push(args.workspaceRoot); 
+		this.sourcePaths.push(args.workspaceRoot);
 	}
 	if("sourcePaths" in args) {
 		this.sourcePaths = this.sourcePaths.concat(args.sourcePaths);
@@ -248,11 +248,11 @@ harbourDebugSession.prototype.SetProcess = function(pid)
 	var interval = setInterval( ()=> {
 		try
 		{
-			process.kill(pid,0);			
+			process.kill(pid,0);
 		} catch(error)
 		{
 			tc.sendEvent(new debugadapter.TerminatedEvent());
-			clearInterval(interval);	
+			clearInterval(interval);
 		}
 	},1000)
 }
@@ -285,7 +285,7 @@ harbourDebugSession.prototype.evaluateClient = function(socket, server, args)
 			return
 		}
 		nData++;
-		// the client sended exe name and process ID		
+		// the client sended exe name and process ID
 		var lines = data.toString().split("\r\n");
 		if(lines.length<2) //todo: check if they arrive in 2 tranches.
 			return;
@@ -410,9 +410,9 @@ harbourDebugSession.prototype.sendScope = function(inError)
 	this.variableCommands = this.variableCommands.concat(["LOCALS","PUBLICS","PRIVATES", "PRIVATE_CALLEE","STATICS"]);
 	//TODO: "GLOBALS","EXTERNALS"
 	this.varResp = [];
-	this.varResp.length = this.variableCommands.length;	
+	this.varResp.length = this.variableCommands.length;
 	this.variableEvaluations =  [];
-	this.variableEvaluations.length = this.variableCommands.length;	
+	this.variableEvaluations.length = this.variableCommands.length;
 	var n=0;
 	var scopes = [];
 	if(inError)
@@ -526,7 +526,7 @@ harbourDebugSession.prototype.sendVariables = function(id,line)
 		}
 		var v = new debugadapter.Variable(infos[4],infos[6],line);
 		v = this.getVariableFormat(v,infos[5],infos[6],"value",line,id);
-		vars.push(v);		
+		vars.push(v);
 	}
 }
 
@@ -580,7 +580,7 @@ harbourDebugSession.prototype.setBreakPointsRequest = function(response,args)
 	dest = this.breakpoints[src];
 	for (var i in dest) {
 		if (dest.hasOwnProperty(i)) {
-			dest[i] = "-" + dest[i]; 
+			dest[i] = "-" + dest[i];
 		}
 	}
 	// check current breakpoints
@@ -632,10 +632,10 @@ harbourDebugSession.prototype.processBreak = function(line)
 {
 	//this.sendEvent(new debugadapter.OutputEvent("received: "+line+"\r\n","console"))
 	var aInfos = line.split(":");
-	var dest 
+	var dest
 	if(!(aInfos[1] in this.breakpoints))
 	{
-		//error 
+		//error
 		return
 	}
 	aInfos[2] = parseInt(aInfos[2]);
@@ -664,7 +664,7 @@ harbourDebugSession.prototype.processBreak = function(line)
 		else
 			dest.response.body.breakpoints[idBreak].message = localize('harbour.dbgNoLine')
 		dest[aInfos[2]] = 1;
-	} 
+	}
 	this.checkBreakPoint(aInfos[1]);
 }
 
@@ -675,7 +675,7 @@ harbourDebugSession.prototype.checkBreakPoint = function(src)
 		if (dest.hasOwnProperty(i) && i!="response") {
 			if(dest[i]!=1)
 			{
-				return; 
+				return;
 			}
 		}
 	}
@@ -694,7 +694,7 @@ harbourDebugSession.prototype.setExceptionBreakPointsRequest = function(response
 	{
 		errorType++;
 	}
-	this.command(`ERRORTYPE\r\n${errorType}\r\n`)	
+	this.command(`ERRORTYPE\r\n${errorType}\r\n`)
 	this.sendResponse(response);
 }
 
@@ -703,9 +703,9 @@ harbourDebugSession.prototype.setExceptionBreakPointsRequest = function(response
 harbourDebugSession.prototype.evaluateRequest = function(response,args)
 {
 	response.body = {};
-	response.body.result = args.expression; 
+	response.body.result = args.expression;
 	this.evaluateResponses.push(response);
-	this.command(`EXPRESSION\r\n${args.frameId+1 || this.currentStack}:${args.expression.replace(/:/g,";")}\r\n`)	
+	this.command(`EXPRESSION\r\n${args.frameId+1 || this.currentStack}:${args.expression.replace(/:/g,";")}\r\n`)
 }
 
 /**
@@ -729,7 +729,7 @@ harbourDebugSession.prototype.processExpression = function(line)
 		resp.message = infos[3];
 	} else
 		resp.body = this.getVariableFormat(resp.body,infos[2],infos[3],"result",line);
-	this.sendResponse(resp);	
+	this.sendResponse(resp);
 }
 
 /// Completition
@@ -741,7 +741,7 @@ harbourDebugSession.prototype.processExpression = function(line)
 harbourDebugSession.prototype.completionsRequest = function(response, args)
 {
 	this.completionsResponse = response;
-	this.command(`COMPLETITION\r\n${args.frameId+1 || this.currentStack}:${args.text}\r\n`)	
+	this.command(`COMPLETITION\r\n${args.frameId+1 || this.currentStack}:${args.text}\r\n`)
 }
 
 /**
@@ -762,15 +762,15 @@ harbourDebugSession.prototype.processCompletion = function()
 		var type = line.substr(0,line.indexOf(":"));
 		line = line.substr(line.indexOf(":")+1);
 		var thisCompletion = new debugadapter.CompletionItem(line,0);
-		thisCompletion.type = type=="F"? 'function': 
-							  type=="M"? 'field' : 
+		thisCompletion.type = type=="F"? 'function':
+							  type=="M"? 'field' :
 							  type=="D"? 'variable' : 'value';
 		// function/procedure -> function
 		// method -> field
 		// data -> variable
 		// local/public/etc -> value
 		this.completionsResponse.body.targets.push(thisCompletion);
-	}	
+	}
 }
 
 
