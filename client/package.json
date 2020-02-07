@@ -25,8 +25,8 @@
     ],
     "dependencies": {
         "true-case-path": "^2.2.1",
-        "vscode-debugadapter": "^1.37.1",
-        "vscode-debugprotocol": "^1.37.0",
+        "vscode-debugadapter": "^1.38.0",
+        "vscode-debugprotocol": "^1.38.0",
         "vscode-languageclient": "^6.1.0",
         "vscode-nls": "^4.1.1"
     },
@@ -284,67 +284,94 @@
                 "path": "harbour.code-snippets"
             }
         ],
-        "taskDefinitions": [{
+        "taskDefinitions": [
+            {
                 "type": "Harbour",
-            "required": ["output"],
-            "properties": {
-                "input": {
-                    "type": "string",
-                    "default": "${file}"
-                },
-                "output": {
-                    "type": "string",
-                    "enum": ["portable","C code"]
-                },
-                "c-type": {
-                    "type": "string",
-                    "enum": ["compact", "normal", "verbose", "real C Code"],
-                    "default": "compact"
-                }
-            }
-        }, {
-            "type": "HBMK2",
-            "required": ["input"],
-            "properties": {
-                "input": {
-                    "type": "string",
-                    "default": "${file}"
-                },
-                "output": {
-                    "type": "string",
-                    "default": "${fileBasenameNoExtension}"
-                },
-                "libraries": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
+                "required": [
+                    "output"
+                ],
+                "properties": {
+                    "input": {
+                        "type": "string",
+                        "default": "${file}"
+                    },
+                    "output": {
+                        "type": "string",
+                        "enum": [
+                            "portable",
+                            "C code"
+                        ]
+                    },
+                    "c-type": {
+                        "type": "string",
+                        "enum": [
+                            "compact",
+                            "normal",
+                            "verbose",
+                            "real C Code"
+                        ],
+                        "default": "compact"
                     }
-                },
-                "platform": {
-                    "type":"string",
-                    "enum": [
-                        "linux", "darwin", "win", "wce", "os2", "dos", "bsd", "hpux",
-                        "beos", "qnx", "android", "vxworks", "symbian", "cygwin",
-                        "minix", "aix", "sunos"
-                    ]
-                },
-                "compiler": {
-                    "type": "string",
-                    "enum": [
-                        "gcc","clang",
-                        "icc", "watcom", "sunpro", "open64",
-                        "mingw", "msvc", "bcc", "bcc64", "pocc", "xcc", "mingw64",
-                        "msvc64", "msvcia64", "iccia64", "pocc64",
-                        "mingwarm", "msvcarm", "poccarm",
-                        "gccomf", "djgpp", "gccarm", "diab", "sunpro"]
-                },
-                "debugSymbols": {
-                    "type": "boolean",
-                    "default": false,
-                    "title": "if true include the libray for debugging on VSCode"
+                }
+            },
+            {
+                "type": "HBMK2",
+                "required": [
+                    "input"
+                ],
+                "properties": {
+                    "input": {
+                        "type": "string",
+                        "default": "${file}"
+                    },
+                    "output": {
+                        "type": "string",
+                        "default": "${fileBasenameNoExtension}"
+                    },
+                    "libraries": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "platform": {
+                        "type": "string",
+                        "enum": [
+                            "linux",
+                            "darwin",
+                            "win",
+                            "wce",
+                            "os2",
+                            "dos",
+                            "bsd",
+                            "hpux",
+                            "beos",
+                            "qnx",
+                            "android",
+                            "vxworks",
+                            "symbian",
+                            "cygwin",
+                            "minix",
+                            "aix",
+                            "sunos"
+                        ]
+                    },
+                    "compiler": {
+                        "type": "string",
+                        "enum": ["gcc", "clang", "icc", "watcom", "sunpro", "open64",
+                            "mingw", "msvc", "bcc", "bcc64", "pocc", "xcc", "mingw64",
+                            "msvc64", "msvcia64", "iccia64", "pocc64", "mingwarm", 
+                            "msvcarm", "poccarm", "gccomf", "djgpp", "gccarm", "diab"
+                        ]
+                    },
+                    "debugSymbols": {
+                        "type": "boolean",
+                        "default": false,
+                        "title": "if true include the libray for debugging on VSCode"
+                    }
                 }
             }
-        }]
+        ]
     },
     "devDependencies": {
         "webpack": "^4.41.5",

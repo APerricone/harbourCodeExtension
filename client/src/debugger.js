@@ -356,10 +356,11 @@ harbourDebugSession.prototype.sendStack = function(line) {
 		for(i=0;i<infos.length;i++) infos[i]=infos[i].replace(";",":")
 		var completePath = infos[0]
 		var found = false;
-		if(path.isAbsolute(infos[0]) && fs.existsSync(infos[0])) {
-			completePath = trueCase.trueCasePathSync(infos[0]);
-			found=true;
-		} else
+		if(infos[0].length>0) {
+			if(path.isAbsolute(infos[0]) && fs.existsSync(infos[0])) {
+				completePath = trueCase.trueCasePathSync(infos[0]);
+				found=true;
+			} else
 			for(i=0;i<this.sourcePaths.length;i++) {
 				if(fs.existsSync(path.join(this.sourcePaths[i],infos[0]))) {
 					completePath = trueCase.trueCasePathSync(infos[0],this.sourcePaths[i]);
@@ -367,6 +368,7 @@ harbourDebugSession.prototype.sendStack = function(line) {
 					break;
 				}
 			}
+		}
 		if(found) infos[0]=path.basename(completePath);
 		frames[j] = new debugadapter.StackFrame(j,infos[2],
 			new debugadapter.Source(infos[0],completePath),
@@ -524,7 +526,7 @@ harbourDebugSession.prototype.sendVariables = function(id,line)
 		{ //the value can contains : , we need to rejoin it.
 			infos[6] = infos.splice(6).join(":");
 		}
-		var v = new debugadapter.Variable(infos[4],infos[6],line);
+		var v = new debugadapter.Variable(infos[4],infos[6]);
 		v = this.getVariableFormat(v,infos[5],infos[6],"value",line,id);
 		vars.push(v);
 	}

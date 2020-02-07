@@ -90,22 +90,47 @@ function HRB_resolveTask(task) {
         if(task.definition.compiler) args.push("-comp="+task.definition.compiler);
         var file_cwd = path.dirname(vscode.window.activeTextEditor.document.fileName);
         var hbmk2Path = path.join(path.dirname(section.compilerExecutable), "hbkm2")
-        if(task.definition.compiler) {
-            var bat;
+        if(task.definition.compiler && process.platform()=="win32") {
+            var arch;
+            var is64 = process.env.hasOwnProperty('ProgramFiles(x86)');
+            var startPath = process.env[is64?'ProgramFiles(x86)':'ProgramFiles'];
+            var dirs = fs.readdirSync(path.join(startPath,"Microsoft Visual Studio"));
+            if(dirs.length>0) {
+                dirs.sort((a,b) => b-a);
+                startPath = path.join(startPath,"Microsoft Visual Studio",dirs[0])
+            } else
+                startPath = path.join(startPath,"Microsoft Visual Studio 10.0","VC")
+
             switch(task.definition.compiler)
             {
                 case "msvc":
-                    bat="vcvars32.bat"
+                    if(is64)
+                        arch="amd64_x86"
+                    else
+                        arch="x86"
                     break;
                 case "msvc64":
-                    bat="vcvars64.bat"
+                    if(is64)
+                        arch="amd64"
+                    else
+                        arch="x86_amd64"
                     break;
                 case "msvcarm":
-                    bat="vcvarsamd64_arm.bat"
+                    if(is64)
+                        arch="amd64_arm"
+                    else
+                        arch="x86_arm"
                     break;
+                case "msvcarm64":
+                    if(is64)
+                        arch="amd64_arm64"
+                    else
+                        arch="x86_arm64"
+                    break;
+
             }
-            if(bat) {
-                hbmk2Path="CALL \"c:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build\\"+bat+"\" && "+hbmk2Path
+            if(arch) {
+                hbmk2Path="CALL \""+startPath+"\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build\\vcvarsall.bat "+arch+"\" && "+hbmk2Path
             }
         }
         task.execution = new vscode.ShellExecution(hbmk2Path,args,{

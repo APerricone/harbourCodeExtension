@@ -1,5 +1,4 @@
 const vscode = require('vscode');
-const client = require('vscode-languageclient');
 
 // reuse the bracket-match style
 
