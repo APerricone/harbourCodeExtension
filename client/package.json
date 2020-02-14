@@ -336,7 +336,7 @@
                         "mingw", "msvc", "bcc", "bcc64", "pocc", "xcc", "mingw64",
                         "msvc64", "msvcia64", "iccia64", "pocc64",
                         "mingwarm", "msvcarm", "poccarm",
-                        "gccomf", "djgpp", "gccarm", "diab", "sunpro"]
+                        "gccomf", "djgpp", "gccarm", "diab"]
                 },
                 "debugSymbols": {
                     "type": "boolean",
