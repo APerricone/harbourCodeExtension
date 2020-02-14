@@ -1,7 +1,6 @@
 const vscode = require('vscode');
 
 // reuse the bracket-match style
-
 var decoration;
 /** @type{client.LanguageClient} */
 var client;
