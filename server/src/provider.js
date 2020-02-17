@@ -272,7 +272,7 @@ Provider.prototype.linePP = function (line) {
         this.currLinePreProc = oriLine;
 
         if( /^\s*#\s*pragma\s+(?:__text|__stream|__cstream)\b/i.test(line) ||
-            /^\s*([cx]?text)\b/i.test(line)) {
+            /^\s*(text)\b/i.test(line)) {
             this.currLine = "";
             this.pragmaText = true;
             return;
