@@ -389,6 +389,18 @@
                         "type": "boolean",
                         "default": false,
                         "title": "if true include the libray for debugging on VSCode"
+                    },
+                    "setupBatch": {
+                        "type": "string",
+                        "title": "A batch or a shell script that set up the hbmk2 environment"
+                    },
+                    "options": {
+                        "type": "object",
+                        "properties": {
+                            "env": {
+                                "type": "object"
+                            }
+                        }
                     }
                 }
             }

@@ -1,14 +1,16 @@
 const vscode = require('vscode');
 const path = require("path");
 const fs = require("fs");
+const cp = require("child_process");
+const os = require("os");
 
 class HRBTask {
     constructor() {
     }
 
-    GetArgs(section) {
-        var textDocument = vscode.window.activeTextEditor.document;
-        var args = ["-w"+section.warningLevel, textDocument.fileName ];
+    GetArgs(fileName) {
+        var section = vscode.workspace.getConfiguration('harbour');
+        var args = ["-w"+section.warningLevel, fileName ];
         for (var i = 0; i < section.extraIncludePaths.length; i++) {
             var pathVal = section.extraIncludePaths[i];
             if(pathVal.indexOf("${workspaceFolder}")>=0) {
@@ -26,7 +28,7 @@ class HRBTask {
         var retValue = [];
     	if(textDocument && textDocument.languageId == 'harbour' ) {
             var section = vscode.workspace.getConfiguration('harbour');
-            var args = this.GetArgs(section);
+            var args = this.GetArgs(textDocument.fileName);
             var file_cwd = path.dirname(textDocument.fileName);
             retValue.push(new vscode.Task({
                     "type": "Harbour",
@@ -52,23 +54,225 @@ class HRBTask {
      * @param {vscode.CancellationToken} token
      */
     resolveTask(task, token) {
-        var section = vscode.workspace.getConfiguration('harbour');
-        var args = this.GetArgs(section);
+        var input=task.definition.input;
+        if(!input || input=="${file}") {
+            var textDocument = undefined;
+            if(vscode && vscode.window && vscode.window.activeTextEditor && vscode.window.activeTextEditor.document)
+                textDocument =vscode.window.activeTextEditor.document;
+            if(textDocument && textDocument.languageId != 'harbour' )
+                return undefined;
+            input=textDocument.fileName;
+        }
+        var ext = path.extname(input);
+        if(ext!=".prg")
+            return undefined;
+        var retTask = new vscode.Task(task.definition,"build "+input ,"Harbour");
+
+        var args = this.GetArgs(input);
         if(task.definition.output=="C code")
             args = args.concat(["-gc"]);
         else
             args = args.concat(["-gh"]);
         var file_cwd = path.dirname(vscode.window.activeTextEditor.document.fileName);
-        task.execution = new vscode.ShellExecution(section.compilerExecutable,args,{
+        var section = vscode.workspace.getConfiguration('harbour');
+        retTask.execution = new vscode.ShellExecution(section.compilerExecutable,args.concat(["-gc"]),{
             cwd: file_cwd
         });
         if(!Array.isArray(task.problemMatchers) || task.problemMatchers.length==0 )
-            task.problemMatchers = ["$harbour","$msCompile"];
-        return task;    
+            retTask.problemMatchers = ["$harbour"];
+        else
+            retTask.problemMatchers = task.problemMatchers;
+        return retTask;
+    }
+}
+
+var myTerminals = {};
+function getTerminalFn(task) {
+    var platform = task.definition.platform || "native";
+    var compiler = task.definition.compiler || "native";
+    var setupBatch = task.definition.setupBatch || "none";
+    if(!(platform in myTerminals)) {
+        myTerminals[platform]={};
+    }
+    if(!(compiler in myTerminals[platform])) {
+        myTerminals[platform][compiler]={}
+    }
+    if(!(setupBatch in myTerminals[platform][compiler])) {
+        myTerminals[platform][compiler][setupBatch]=undefined
+    }
+    return () => {
+        if(!myTerminals[platform][compiler][setupBatch])
+            new HBMK2Terminal(platform,compiler,setupBatch);
+        var ret=myTerminals[platform][compiler][setupBatch];
+        ret.append(task);
+        return ret;
+    }
+}
+
+function ToAbsolute(fileName) {
+    if(path.isAbsolute(fileName))
+        return fileName;
+    for (let i = 0; i < vscode.workspace.workspaceFolders.length; i++) {
+        let thisDir = vscode.workspace.workspaceFolders[i];
+        /** @type {vscode.Uri} */
+        let uri = vscode.Uri.parse(thisDir.uri)
+        if (uri.scheme != "file") continue;
+        const p = path.join(uri.fsPath,fileName);
+        if(fs.existsSync(p)) {
+            return p;
+            break;
+        }
+    }
+    return undefined;
+}
+
+/** @implements {vscode.Pseudoterminal} */
+class HBMK2Terminal {
+    /**
+     * @param {String} platform The parameter platfor of those tasks
+     * @param {String} compiler The parameter compiler of those tasks
+     * @param {batch} batch The parameter setupBatch of those tasks
+     */
+    constructor(platform, compiler, batch) {
+        this.platform = platform;
+        this.compiler = compiler;
+        this.batch = batch;
+        myTerminals[this.platform][this.compiler][this.batch]=this;
+        this.write = ()=>{};
+        this.closeEvt = ()=>{};
+        this.tasks = [];
+        /** @type {boolean} indicates that this HBMK2Terminal is executing the setup shell or batch */
+        this.settingup = false;
+        this.env=process.env;
+        if(task.definition.env) {
+            for (const key in task.definition.env) {
+                if (task.definition.env.hasOwnProperty(key)) {
+                    this.env[key]=task.definition.env[key];;
+                }
+            }
+        }
+        if(this.batch!="none") {
+            this.batch=ToAbsolute(this.batch);
+            if(!this.batch) {
+                this.unableToStart=true;
+                return;
+            }
+            this.settingup = true;
+            var cmd="setup"; //TODO: make unique
+            if(os.platform()=='win32') {
+                cmd+=".bat";
+                fs.writeFileSync(cmd,
+                    `call \"${this.batch}\"\r\nset\r\n`)
+            } else {
+                cmd="./"+cmd+".sh";
+                fs.writeFileSync(cmd,
+                    `sh  \"${this.batch}\"\r\printenv\r\n`)
+            }
+            var tc = this;
+            var env1 = {};
+            function onData(data) {
+                /** @type{String[]} */
+                var str = data.toString().split(/[\r\n]{1,2}/);
+                for(let i=0;i<str.length-1;++i) {
+                    var m = str[i].match(/([a-zA-Z_]+)=(.*)$/);
+                    // I am not sure about the toUpperCase...
+                    // on windows is necessary, on linux/mac I don't know
+                    // I am not sure if all this is necessary on linux/mac
+                    if(m) {
+                        env1[ m[1].toUpperCase() ] = m[2];
+                    } else
+                        tc.write(str[i]+"\r\n");
+                }
+            }
+            var p1 = cp.spawn( cmd,{env:process.env})
+            p1.stdout.on('data', onData);
+            p1.on("exit", () => {
+                fs.unlink(cmd, ()=>{});
+                tc.env=env1;
+                tc.settingup = false;
+                tc.start();
+            });
+        }
+        this.write=()=>{};
+    }
+    onDidWrite(fn) {
+        this.write=fn;
+    }
+    onDidClose(fn) {
+        this.closeEvt=fn;
+    }
+    open(/*initialDimensions*/) {
+        this.start();
+    }
+    append(t) {
+        this.tasks.push(t);
+    }
+    close() {
+        if(this.p) {
+            this.p.kill();
+        }
+        myTerminals[this.platform][this.compiler][this.batch]=undefined;
+    }
+    start() {
+        if(this.unableToStart) {
+            this.write("Unable to start setup batch.\r\n")
+            this.closeEvt();
+            return;
+        }
+        if(this.settingup){
+            this.write("setting up the enviroment...\r\n")
+            return;
+        }
+        if(this.tasks.length==0)
+            this.closeEvt(0);
+        var task = this.tasks.splice(0,1)[0];
+        var inputFile = ToAbsolute(task.definition.input) || task.definition.input;
+        var args = [inputFile];
+        if(task.definition.debugSymbols) {
+            args.push("-b");
+            args.push(path.resolve(__dirname, path.join('..','extra','dbg_lib.prg')));
+        }
+        if(task.definition.output) args.push("-o"+task.definition.output);
+        args.concat(task.definition.libraries);
+        if(task.definition.platform) args.push("-plat="+task.definition.platform);
+        if(task.definition.compiler) args.push("-comp="+task.definition.compiler);
+        var file_cwd = path.dirname(inputFile);
+        var section = vscode.workspace.getConfiguration('harbour');
+        var hbmk2Path = path.join(path.dirname(section.compilerExecutable), "hbmk2")
+        this.write("Start HBMK2\r\n")
+        this.p = cp.spawn(hbmk2Path,args,{cwd:file_cwd,env:this.env});
+        var tc = this;
+        this.p.stderr.on('data', data =>
+            tc.write(data.toString())
+        );
+        this.p.stdout.on('data', data =>
+            tc.write(data.toString())
+        );
+        this.p.on("close", (r) => {
+            tc.p = undefined;
+            tc.closeEvt(r)
+        });
+        this.p.on("error", (r)=> {
+            tc.p = undefined;
+            tc.closeEvt(-1);
+        });
     }
 }
 
 class HBMK2Task {
+    getValidTask(name,input, definition, problemMathes) {
+        var retTask = new vscode.Task({
+            "type": "HBMK2",
+            "input": input
+            //"c-type": "compact"
+        }, name ,"HBMK2");
+        retTask.definition = definition;
+        retTask.execution = new vscode.CustomExecution(getTerminalFn(retTask));
+        if(!Array.isArray(problemMathes) || problemMathes.length==0 )
+            retTask.problemMatchers = ["$harbour","$msCompile"];
+        return retTask;
+    }
+
     /**
      *
      * @param {vscode.CancellationToken} token
@@ -113,11 +317,14 @@ class HBMK2Task {
                         if(!ff[i].isFile()) continue;
                         var ext = path.extname(ff[i].name).toLowerCase();
                         if(ext==".hbp") {
-                            retValue.push(HBMK2This.resolveTask(new vscode.Task({
+                            var task = new vscode.Task({
                                 "type": "HBMK2",
                                 "input": ff[i].name
                                 //"c-type": "compact"
-                            }, "build "+path.basename(ff[i].name) ,"HBMK2")));
+                            }, "build "+path.basename(ff[i].name) ,"HBMK2");
+                            task.execution = new vscode.CustomExecution(getTerminalFn(task));
+                            task.problemMatchers = ["$harbour","$msCompile"];
+                            retValue.push(task);
                         }
                     }
                 }
@@ -128,46 +335,17 @@ class HBMK2Task {
 
     /**
      *
-     * @param {vscode.Task} task
+     * @param {vscode.Task} retTask
      * @param {vscode.CancellationToken} token
      */
     resolveTask(task) {
-        var args = [task.definition.input];
-        if(task.definition.debugSymbols) {
-            args.push("-b");
-            args.push(path.resolve(__dirname, path.join('..','extra','dbg_lib.prg')));
-        }
-        if(task.definition.output) args.push("-o"+task.definition.output);
-        args.concat(task.definition.libraries);
-        if(task.definition.platform) args.push("-plat="+task.definition.platform);
-        if(task.definition.compiler) args.push("-comp="+task.definition.compiler);
-        var file_cwd = path.dirname(vscode.window.activeTextEditor.document.fileName);
-        var section = vscode.workspace.getConfiguration('harbour');
-        var hbmk2Path = path.join(path.dirname(section.compilerExecutable), "hbmk2")
-        /*if(task.definition.compiler) {
-            var bat;
-            switch(task.definition.compiler)
-            {
-                case "msvc":
-                    bat="vcvars32.bat"
-                    break;
-                case "msvc64":
-                    bat="vcvars64.bat"
-                    break;
-                case "msvcarm":
-                    bat="vcvarsamd64_arm.bat"
-                    break;
-            }
-            if(bat) {
-                hbmk2Path="CALL \"c:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build\\"+bat+"\" && "+hbmk2Path
-            }
-        }*/
-        task.execution = new vscode.CustomExecution(hbmk2Path,args,{
-            cwd: file_cwd
-        });
+        var retTask = new vscode.Task(task.definition,"build "+task.definition.input ,"HBMK2");
+        retTask.execution = new vscode.CustomExecution(getTerminalFn(retTask));
         if(!Array.isArray(task.problemMatchers) || task.problemMatchers.length==0 )
-            task.problemMatchers = ["$harbour","$msCompile"];
-        return task;
+            retTask.problemMatchers = ["$harbour","$msCompile"];
+        else
+            retTask.problemMatchers = task.problemMatchers;
+        return retTask;
     }
 }
 function activate() {
