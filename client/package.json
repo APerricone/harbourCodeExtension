@@ -50,8 +50,7 @@
                 }
             }
         ],
-        "commands": [
-            {
+        "commands": [{
                 "command": "harbour.getdbgcode",
                 "title": "%harbour.dbgCodeCmd%"
             }
@@ -170,8 +169,7 @@
                             "workingDir": "${workspaceFolder}/",
                             "sourcePaths": "^[\"\\${workspaceFolder}\"]"
                         }
-                    },
-                    {
+                    }, {
                         "label": "Harbour attach",
                         "description": "%harbour.configurationSnippetsDesc2%",
                         "body": {
@@ -181,8 +179,21 @@
                             "program": "^\"\\${workspaceFolder}/${2:Program}\"",
                             "sourcePaths": "^[\"\\${workspaceFolder}\"]"
                         }
+                    }, {
+                        "label": "Harbour attach selectProcess",
+                        "description": "%harbour.configurationSnippetsDesc3%",
+                        "body": {
+                            "type": "harbour-dbg",
+                            "request": "attach",
+                            "name": "%harbour.configurationSnippets3%",
+                            "process": "^\"\\${command:pickProcess}\"",
+                            "sourcePaths": "^[\"\\${workspaceFolder}\"]"
+                        }
                     }
                 ],
+                "variables": {
+                    "pickProcess": "harbour.debugList"
+                },
                 "configurationAttributes": {
                     "launch": {
                         "required": [
@@ -245,9 +256,6 @@
                         }
                     },
                     "attach": {
-                        "required": [
-                            "program"
-                        ],
                         "properties": {
                             "workspaceRoot": {
                                 "type": "string",
@@ -257,6 +265,17 @@
                             "program": {
                                 "type": "string",
                                 "description": "%harbour.launch.program%"
+                            },
+                            "process": {
+                                "anyOf": [{
+                                    "type": "string",
+                                    "default": "${command:pickProcess}",
+                                    "description": "%harbour.attach.process%"
+                                },{
+                                    "type": "number",
+                                    "default": 0,
+                                    "description": "%harbour.attach.process%"
+                                }]
                             },
                             "sourcePaths": {
                                 "type": "array",
@@ -293,14 +312,16 @@
                 "properties": {
                     "input": {
                         "type": "string",
-                        "default": "${file}"
+                        "default": "${file}",
+                        "description": "%harbour.task.input%"
                     },
                     "output": {
                         "type": "string",
                         "enum": [
                             "portable",
                             "C code"
-                        ]
+                        ],
+                        "description": "%harbour.task.output%"
                     },
                     "c-type": {
                         "type": "string",
@@ -310,7 +331,8 @@
                             "verbose",
                             "real C Code"
                         ],
-                        "default": "compact"
+                        "default": "compact",
+                        "description": "%harbour.task.ctype%"
                     }
                 }
             },
@@ -322,17 +344,16 @@
                 "properties": {
                     "input": {
                         "type": "string",
-                        "default": "${file}"
+                        "default": "${file}",
+                        "description": "%harbour.task.HBMK2.input%"
                     },
-                    "output": {
-                        "type": "string",
-                        "default": "${fileBasenameNoExtension}"
-                    },
-                    "libraries": {
+                    "extraArgs": {
                         "type": "array",
                         "items": {
                             "type": "string"
-                        }
+                        },
+                        "description": "%harbour.task.HBMK2.extraArgs%"
+
                     },
                     "platform": {
                         "type": "string",
@@ -354,7 +375,8 @@
                             "minix",
                             "aix",
                             "sunos"
-                        ]
+                        ],
+                        "description": "%harbour.task.HBMK2.platform%"
                     },
                     "compiler": {
                         "type": "string",
@@ -383,24 +405,17 @@
                             "djgpp",
                             "gccarm",
                             "diab"
-                        ]
+                        ],
+                        "description": "%harbour.task.HBMK2.compiler%"
                     },
                     "debugSymbols": {
                         "type": "boolean",
                         "default": false,
-                        "title": "if true include the libray for debugging on VSCode"
+                        "description": "%harbour.task.HBMK2.debug%"
                     },
                     "setupBatch": {
                         "type": "string",
-                        "title": "A batch or a shell script that set up the hbmk2 environment"
-                    },
-                    "options": {
-                        "type": "object",
-                        "properties": {
-                            "env": {
-                                "type": "object"
-                            }
-                        }
+                        "description": "%harbour.task.HBMK2.setupBatch%"
                     }
                 }
             }

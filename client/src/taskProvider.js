@@ -3,6 +3,7 @@ const path = require("path");
 const fs = require("fs");
 const cp = require("child_process");
 const os = require("os");
+const localize = require("./myLocalize.js").localize;
 
 class HRBTask {
     constructor() {
@@ -33,7 +34,7 @@ class HRBTask {
             retValue.push(new vscode.Task({
                     "type": "Harbour",
                     "output": "portable"
-                }, "Generate Harbour Portable Object (hrb)","Harbour",
+                }, localize("harbour.task.portableName"),"Harbour",
                 new vscode.ShellExecution(section.compilerExecutable,args.concat(["-gh"]),{
                     cwd: file_cwd
                 }),"$harbour"));
@@ -41,7 +42,7 @@ class HRBTask {
                     "type": "Harbour",
                     "output": "C code",
                     "c-type": "compact"
-                }, "Generate C file","Harbour",
+                }, localize("harbour.task.cCodeName"),"Harbour",
                 new vscode.ShellExecution(section.compilerExecutable,args.concat(["-gc"]),{
                     cwd: file_cwd
                 }),"$harbour"));
@@ -144,13 +145,6 @@ class HBMK2Terminal {
         /** @type {boolean} indicates that this HBMK2Terminal is executing the setup shell or batch */
         this.settingup = false;
         this.env=process.env;
-        if(task.definition.env) {
-            for (const key in task.definition.env) {
-                if (task.definition.env.hasOwnProperty(key)) {
-                    this.env[key]=task.definition.env[key];;
-                }
-            }
-        }
         if(this.batch!="none") {
             this.batch=ToAbsolute(this.batch);
             if(!this.batch) {
@@ -215,12 +209,12 @@ class HBMK2Terminal {
     }
     start() {
         if(this.unableToStart) {
-            this.write("Unable to start setup batch.\r\n")
+            this.write(localize("harbour.task.HBMK2.errorBatch")+".\r\n");
             this.closeEvt();
             return;
         }
         if(this.settingup){
-            this.write("setting up the enviroment...\r\n")
+            this.write(localize("harbour.task.HBMK2.setup")+"\r\n");
             return;
         }
         if(this.tasks.length==0)
@@ -233,13 +227,13 @@ class HBMK2Terminal {
             args.push(path.resolve(__dirname, path.join('..','extra','dbg_lib.prg')));
         }
         if(task.definition.output) args.push("-o"+task.definition.output);
-        args.concat(task.definition.libraries);
+        args.concat(task.definition.extraArgs);
         if(task.definition.platform) args.push("-plat="+task.definition.platform);
         if(task.definition.compiler) args.push("-comp="+task.definition.compiler);
         var file_cwd = path.dirname(inputFile);
         var section = vscode.workspace.getConfiguration('harbour');
         var hbmk2Path = path.join(path.dirname(section.compilerExecutable), "hbmk2")
-        this.write("Start HBMK2\r\n")
+        this.write(localize("harbour.task.HBMK2.start")+"\r\n")
         this.p = cp.spawn(hbmk2Path,args,{cwd:file_cwd,env:this.env});
         var tc = this;
         this.p.stderr.on('data', data =>
@@ -321,7 +315,7 @@ class HBMK2Task {
                                 "type": "HBMK2",
                                 "input": ff[i].name
                                 //"c-type": "compact"
-                            }, "build "+path.basename(ff[i].name) ,"HBMK2");
+                            }, localize("harbour.task.HBMK2.provideName",path.basename(ff[i].name)) ,"HBMK2");
                             task.execution = new vscode.CustomExecution(getTerminalFn(task));
                             task.problemMatchers = ["$harbour","$msCompile"];
                             retValue.push(task);
