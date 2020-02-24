@@ -416,6 +416,14 @@
                     "setupBatch": {
                         "type": "string",
                         "description": "%harbour.task.HBMK2.setupBatch%"
+                    },
+                    "options": {
+                        "type": "object",
+                        "properties": {
+                            "env": {
+                                "type": "object"
+                            }
+                        }
                     }
                 }
             }

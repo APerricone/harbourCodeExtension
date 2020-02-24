@@ -88,23 +88,18 @@ class HRBTask {
 }
 
 var myTerminals = {};
+/**
+ *
+ * @param {vscode.Task} task
+ */
 function getTerminalFn(task) {
-    var platform = task.definition.platform || "native";
-    var compiler = task.definition.compiler || "native";
-    var setupBatch = task.definition.setupBatch || "none";
-    if(!(platform in myTerminals)) {
-        myTerminals[platform]={};
-    }
-    if(!(compiler in myTerminals[platform])) {
-        myTerminals[platform][compiler]={}
-    }
-    if(!(setupBatch in myTerminals[platform][compiler])) {
-        myTerminals[platform][compiler][setupBatch]=undefined
+    if(!(task.name in myTerminals)) {
+        myTerminals[task.name]=undefined
     }
     return () => {
-        if(!myTerminals[platform][compiler][setupBatch])
-            new HBMK2Terminal(platform,compiler,setupBatch);
-        var ret=myTerminals[platform][compiler][setupBatch];
+        if(!myTerminals[task.name])
+            myTerminals[task.name]=new HBMK2Terminal(task);
+        var ret=myTerminals[task.name];
         ret.append(task);
         return ret;
     }
@@ -134,20 +129,27 @@ class HBMK2Terminal {
      * @param {String} compiler The parameter compiler of those tasks
      * @param {batch} batch The parameter setupBatch of those tasks
      */
-    constructor(platform, compiler, batch) {
-        this.platform = platform;
-        this.compiler = compiler;
-        this.batch = batch;
-        myTerminals[this.platform][this.compiler][this.batch]=this;
+    constructor(task) {
+        this.name = task.name;
+        myTerminals[task.name]=this;
         this.write = ()=>{};
         this.closeEvt = ()=>{};
         this.tasks = [];
         /** @type {boolean} indicates that this HBMK2Terminal is executing the setup shell or batch */
         this.settingup = false;
         this.env=process.env;
-        if(this.batch!="none") {
-            this.batch=ToAbsolute(this.batch);
-            if(!this.batch) {
+        if(task.definition.options && task.definition.options.env) {
+            var extraEnv = task.definition.options.env;
+            for (const p in extraEnv) {
+                if (extraEnv.hasOwnProperty(p)) {
+                    this.env[p] = extraEnv[p];
+                }
+            }
+        }
+        var batch = task.definition.setupBatch;
+        if(batch) {
+            batch=ToAbsolute(batch);
+            if(!batch) {
                 this.unableToStart=true;
                 return;
             }
@@ -156,11 +158,11 @@ class HBMK2Terminal {
             if(os.platform()=='win32') {
                 cmd+=".bat";
                 fs.writeFileSync(cmd,
-                    `call \"${this.batch}\"\r\nset\r\n`)
+                    `call \"${batch}\"\r\nset\r\n`)
             } else {
                 cmd="./"+cmd+".sh";
                 fs.writeFileSync(cmd,
-                    `sh  \"${this.batch}\"\r\printenv\r\n`)
+                    `sh  \"${batch}\"\r\printenv\r\n`)
             }
             var tc = this;
             var env1 = {};
@@ -168,7 +170,7 @@ class HBMK2Terminal {
                 /** @type{String[]} */
                 var str = data.toString().split(/[\r\n]{1,2}/);
                 for(let i=0;i<str.length-1;++i) {
-                    var m = str[i].match(/([a-zA-Z_]+)=(.*)$/);
+                    var m = str[i].match(/([^=]+)=(.*)$/);
                     // I am not sure about the toUpperCase...
                     // on windows is necessary, on linux/mac I don't know
                     // I am not sure if all this is necessary on linux/mac
@@ -205,7 +207,7 @@ class HBMK2Terminal {
         if(this.p) {
             this.p.kill();
         }
-        myTerminals[this.platform][this.compiler][this.batch]=undefined;
+        myTerminals[this.name]=undefined;
     }
     start() {
         if(this.unableToStart) {
@@ -221,13 +223,24 @@ class HBMK2Terminal {
             this.closeEvt(0);
         var task = this.tasks.splice(0,1)[0];
         var inputFile = ToAbsolute(task.definition.input) || task.definition.input;
+        if(!inputFile || inputFile=="${file}") {
+            var textDocument = undefined;
+            if(vscode && vscode.window && vscode.window.activeTextEditor && vscode.window.activeTextEditor.document)
+                textDocument =vscode.window.activeTextEditor.document;
+            if(!textDocument) {
+                tc.closeEvt(-1);
+                return undefined;
+            }
+            inputFile=textDocument.fileName;
+        }
+
         var args = [inputFile];
         if(task.definition.debugSymbols) {
             args.push("-b");
             args.push(path.resolve(__dirname, path.join('..','extra','dbg_lib.prg')));
         }
         if(task.definition.output) args.push("-o"+task.definition.output);
-        args.concat(task.definition.extraArgs);
+        args=args.concat(task.definition.extraArgs);
         if(task.definition.platform) args.push("-plat="+task.definition.platform);
         if(task.definition.compiler) args.push("-comp="+task.definition.compiler);
         var file_cwd = path.dirname(inputFile);
