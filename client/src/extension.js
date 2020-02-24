@@ -64,7 +64,8 @@ function DebugList(args) {
 							var exeTarget = path.basename(args.program,path.extname(args.program)).toLowerCase();
 							if(clPath!=exeTarget) break;
 						}
-						picks.items=picks.items.concat([{label:clPath+":"+processId, process:processId }])
+						if(!picks.items.find((v)=>v.process==processId))
+							picks.items=picks.items.concat([{label:clPath+":"+processId, process:processId }])
 						break;
 					}
 				} catch(ex) { }
@@ -72,16 +73,17 @@ function DebugList(args) {
 				socket.end();
 			});
 		}).listen(port);
-		picks.onDidHide((e)=> {
+		picks.onDidAccept(()=>{
+			picks.hide();
+		});
+		picks.onDidHide(()=> {
 			server.close();
-			for (let i = 0; i < picks.items.length; i++) {
-				const item = picks.items[i];
-				if(item.picked) {
-					resolve(item.processId);
-				}
-			}
-			resolve(-1);
+			if(picks.selectedItems.length>0) {
+				resolve(picks.selectedItems[0].process.toString());
+			} else
+				resolve("");
 		})
+
 		picks.show();;
 	});
 }
