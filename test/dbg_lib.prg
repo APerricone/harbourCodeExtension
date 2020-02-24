@@ -61,7 +61,7 @@ static procedure CheckSocket(lStopSent)
 		hb_inetInit()
 		t_oDebugInfo['socket'] := hb_inetCreate(140-t_oDebugInfo['timeCheckForDebug']*10)
 		hb_inetConnect("127.0.0.1",DBG_PORT,t_oDebugInfo['socket'])
-		if hb_inetErrorCode(t_oDebugInfo['socket']) <> 0			
+		if hb_inetErrorCode(t_oDebugInfo['socket']) <> 0
 			//QOut("failed")			// no server found
 			tmp := "NO"
 		else
@@ -78,7 +78,7 @@ static procedure CheckSocket(lStopSent)
 			//QOut("returned ",tmp)
 			// End of handshake
 		endif
-		if tmp="NO" //server not found or handshake failed 
+		if tmp="NO" //server not found or handshake failed
 			t_oDebugInfo['socket'] := nil
 			t_oDebugInfo['timeCheckForDebug']+=1
 		endif
@@ -697,7 +697,7 @@ static procedure sendCoumpoundVar(req, cParams )
 	hb_inetSend(t_oDebugInfo['socket'],"END"+CRLF)
 return
 
-static function IsValidFileName(cModule) 
+static function IsValidFileName(cModule)
 	LOCAL iModule, t_oDebugInfo := __DEBUGITEM()
 	//? "IsValidFileName: ", cModule
 	cModule := ExtractFileName(cModule)
@@ -902,7 +902,7 @@ static procedure AddModule(aInfo)
 		fFileModules := fopen("modules.dbg",1+64)
 		fSeek(fFileModules,0,2)
 	#endif
-	   for i:=1 to len(aInfo)		
+	for i:=1 to len(aInfo)
 		aInfo[i,1] := ExtractFileName(aInfo[i,1])
 		if len(aInfo[i,1])=0
 			loop
@@ -1214,9 +1214,9 @@ static function GetAppName()
 	case "Darwin" $ OS()
 		 cAppName = "/System/Library/CoreServices/Dock.app/Contents/MacOS/Dock"
 	case "Linux" $ OS()
-		 cAppName = "..."	 
+		 cAppName = "..."
   endcase
-return cAppName	
+return cAppName
 
 static function FixProcFile( cProcFile,lRemoveDriveLetter )
 	local cResult := cProcFile
@@ -1274,7 +1274,7 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 			i := rat(":",uParam1)
 			tmp := ATail(t_oDebugInfo['aStack'])
 			lAdd := (empty(tmp) .or. __dbgProcLevel()-1!=tmp[HB_DBG_CS_LEVEL])
-			lAdd := lAdd .or. t_oDebugInfo['bInitStatics'] 
+			lAdd := lAdd .or. t_oDebugInfo['bInitStatics']
 			lAdd := lAdd .or. t_oDebugInfo['bInitGlobals']
 			lAdd := lAdd .or. t_oDebugInfo['bInitLines']
 			if lAdd
@@ -1284,7 +1284,7 @@ PROCEDURE __dbgEntry( nMode, uParam1, uParam2, uParam3 )
 #ifdef INAPACHE
 			if i=0
 				tmp[HB_DBG_CS_MODULE] := FixProcFile(uParam1)
-				tmp[HB_DBG_CS_FUNCTION] := procName(1) 
+				tmp[HB_DBG_CS_FUNCTION] := procName(1)
 			else
 				tmp[HB_DBG_CS_MODULE] := FixProcFile(left(uParam1,i-1),.t.)
 				tmp[HB_DBG_CS_FUNCTION] := substr(uParam1,i+1)

@@ -19,18 +19,22 @@
                 "message": 5
             }
         }, "$harbour"],
+    "options": {
+        "cwd": "${workspaceFolder}"
+    },
     "tasks": [
         {
             "label": "build",
-            "command": "hbmk2",
-            "windows": {
-                "command": "myBuild.bat"
-            },
+            "type": "HBMK2",
+            "input": "${file}",
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
-            "args": [ "-lcode_dbg", "-L.", "${relativeFile}", "-gtcgi", "-w", "-ql", "-b", "-gc3", "-winuni", "-debug"]
+            "extraArgs": [
+                "-lcode_dbg", "-L.", "-gtcgi", "-w", "-ql", "-b", "-gc3", "-winuni", "-debug"
+            ],
+            "setupBatch": "c:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build\\vcvars32.bat",]
         },
         {
             "label": "buildX",
@@ -39,11 +43,15 @@
         },
         {
             "label": "createLibrary",
-            "command": "hbmk2",
-            "windows": {
-                "command": "myBuild.bat"
+            "type": "HBMK2",
+            "input": "dbg_lib.prg",
+            "options": {
+                "env": {
+                    "HB_INSTALL_PREFIX": "C:\\harbour"
+                }
             },
-            "args": [ "dbg_lib", "-w3", "-es2", "-ql", "-ocode_dbg","-gc3", "-hblib","-inc","-winuni"]
+            "setupBatch": "c:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build\\vcvars32.bat",
+            "extraArgs": ["-w3", "-es2", "-ocode_dbg","-gc3", "-hblib","-inc","-winuni"]
         },
         {
             "label": "createLibraryX",
