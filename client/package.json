@@ -170,13 +170,23 @@
                             "sourcePaths": "^[\"\\${workspaceFolder}\"]"
                         }
                     }, {
-                        "label": "Harbour attach",
+                        "label": "Harbour attach program",
                         "description": "%harbour.configurationSnippetsDesc2%",
                         "body": {
                             "type": "harbour-dbg",
                             "request": "attach",
                             "name": "%harbour.configurationSnippets2%",
                             "program": "^\"\\${workspaceFolder}/${2:Program}\"",
+                            "sourcePaths": "^[\"\\${workspaceFolder}\"]"
+                        }
+                    }, {
+                        "label": "Harbour attach process",
+                        "description": "%harbour.configurationSnippetsDesc2%",
+                        "body": {
+                            "type": "harbour-dbg",
+                            "request": "attach",
+                            "name": "%harbour.configurationSnippets2%",
+                            "process": "${2:processId}",
                             "sourcePaths": "^[\"\\${workspaceFolder}\"]"
                         }
                     }, {
