@@ -5,6 +5,50 @@ const cp = require("child_process");
 const os = require("os");
 const localize = require("./myLocalize.js").localize;
 
+/**
+ *
+ * @param {String} v
+ */
+function resolvePredefinedVariables(v) {
+    function replace(what,solved) {
+        if(v.indexOf(what)>=0) {
+            do {
+                v=v.replace(what,solved);
+            } while(v.indexOf(what)>=0);
+        }
+    }
+    var textDocument = undefined;
+    var parsed = undefined;
+    if(vscode && vscode.window && vscode.window.activeTextEditor && vscode.window.activeTextEditor.document) {
+        textDocument =vscode.window.activeTextEditor.document;
+        parsed = path.parse(textDocument.uri.fsPath);
+    }
+    var workspace0 = undefined, relativeParsed = undefined, relativePath = undefined;
+    if(textDocument) {
+        workspace0 = vscode.workspace.getWorkspaceFolder(textDocument.uri);
+    }
+    if(workspace0) {
+        relativePath = path.relative(workspace0.uri.fsPath,textDocument.uri.fsPath);
+        relativeParsed = path.parse(relativePath);
+     }else
+        workspace0 = vscode.workspace.workspaceFolders[0];
+    replace("${workspaceFolder}", workspace0.uri.fsPath); //the path of the folder opened in VS Code
+    replace("${workspaceFolderBasename}", workspace0.name) //the name of the folder opened in VS Code without any slashes (/)
+    replace("${file}", textDocument? textDocument.uri.fsPath : ""); //  - the current opened file
+    replace("${relativeFile}", relativePath? relativePath : ""); // the current opened file relative to workspaceFolder
+    replace("${relativeFileDirname}", relativeParsed? relativeParsed.dir : ""); //the current opened file's dirname relative to workspaceFolder
+    replace("${fileBasename}", parsed? parsed.base : ""); //the current opened file's basename
+    replace("${fileBasenameNoExtension}", parsed? parsed.name:""); //the current opened file's basename with no file extension
+    replace("${fileDirname}", parsed? path.basename(parsed.dir):""); //the current opened file's dirname
+    replace("${fileExtname}", parsed? parsed.ext:""); //the current opened file's extension
+    //replace("${cwd}"); //the task runner's current working directory on startup
+    //replace("${lineNumber}"); //the current selected line number in the active file
+    //replace("${selectedText}"); //the current selected text in the active file
+    //replace("${execPath}"); //the path to the running VS Code executable
+    //replace("${defaultBuildTask}"); //the name of the default build task
+    return v;
+}
+
 class HRBTask {
     constructor() {
     }
@@ -13,10 +57,7 @@ class HRBTask {
         var section = vscode.workspace.getConfiguration('harbour');
         var args = ["-w"+section.warningLevel, fileName ];
         for (var i = 0; i < section.extraIncludePaths.length; i++) {
-            var pathVal = section.extraIncludePaths[i];
-            if(pathVal.indexOf("${workspaceFolder}")>=0) {
-                pathVal=pathVal.replace("${workspaceFolder}",file_cwd)
-            }
+            var pathVal = resolvePredefinedVariables(section.extraIncludePaths[i]);
             args.push("-I"+pathVal);
         }
         return args.concat(section.extraOptions.split(" ").filter(function(el) {return el.length != 0}));
@@ -55,15 +96,7 @@ class HRBTask {
      * @param {vscode.CancellationToken} token
      */
     resolveTask(task, token) {
-        var input=task.definition.input;
-        if(!input || input=="${file}") {
-            var textDocument = undefined;
-            if(vscode && vscode.window && vscode.window.activeTextEditor && vscode.window.activeTextEditor.document)
-                textDocument =vscode.window.activeTextEditor.document;
-            if(textDocument && textDocument.languageId != 'harbour' )
-                return undefined;
-            input=textDocument.fileName;
-        }
+        var input=resolvePredefinedVariables(task.definition.input);
         var ext = path.extname(input);
         if(ext!=".prg")
             return undefined;
@@ -239,17 +272,7 @@ class HBMK2Terminal {
         if(this.tasks.length==0)
             this.closeEvt(0);
         var task = this.tasks.splice(0,1)[0];
-        var inputFile = ToAbsolute(task.definition.input) || task.definition.input;
-        if(!inputFile || inputFile=="${file}") {
-            var textDocument = undefined;
-            if(vscode && vscode.window && vscode.window.activeTextEditor && vscode.window.activeTextEditor.document)
-                textDocument =vscode.window.activeTextEditor.document;
-            if(!textDocument) {
-                tc.closeEvt(-1);
-                return undefined;
-            }
-            inputFile=textDocument.fileName;
-        }
+        var inputFile = ToAbsolute(resolvePredefinedVariables(task.definition.input)) || task.definition.input;
 
         var args = [inputFile];
         if(task.definition.debugSymbols) {

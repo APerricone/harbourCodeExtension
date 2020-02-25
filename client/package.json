@@ -50,7 +50,8 @@
                 }
             }
         ],
-        "commands": [{
+        "commands": [
+            {
                 "command": "harbour.getdbgcode",
                 "title": "%harbour.dbgCodeCmd%"
             }
@@ -169,7 +170,8 @@
                             "workingDir": "${workspaceFolder}/",
                             "sourcePaths": "^[\"\\${workspaceFolder}\"]"
                         }
-                    }, {
+                    },
+                    {
                         "label": "Harbour attach program",
                         "description": "%harbour.configurationSnippetsDesc2%",
                         "body": {
@@ -179,7 +181,8 @@
                             "program": "^\"\\${workspaceFolder}/${2:Program}\"",
                             "sourcePaths": "^[\"\\${workspaceFolder}\"]"
                         }
-                    }, {
+                    },
+                    {
                         "label": "Harbour attach process",
                         "description": "%harbour.configurationSnippetsDesc2%",
                         "body": {
@@ -189,7 +192,8 @@
                             "process": "${2:processId}",
                             "sourcePaths": "^[\"\\${workspaceFolder}\"]"
                         }
-                    }, {
+                    },
+                    {
                         "label": "Harbour attach selectProcess",
                         "description": "%harbour.configurationSnippetsDesc3%",
                         "body": {
@@ -277,15 +281,18 @@
                                 "description": "%harbour.launch.program%"
                             },
                             "process": {
-                                "anyOf": [{
-                                    "type": "string",
-                                    "default": "${command:pickProcess}",
-                                    "description": "%harbour.attach.process%"
-                                },{
-                                    "type": "number",
-                                    "default": 0,
-                                    "description": "%harbour.attach.process%"
-                                }]
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "default": "${command:pickProcess}",
+                                        "description": "%harbour.attach.process%"
+                                    },
+                                    {
+                                        "type": "number",
+                                        "default": 0,
+                                        "description": "%harbour.attach.process%"
+                                    }
+                                ]
                             },
                             "sourcePaths": {
                                 "type": "array",
@@ -363,7 +370,6 @@
                             "type": "string"
                         },
                         "description": "%harbour.task.HBMK2.extraArgs%"
-
                     },
                     "platform": {
                         "type": "string",
@@ -442,7 +448,9 @@
                                 "type": "string",
                                 "description": "%harbour.task.HBMK2.setupBatch%"
                             },
-                            "env": { "type": "object"}
+                            "env": {
+                                "type": "object"
+                            }
                         }
                     },
                     "linux": {
@@ -452,7 +460,9 @@
                                 "type": "string",
                                 "description": "%harbour.task.HBMK2.setupBatch%"
                             },
-                            "env": { "type": "object"}
+                            "env": {
+                                "type": "object"
+                            }
                         }
                     },
                     "osx": {
@@ -462,7 +472,9 @@
                                 "type": "string",
                                 "description": "%harbour.task.HBMK2.setupBatch%"
                             },
-                            "env": { "type": "object"}
+                            "env": {
+                                "type": "object"
+                            }
                         }
                     }
                 }

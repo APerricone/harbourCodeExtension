@@ -2,7 +2,7 @@
 All notable changes to the "Harbour and xHarbour" extension will be documented in this file.
 
 # 0.9.10
- - **debugger** added process list on attach
+ - **debugger** added process list on attach, attach by process Id
  - **task** added Harbour and HBMK2 tasks, BETA
  - **server** added completition and go to definition on #pragma include [#45](https://github.com/APerricone/harbourCodeExtension/issues/45)
  - **syntax** better operator and keyworld list
