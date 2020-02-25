@@ -147,6 +147,23 @@ class HBMK2Terminal {
             }
         }
         var batch = task.definition.setupBatch;
+        var platform = process.platform;
+        if(platform=='win32') platform="windows";
+        if(platform=='darwin') platform="osx";
+        //TODO: other platforms
+        if(platform in task.definition) {
+            var platformSpecific = task.definition[platform];
+            if(platformSpecific.env) {
+                var extraEnv = platformSpecific.env;
+                for (const p in extraEnv) {
+                    if (extraEnv.hasOwnProperty(p)) {
+                        this.env[p] = extraEnv[p];
+                    }
+                }
+            }
+            if(platformSpecific.setupBatch)
+                batch=platformSpecific.setupBatch;
+        }
         if(batch) {
             batch=ToAbsolute(batch);
             if(!batch) {

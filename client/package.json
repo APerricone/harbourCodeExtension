@@ -424,6 +424,36 @@
                                 "type": "object"
                             }
                         }
+                    },
+                    "windows": {
+                        "type": "object",
+                        "properties": {
+                            "setupBatch": {
+                                "type": "string",
+                                "description": "%harbour.task.HBMK2.setupBatch%"
+                            },
+                            "env": { "type": "object"}
+                        }
+                    },
+                    "linux": {
+                        "type": "object",
+                        "properties": {
+                            "setupBatch": {
+                                "type": "string",
+                                "description": "%harbour.task.HBMK2.setupBatch%"
+                            },
+                            "env": { "type": "object"}
+                        }
+                    },
+                    "osx": {
+                        "type": "object",
+                        "properties": {
+                            "setupBatch": {
+                                "type": "string",
+                                "description": "%harbour.task.HBMK2.setupBatch%"
+                            },
+                            "env": { "type": "object"}
+                        }
                     }
                 }
             }
