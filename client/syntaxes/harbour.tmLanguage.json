@@ -986,7 +986,7 @@
 				{ "name": "keyword.end.harbour", "match": "\\b(?i:end)\\b" },
 				{ "name": "keyword.exit.harbour", "match": "\\b(?i:exit)\\b" },
 				{ "name": "keyword.external.harbour", "match": "\\b(?i:exte(?:r(?:n(?:al?)?)?)?)\\b" },
-				{ "name": "keyword.for.harbour", "match": "\\b(?i:for)\\b" },
+				{ "name": "keyword.for.harbour", "match": "\\b(?i:for(?:\\s+each)?)\\b" },
 				{ "name": "keyword.function.harbour", "match": "\\b(?i:func(?:t(?:i(?:on?)?)?)?)\\b" },
 				{ "name": "keyword.if.harbour", "match": "\\b(?i:if)\\b" },
 				{ "name": "keyword.iif.harbour", "match": "\\b(?i:iif)\\b" },
