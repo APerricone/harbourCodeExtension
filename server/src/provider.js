@@ -940,45 +940,69 @@ Provider.prototype.findDBReferences = function () {
     }
 }
 
+// every group is an array (TODO class?)
+// 0 is name, 1 is start keyword, (2...n-2) middle keyword, (n-1) last keyword
 var group_keywords = [
-    ["if", "if", /else(?:if)?/, /end(?:\b|\s*if)/],
-    ["for", /for(?:\s+each)?/, "loop", "exit", "next"],
-    ["case", /(switch|do\s+case)/, "case", "otherwise", "default", "exit", /end\s*(?:switch|case)?/],
-    ["while", /(?:do\s*)?while/, "loop", "exit", /end(?:\b|\s*do)/],
-    ["try", "try", "catch", /end\s*(?:do)?/],
-    ["sequence", /begin\s+sequence/, "recover", /end(?:\b|\s*sequence)?/],
-    ["dump", /#pragma\s+begindump/, /#pragma\s+enddump/],
+    ["if", "if", /else(?:if)?\b/, /end(?:\b|\s*if\b)/],
+    ["for", /for(?:\s+each)?\b/, "loop", "exit", "next"],
+    ["case", /(switch|do\s+case)\b/, "case", "otherwise", "default", "exit", /end\s*(?:switch|case)?\b/],
+    ["while", /(?:do\s*)?while\b/, "loop", "exit", /end(?:\b|\s*do\b)/],
+    ["try", "try", "catch", /end(?:\s*do)?\b/],
+    ["sequence", /begin\s+sequence\b/, "recover", /end(?:\s*sequence)?\b/],
+    ["dump", /#pragma\s+begindump\b/, /#pragma\s+enddump/],
 ];
 //it can be mixed with other groups
 var preproc_keywords = [
-    ["#if", /#if(?:n?def)?/, /#else(?:if)?/, /#end\s*(?:if)?/]
+    ["#if", /#if(?:n?def)?\b/, /#else(?:if)?\b/, /#end\s*(?:if)?\b/]
 ];
+function removeStrings(keywords) {
+    for(let i=0;i<keywords.length;++i)
+    for(let j=1;j<keywords[i].length;++j)
+        if(typeof(keywords[i][j])=="string") {
+            keywords[i][j] = new RegExp(keywords[i][j]+"\\b");
+        }
+}
+removeStrings(group_keywords);
+//removeStrings(preproc_keywords);
 
+/**
+ *
+ * @param {Array<Group>} dest destination array of found groups
+ * @param {Array<Group>} destStack destination array of pending groups
+ * @param {Array<Array<string|RegExp>>} keywords  array of groups keywords
+ * @param {String} checkString string to check, already trimmed at start  and converted to lowercase
+ * @param {numer} pos number of trimmed character at start
+ * @param {number} lineNr current line number
+ */
 function GroupManagement(dest, destStack, keywords, checkString, pos, lineNr) {
+    /** @type {Array<RegExp>} temp variable to store the list of keywords */
     var currKeywords;
+    /** @type {Group} temp variable to store a group */
     var currGroup;
+    // looking for new group start
     for (var i = 0; i < keywords.length; i++) {
-        var m;
+        var m; // if match the first keyword, a new group begins
         if ((m = checkString.match(keywords[i][1])) && m.index == 0) {
             currGroup = new Group(keywords[i][0]);
+            // put it on pending
             destStack.push(currGroup);
             currGroup.addRange(lineNr, pos, pos + m[0].length, m);
             return
         }
     }
+    // looking for pending group, starting from the last opened
     for (var j = destStack.length - 1; j >= 0; j--) {
         currGroup = destStack[j];
+        // find the current examined group keyword list
         currKeywords = keywords.find(v => v[0] == currGroup.type);
         for (var i = 2; i < currKeywords.length; i++) {
-            var m;
+            var m;  // try all keywords on group
             if ((m = checkString.match(currKeywords[i])) && m.index == 0) {
                 currGroup.addRange(lineNr, pos, pos + m[0].length, m);
                 if (i == currKeywords.length - 1) {
+                    // the last keyword close the group
+                    // pop from pending push on found
                     dest.push(destStack.pop());
-                    //if(destStack.length>0) {
-                    //    currGroup = destStack[destStack.length-1];
-                    //    currKeywords = keywords.find(v=> v[0]==currGroup.type);
-                    //}
                 }
                 return
             }
