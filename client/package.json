@@ -40,7 +40,7 @@
             {
                 "name": "harbour",
                 "owner": "harbour",
-                "fileLocation": "relative",
+                "fileLocation": "autoDetect",
                 "pattern": {
                     "regexp": "^(?:([^\\(]*)\\((\\d+)\\)\\s+)(Warning|Error)\\s+(.*)$",
                     "file": 1,
@@ -363,6 +363,11 @@
                         "type": "string",
                         "default": "${file}",
                         "description": "%harbour.task.HBMK2.input%"
+                    },
+                    "output": {
+                        "type": "string",
+                        "default": "${file}",
+                        "description": "%harbour.task.HBMK2.output%"
                     },
                     "extraArgs": {
                         "type": "array",

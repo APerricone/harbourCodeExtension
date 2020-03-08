@@ -74,6 +74,7 @@ class HRBTask {
             var file_cwd = path.dirname(textDocument.fileName);
             retValue.push(new vscode.Task({
                     "type": "Harbour",
+                    "input": "${file}",
                     "output": "portable"
                 }, localize("harbour.task.portableName"),"Harbour",
                 new vscode.ShellExecution(section.compilerExecutable,args.concat(["-gh"]),{
@@ -81,10 +82,11 @@ class HRBTask {
                 }),"$harbour"));
             retValue.push(new vscode.Task({
                     "type": "Harbour",
+                    "input": "${file}",
                     "output": "C code",
                     "c-type": "compact"
                 }, localize("harbour.task.cCodeName"),"Harbour",
-                new vscode.ShellExecution(section.compilerExecutable,args.concat(["-gc"]),{
+                new vscode.ShellExecution(section.compilerExecutable,args.concat(["-gc0"]),{
                     cwd: file_cwd
                 }),"$harbour"));
         }
@@ -103,9 +105,15 @@ class HRBTask {
         var retTask = new vscode.Task(task.definition,"build "+input ,"Harbour");
 
         var args = this.GetArgs(input);
-        if(task.definition.output=="C code")
-            args = args.concat(["-gc"]);
-        else
+        if(task.definition.output=="C code") {
+            if("c-type" in task.definition) {
+                var id = ["compact","normal",
+                    "verbose","real C Code"].indexOf(task.definition["c-type"]);
+                if(id>=0) {
+                    args = args.concat(["-gc"+id]);
+                } else args = args.concat(["-gc"]);
+            } else args = args.concat(["-gc"]);
+        } else
             args = args.concat(["-gh"]);
         var file_cwd = path.dirname(vscode.window.activeTextEditor.document.fileName);
         var section = vscode.workspace.getConfiguration('harbour');
@@ -329,6 +337,27 @@ class HBMK2Task {
             return [];
         var HBMK2This = this;
         return new Promise((resolve,reject)=> {
+            var retValue=[];
+            var textDocument = undefined;
+            if(vscode && vscode.window && vscode.window.activeTextEditor && vscode.window.activeTextEditor.document)
+                textDocument =vscode.window.activeTextEditor.document;
+            if(textDocument && textDocument.languageId == 'harbour' ) {
+                var task = new vscode.Task({
+                    "type": "HBMK2",
+                    "input": "${file}"
+                }, localize("harbour.task.HBMK2.provideName",path.basename(textDocument.fileName)) ,"HBMK2");
+                task.execution = new vscode.CustomExecution(getTerminalFn(task));
+                task.problemMatchers = ["$harbour","$msCompile"];
+                var task2 = new vscode.Task({
+                    "type": "HBMK2",
+                    "input": "${file}",
+                    "debugSymbols": true,
+                    "output": "${fileBasenameNoExtension}_dbg"
+                }, localize("harbour.task.HBMK2.provideName",path.basename(textDocument.fileName)+" debug") ,"HBMK2");
+                task2.execution = new vscode.CustomExecution(getTerminalFn(task));
+                task2.problemMatchers = ["$harbour","$msCompile"];
+                retValue.push(task,task2);
+            }
             /** @type{Array<Promise>} */
             var promises = [];
             for(let d=0;d<vscode.workspace.workspaceFolders.length;d++) {
@@ -352,31 +381,32 @@ class HBMK2Task {
                 });
                 promises.push(r);
             }
-            Promise.all(promises).then((values)=>{
-                if(token.isCancellationRequested) {
-                    reject(token);
-                    return;
-                }
-                var retValue=[];
-                for(let j=0;j<values.length;j++) {
-                    let ff = values[j];
-                    for(let i=0;i<ff.length;++i) {
-                        if(!ff[i].isFile()) continue;
-                        var ext = path.extname(ff[i].name).toLowerCase();
-                        if(ext==".hbp") {
-                            var task = new vscode.Task({
-                                "type": "HBMK2",
-                                "input": ff[i].name
-                                //"c-type": "compact"
-                            }, localize("harbour.task.HBMK2.provideName",path.basename(ff[i].name)) ,"HBMK2");
-                            task.execution = new vscode.CustomExecution(getTerminalFn(task));
-                            task.problemMatchers = ["$harbour","$msCompile"];
-                            retValue.push(task);
+            if(promises.length>0) {
+                Promise.all(promises).then((values)=>{
+                    if(token.isCancellationRequested) {
+                        reject(token);
+                        return;
+                    }
+                    for(let j=0;j<values.length;j++) {
+                        let ff = values[j];
+                        for(let i=0;i<ff.length;++i) {
+                            if(!ff[i].isFile()) continue;
+                            var ext = path.extname(ff[i].name).toLowerCase();
+                            if(ext==".hbp") {
+                                var task = new vscode.Task({
+                                    "type": "HBMK2",
+                                    "input": ff[i].name
+                                }, localize("harbour.task.HBMK2.provideName",path.basename(ff[i].name)) ,"HBMK2");
+                                task.execution = new vscode.CustomExecution(getTerminalFn(task));
+                                task.problemMatchers = ["$harbour","$msCompile"];
+                                retValue.push(task);
+                            }
                         }
                     }
-                }
+                    resolve(retValue);
+                });
+            } else
                 resolve(retValue);
-            });
         });
     }
 
