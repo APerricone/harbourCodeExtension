@@ -325,10 +325,11 @@ function kindTOVS(kind, sk) {
             return sk ? server.SymbolKind.Method : server.CompletionItemKind.Method;
         case "data":
             return sk ? server.SymbolKind.Property : server.CompletionItemKind.Property;
-        case "function":
-        case "procedure":
         case "function*":
         case "procedure*":
+            return sk ? server.SymbolKind.Interface : server.CompletionItemKind.Interface;
+        case "function":
+        case "procedure":
         case "C-FUNC":
             return sk ? server.SymbolKind.Function : server.CompletionItemKind.Function;
         case "local":

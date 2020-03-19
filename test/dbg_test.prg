@@ -1,5 +1,5 @@
 /// Add some line empty
-/// it is necessary to test the offset 
+/// it is necessary to test the offset
 /// of modules inside the harbourd debug
 /// system.
 /// no code unltil line 14
@@ -67,7 +67,7 @@ proc main( )
 		j:=i*2
 		? "i vale &( str(i) ), j vale &(j), formula &(i*2)"
 	next
-	//AltD()
+	AltD()
 	? "Perry"
 	//begin sequence with {|| QOut("eh") }
 	//	eval(&bs,"",c)
@@ -109,7 +109,7 @@ proc Called()
 	local test := "1978-06-11 17:10:23.324"
 	static provaStat := 611
 	? test2
-	
+
 NOTE Testing a lib
 proc TestLib()
 	LOCAL bb := {|| TestLibInside()}
@@ -132,7 +132,7 @@ proc TestLibInside2(v)
 proc testLotParameter(a/*a param*/,b/*b param*/,c/*c param*/,;
 			d/*d param*/,e/*e param*/,f ; //f param
 			,g,h,i,j,k,l,m,n,o,p,q,r)
-return 
+return
 
 #pragma -B-
 proc FakeLib(bBlock,par)
@@ -142,26 +142,26 @@ proc FakeLib(bBlock,par)
 
 /* notes from src/debug/debugger.prg:
 	__DbgEntry ACTIVATE -> breakpoint arrived,
-			default there is a breakpoint at startup, without 'go' next line is a breakpoint, 
+			default there is a breakpoint at startup, without 'go' next line is a breakpoint,
 				if 'trace' next line even if is inside a called procedure is a breakpoint
 		uParam1 --> debugInfo
 
 		__dbgInvokeDebug() if .T. it stopped is caused by an AltD()
 
-	
+
 	Commands:
 		__dbgSetGo(debugInfo) --> play the program
 		__dbgSetTrace(debugInfo) --> set a breakpoint in the first line of the next called procedure
 		__dbgSetCBTrace(debugInfo,lCB) --> trace includes codeblock too
-		__dbgAddBreak(debugInfo,file,line) --> 
+		__dbgAddBreak(debugInfo,file,line) -->
 		__dbgIsBreak(debugInfo,file,line) --> return id of breakpoint if setted
 		__dbgDelBreak(debugInfo, id)
-		__dbgAddWatch(debugInfo,cExpr,lTracePoint) --> 
+		__dbgAddWatch(debugInfo,cExpr,lTracePoint) -->
       	__mvDbgInfo( HB_MV_PUBLIC|HB_MV_PRIVATE ) --> returns number of public/private variable
       	__mvDbgInfo( HB_MV_PUBLIC|HB_MV_PRIVATE, idx, @cName ) -> returns the index of idx public variable (Sets its name in cName)
       	__mvDbgInfo( HB_MV_PRIVATE_LOCAL, lv ) -> returns number of private variable at level lv of stack
 		__dbgProcLevel() --> return the current level (len of stack?)
-		      	
+
 		gets of value of variable
 		   SWITCH aVar[ HB_DBG_VAR_TYPE ]
    CASE "G" ; RETURN __dbgVMVarGGet( aVar[ HB_DBG_VAR_FRAME ], aVar[ HB_DBG_VAR_INDEX ] )

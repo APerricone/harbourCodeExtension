@@ -12,6 +12,6 @@
 	"terminal.integrated.shell.windows": "cmd.exe",
     "terminal.integrated.shellArgs.windows": [
         "/k",
-        "c:\\harbour32\\start.bat"
+        "c:\\harbour\\start64.bat"
     ]
 }

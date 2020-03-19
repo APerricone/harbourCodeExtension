@@ -50,7 +50,10 @@
                     "HB_INSTALL_PREFIX": "C:\\harbour"
                 }
             },
-            "setupBatch": "c:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build\\vcvars32.bat",
+            "window":
+            {
+                "setupBatch": "c:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build\\vcvars32.bat"
+            },
             "extraArgs": ["-w3", "-es2", "-ocode_dbg","-gc3", "-hblib","-inc","-winuni"]
         },
         {
