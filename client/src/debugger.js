@@ -173,7 +173,13 @@ harbourDebugSession.prototype.launchRequest = function(response, args)
 		this.sourcePaths = this.sourcePaths.concat(args.sourcePaths);
 	}
 	for (let idx = 0; idx < this.sourcePaths.length; idx++) {
-		this.sourcePaths[idx] = trueCase.trueCasePathSync(this.sourcePaths[idx]);
+		try {
+			this.sourcePaths[idx] = trueCase.trueCasePathSync(this.sourcePaths[idx]);
+		} catch(ex) {
+			// path no found
+			this.sourcePaths.splice(idx,1);
+			idx--;
+		}
 	}
 	this.Debugging = !args.noDebug;
 	this.startGo = args.stopOnEntry===false || args.noDebug===true;
@@ -236,7 +242,13 @@ harbourDebugSession.prototype.attachRequest = function(response, args)
 		this.sourcePaths = this.sourcePaths.concat(args.sourcePaths);
 	}
 	for (let idx = 0; idx < this.sourcePaths.length; idx++) {
-		this.sourcePaths[idx] = trueCase.trueCasePathSync(this.sourcePaths[idx]);
+		try {
+			this.sourcePaths[idx] = trueCase.trueCasePathSync(this.sourcePaths[idx]);
+		} catch(ex) {
+			// path no found
+			this.sourcePaths.splice(idx,1);
+			idx--;
+		}
 	}
 	this.Debugging = !args.noDebug;
 	this.startGo = true;

@@ -280,7 +280,7 @@ class HBMK2Terminal {
             args.push(path.resolve(__dirname, path.join('..','extra','dbg_lib.prg')));
         }
         if(task.definition.output) args.push("-o"+task.definition.output);
-        args=args.concat(task.definition.extraArgs);
+        if(Array.isArray(task.definition.extraArgs)) args=args.concat(task.definition.extraArgs);
         if(task.definition.platform) args.push("-plat="+task.definition.platform);
         if(task.definition.compiler) args.push("-comp="+task.definition.compiler);
         var file_cwd = path.dirname(inputFile);
@@ -401,3 +401,4 @@ function activate() {
 }
 
 exports.activate = activate;
+exports.HBMK2Task = HBMK2Task;

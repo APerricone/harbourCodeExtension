@@ -677,6 +677,9 @@
 								"match": "(?i)\\b[a-z_]\\w*\\b"
 							}
 						]
+					},
+					{
+						"include": "#c_code"
 					}
 				]
 			}]
@@ -968,7 +971,7 @@
 			"patterns": [
 				{ "name": "keyword.always.harbour", "match": "\\b(?i:alwa(?:ys?)?)\\b" },
 				{ "name": "keyword.announce.harbour", "match": "\\b(?i:anno(?:u(?:n(?:ce?)?)?)?)\\b" },
-				{ "name": "keyword.begin.harbour", "match": "\\b(?i:begin?)\\b" },
+				{ "name": "keyword.begin.harbour", "match": "\\b(?i:begin?\\s+sequ(?:e(?:n(?:ce?)?)?)?)\\b" },
 				{ "name": "keyword.break.harbour", "match": "\\b(?i:break?)\\b" },
 				{ "name": "keyword.case.harbour", "match": "\\b(?i:case)\\b" },
 				{ "name": "keyword.declare.harbour", "match": "\\b(?i:decl(?:a(?:re?)?)?)\\b" },
@@ -986,12 +989,12 @@
 				{ "name": "keyword.end.harbour", "match": "\\b(?i:end)\\b" },
 				{ "name": "keyword.exit.harbour", "match": "\\b(?i:exit)\\b" },
 				{ "name": "keyword.external.harbour", "match": "\\b(?i:exte(?:r(?:n(?:al?)?)?)?)\\b" },
-				{ "name": "keyword.for.harbour", "match": "\\b(?i:for)\\b" },
+				{ "name": "keyword.for.harbour", "match": "\\b(?i:for(?:\\s+each)?)\\b" },
 				{ "name": "keyword.function.harbour", "match": "\\b(?i:func(?:t(?:i(?:on?)?)?)?)\\b" },
 				{ "name": "keyword.if.harbour", "match": "\\b(?i:if)\\b" },
 				{ "name": "keyword.iif.harbour", "match": "\\b(?i:iif)\\b" },
 				{ "name": "keyword.in.harbour", "match": "\\b(?i:in)\\b" },
-				{ "name": "keyword.init.harbour", "match": "\\b(?i:init)\\b" },
+				{ "name": "keyword.init.harbour", "match": "\\b(?i:init\\s*)\\b" },
 				{ "name": "keyword.local.harbour", "match": "\\b(?i:local?)\\b" },
 				{ "name": "keyword.loop.harbour", "match": "\\b(?i:loop)\\b" },
 				{ "name": "keyword.memvar.harbour", "match": "\\b(?i:memv(?:ar?)?)\\b" },
@@ -1004,15 +1007,15 @@
 				{ "name": "keyword.procedure.harbour", "match": "\\b(?i:proc(?:e(?:d(?:u(?:re?)?)?)?)?)\\b" },
 				{ "name": "keyword.public.harbour", "match": "\\b(?i:publ(?:ic?)?)\\b" },
 				{ "name": "keyword.qself.harbour", "match": "\\b(?i:qself)\\b" },
-				{ "name": "keyword.recover.harbour", "match": "\\b(?i:reco(?:v(?:er?)?)?)\\b" },
+				{ "name": "keyword.recover.harbour", "match": "\\b(?i:reco(?:v(?:er?)?)?(?:\\s+using?)?)\\b" },
 				{ "name": "keyword.return.harbour", "match": "\\b(?i:retu(?:rn?)?)\\b" },
 				{ "name": "keyword.static.harbour", "match": "\\b(?i:stat(?:ic?)?)\\b" },
 				{ "name": "keyword.step.harbour", "match": "\\b(?i:step)\\b" },
 				{ "name": "keyword.switch.harbour", "match": "\\b(?i:swit(?:ch?)?)\\b" },
-				{ "name": "keyword.thread.harbour", "match": "\\b(?i:thre(?:ad?)?)\\b" },
+				{ "name": "keyword.thread.harbour", "match": "\\b(?i:thre(?:ad?)?)\\s+stat(?:ic?)?\\b" },
 				{ "name": "keyword.to.harbour", "match": "\\b(?i:to)\\b" },
 				{ "name": "keyword.while.harbour", "match": "\\b(?i:while?)\\b" },
-				{ "name": "keyword.with.harbour", "match": "\\b(?i:with)\\b" },
+				{ "name": "keyword.with.harbour", "match": "\\b(?i:with\\s+obje(?:ct?)?)\\b" },
 				{ "name": "keyword._hb_class.harbour", "match": "\\b(?i:_hb_class)\\b" },
 				{ "name": "keyword._hb_member.harbour", "match": "\\b(?i:_hb_member)\\b" },
 				{ "name": "keyword._procreq_.harbour", "match": "\\b(?i:_procreq_)\\b" },
@@ -1650,6 +1653,7 @@
 				{
 					"begin": "(?i:^\\s*((#)\\s*if(?:(?:n)?def)?)\\s+)",
 					"end": "(?i:^\\s*((#)\\s*endif))",
+					"contentName": "meta.control.directive.conditional.harbour",
 					"beginCaptures": {
 						"0": { "name": "meta.preprocessor.harbour" },
 						"1": { "name": "keyword.control.directive.conditional.harbour" },
@@ -1688,6 +1692,38 @@
 							"include": "source.harbour"
 						}
 					]
+				},
+				{
+					"begin": "(?i:^\\s*((#)\\s*elif)\\s+)",
+					"end": "(?=(?m:$))",
+					"beginCaptures": {
+						"0": { "name": "meta.preprocessor.harbour" },
+						"1": { "name": "keyword.control.directive.conditional.harbour" },
+						"2": { "name": "punctuation.definition.directive.harbour" }
+					},
+					"patterns": [
+						{
+							"include": "#inline-staments"
+						}
+					]
+				},
+				{
+					"begin": "(?i:^\\s*((#)\\s*else)\\s+)",
+					"end": "(?=(?m:$))",
+					"beginCaptures": {
+						"0": { "name": "meta.preprocessor.harbour" },
+						"1": { "name": "keyword.control.directive.conditional.harbour" },
+						"2": { "name": "punctuation.definition.directive.harbour" }
+					}
+				},
+				{
+					"begin": "(?i:^\\s*((#)\\s*endif))",
+					"end": "(?=(?m:$))",
+					"beginCaptures": {
+						"0": { "name": "meta.preprocessor.harbour" },
+						"1": { "name": "keyword.control.directive.conditional.harbour" },
+						"2": { "name": "punctuation.definition.directive.harbour" }
+					}
 				}
 			]
 		}

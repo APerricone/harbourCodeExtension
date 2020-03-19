@@ -34,7 +34,9 @@
             "extraArgs": [
                 "-lcode_dbg", "-L.", "-gtcgi", "-w", "-ql", "-b", "-gc3", "-winuni", "-debug"
             ],
-            "setupBatch": "c:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build\\vcvars32.bat",]
+            "windows": {
+                "setupBatch": "c:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build\\vcvars32.bat"
+            }
         },
         {
             "label": "buildX",
