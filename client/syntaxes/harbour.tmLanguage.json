@@ -617,19 +617,25 @@
 						]
 					},
 					{
+						"include": "#inline-method-declaration"
+					},
+					{
 						"include": "#method-declaration"
 					},
 					{
-						"match": "^\\s*(export(?:ed)?|visible|hidden|protected):",
+						"match": "(?i)^\\s*(export(?:ed)?|visible|hidden|private|protected)(:)",
 						"captures": {
 							"1": {
 								"name": "storage.modifier.harbour"
+							},
+							"2": {
+								"name": "punctuation.separator.colon.harbour"
 							}
 						}
 					},
 					{
 						"name": "meta.field.declaration.harbour",
-						"begin": "(?i)^\\s*(?:class)?(data|var)\\b",
+						"begin": "(?i)^\\s*(?:class)?(data|var|access)\\b",
 						"beginCaptures": {
 							"0": {
 								"name": "storage.type.field.harbour"
@@ -658,7 +664,7 @@
 								}
 							},
 							{
-								"begin": "(?i)(assign|init)\\s+",
+								"begin": "(?i)(assign|init|inline)\\s+",
 								"beginCaptures": {
 									"1": {
 										"name": "keyword.control.${1:/downcase}.harbour"
@@ -684,13 +690,43 @@
 				]
 			}]
 		},
+		"inline-method-declaration": {
+			"patterns": [{
+				"name": "meta.inline-method.declaration.harbour",
+				"begin": "(?i)^\\s*(inline)\\s*(method)\\b",
+				"beginCaptures": {
+					"1": {
+						"name": "constant.language.inline.harbour"
+					},
+					"2": {
+						"name": "keyword.type.method.harbour"
+					}
+				},
+				"end": "(?i)END[\\t ]*METHOD",
+				"endCaptures": {
+					"0": {
+						"name": "keyword.end.class.harbour"
+					}
+				},
+				"patterns": [{
+						"include": "#continue-expression"
+					},
+					{
+						"include": "#comments"
+					},
+					{
+						"include": "#function-staments"
+					}
+				]
+			}]
+		},
 		"method-declaration": {
 			"patterns": [{
 				"name": "meta.method.declaration.harbour",
-				"begin": "(?i)^\\s*(method)\\b",
+				"begin": "(?i)^\\s*(assign|method)\\b",
 				"beginCaptures": {
 					"1": {
-						"name": "keyword.type.method.harbour"
+						"name": "keyword.type.${1:/downcase}.harbour"
 					}
 				},
 				"end": "(?m:$)",
