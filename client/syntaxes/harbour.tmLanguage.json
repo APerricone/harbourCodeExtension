@@ -367,7 +367,7 @@
 		},
 		"variable-memvar-declaration": {
 			"name": "meta.definition.variable.memvar.harbour",
-			"begin": "(?i)^\\s*memv(?:a(?:r)?)?\\b",
+			"begin": "(?i)^\\s*memv(?:a(?:r)?)?\\b(?!->)",
 			"beginCaptures": {
 				"0": {
 					"name": "storage.type.memvar.harbour"
@@ -390,19 +390,33 @@
 			]
 		},
 		"variable-field-declaration": {
-			"match": "(?i)^\\s*(_?field?)\\s*(->)\\s*([a-z0-9_]+)",
-			"captures": {
-				"1": {
+			"name": "meta.definition.variable.memvar.harbour",
+			"begin": "(?i)^\\s*_?field?\\b(?!->)",
+			"beginCaptures": {
+				"0": {
 					"name": "storage.type.field.harbour"
-				},
-				"2": {
-					"name": "keyword.accessor.harbour"
-				},
-				"3": {
-					"name": "meta.definition.variable.field.harbour"
 				}
-			}
-		},
+			},
+			"end": "(?m:$)",
+			"patterns": [{
+					"include": "#continue-expression"
+				},
+				{
+					"include": "#comments"
+				},
+				{
+					"name": "keyword.in.harbour",
+					"match": "(?i)\\bIN\\b"
+				},
+				{
+					"name": "variable.other.readwrite.field.harbour",
+					"match": "(?i)\\b([A-Z_]\\w*)\\b"
+				},
+				{
+					"include": "#punctuation-comma"
+				}
+			]
+	},
 		"variable-local-declaration": {
 			"name": "meta.definition.variable.local.harbour",
 			"begin": "(?i)^\\s*(loca(?:l)?)\\b",
@@ -984,23 +998,55 @@
 			}]
 		},
 		"macro-var": {
-			"patterns": [{
-				"name": "meta.macro-var.harbour",
-				"match": "(?i)(&)([a-zA-Z_][a-zA-Z0-9_]*)(\\.)?",
-				"captures": {
-					"1": {
-						"name": "punctuation.definition.macro.begin.harbour"
-					},
-					"3": {
-						"name": "punctuation.definition.macro.end.harbour"
+			"name": "meta.macro-var.harbour",
+			"begin": "(?i)(&)([a-zA-Z_][a-zA-Z0-9_]*)",
+			"beginCaptures": {
+				"1": {
+					"name": "punctuation.definition.macro-var.harbour"
+				},
+				"2": {
+					"name": "entity.other.attribute-name.macro.harbour"
+				}
+			},
+			"end": "(?=[^.\\w])",
+			"patterns": [
+				{
+					"match": "(\\.)",
+					"captures": {
+						"1": {
+							"name": "punctuation.accessor.harbour"
+						}
+					}
+				},
+				{
+					"match": "(\\w)",
+					"captures": {
+						"1": {
+							"name": "variable.other.property.harbour"
+						}
 					}
 				}
-			}]
+			]
 		},
 		"macro-exp": {
+			"name": "meta.macro-exp.harbour",
+			"begin": "(?i)(&)(\\()",
+			"beginCaptures": {
+				"1": {
+					"name": "punctuation.definition.macro-exp.harbour"
+				},
+				"2": {
+					"name": "punctuation.definition.begin.bracket.round.harbour"
+				}
+			},
+			"end": "\\)",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.end.bracket.round.harbour"
+				}
+			},
 			"patterns": [{
-				"name": "punctuation.definition.macro.harbour",
-				"match": "(?i)(&)(?=\\()"
+				"include": "#inline-staments"
 			}]
 		},
 		"keywords": {
@@ -1025,6 +1071,7 @@
 				{ "name": "keyword.end.harbour", "match": "\\b(?i:end)\\b" },
 				{ "name": "keyword.exit.harbour", "match": "\\b(?i:exit)\\b" },
 				{ "name": "keyword.external.harbour", "match": "\\b(?i:exte(?:r(?:n(?:al?)?)?)?)\\b" },
+				{ "name": "keyword.field.harbour", "match": "\\b(?i:field?)\\b" },
 				{ "name": "keyword.for.harbour", "match": "\\b(?i:for(?:\\s+each)?)\\b" },
 				{ "name": "keyword.function.harbour", "match": "\\b(?i:func(?:t(?:i(?:on?)?)?)?)\\b" },
 				{ "name": "keyword.if.harbour", "match": "\\b(?i:if)\\b" },
@@ -1073,7 +1120,15 @@
 				},
 				{
 					"name": "keyword.accessor.harbour",
-					"match": "->"
+					"match": "(->)(\\w+)?",
+					"captures": {
+						"1": {
+							"name": "keyword.accessor.harbour"
+						},
+						"2": {
+							"name": "variable.other.property.harbour"
+						}
+					}
 				},
 				{
 					"name": "keyword.operator.logical.harbour",
