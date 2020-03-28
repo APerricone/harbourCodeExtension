@@ -373,7 +373,13 @@ connection.onDocumentSymbol((param) => {
             var names = [];
             while (pp) {
                 if (pp.kind == "method" && pp.foundLike == "definition" && (!pp.parent || pp.startLine > pp.parent.endLine)) {
-                    names.push(pp.parent.name + ":" + pp.name);
+                    if(pp.parent)
+                        names.push(pp.parent.name + ":" + pp.name);
+
+                    else if(pp.parentName)
+                        names.push(pp.parentName+"???:" + pp.name);
+                    else
+                        names.push("???:" + pp.name);
                     break;
                 } else
                     names.push(pp.name);
@@ -390,9 +396,14 @@ connection.onDocumentSymbol((param) => {
                 }
             }
         } else
-            if (info.kind == "method" && info.parent)
-                docSym.name = info.parent.name + ":" + info.name
-
+            if (info.kind == "method") {
+                if(info.parent)
+                    docSym.name = info.parent.name + ":" + info.name
+                else if(info.parentName)
+                    docSym.name = info.parentName+"???:" + info.name;
+                else
+                    docSym.name = "???:" + info.name;
+            }
         parent.push(docSym);
         //}
     };

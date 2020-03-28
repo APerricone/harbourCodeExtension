@@ -136,7 +136,11 @@ function Info(name, kind, foundLike, parent, document, startLine, startCol, endL
     /** @type {string} */
     this.foundLike = foundLike;
     /** @type {Info} */
-    this.parent = parent;
+    if(typeof(parent)=="string") {
+        this.parentName = parent;
+        this.parent = undefined;
+    } else
+        this.parent = parent;
     /** @type {string} */
     this.document = document;
     /** @type {number} */
@@ -637,7 +641,7 @@ Provider.prototype.parseHarbour = function (words) {
                                 }
                                 if (r[5] && r[5].length) fLike = "definition";
                                 if (this.currentMethod) this.currentMethod.endLine = this.lastCodeLine;
-                                this.currentMethod = this.addInfo(r[2], 'method', fLike, this.currentClass);
+                                this.currentMethod = this.addInfo(r[2], 'method', fLike, this.currentClass || r[4]);
 
                                 if (r[3] && r[3].length)
                                     this.parseDeclareList(r[3], "param", this.currentMethod);
