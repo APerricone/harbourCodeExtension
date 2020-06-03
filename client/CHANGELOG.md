@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to the "Harbour and xHarbour" extension will be documented in this file.
 
+# 0.9.11
+ - **debugger** better stability
+ - **task** better stability
+ - **task** correct management of batch option
+
 # 0.9.10
  - **debugger** added process list on attach, attach by process Id
  - **task** added Harbour and HBMK2 tasks, BETA

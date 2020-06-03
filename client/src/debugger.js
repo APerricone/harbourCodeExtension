@@ -385,16 +385,20 @@ harbourDebugSession.prototype.sendStack = function(line) {
 		var completePath = infos[0]
 		var found = false;
 		if(infos[0].length>0) {
-			if(path.isAbsolute(infos[0]) && fs.existsSync(infos[0])) {
-				completePath = trueCase.trueCasePathSync(infos[0]);
-				found=true;
-			} else
-			for(i=0;i<this.sourcePaths.length;i++) {
-				if(fs.existsSync(path.join(this.sourcePaths[i],infos[0]))) {
-					completePath = trueCase.trueCasePathSync(infos[0],this.sourcePaths[i]);
+			try {
+				if(path.isAbsolute(infos[0]) && fs.existsSync(infos[0])) {
+					completePath = trueCase.trueCasePathSync(infos[0]);
 					found=true;
-					break;
+				} else
+				for(i=0;i<this.sourcePaths.length;i++) {
+					if(fs.existsSync(path.join(this.sourcePaths[i],infos[0]))) {
+						completePath = trueCase.trueCasePathSync(infos[0],this.sourcePaths[i]);
+						found=true;
+						break;
+					}
 				}
+			} catch(ex) {
+				found=false;
 			}
 		}
 		if(found) infos[0]=path.basename(completePath);

@@ -4,6 +4,7 @@ const fs = require("fs");
 const cp = require("child_process");
 const os = require("os");
 const localize = require("./myLocalize.js").localize;
+const getAllWorkspaceFiles = require("./utils.js").getAllWorkspaceFiles;
 
 /**
  *
@@ -76,7 +77,7 @@ class HRBTask {
                     "type": "Harbour",
                     "input": "${file}",
                     "output": "portable"
-                }, localize("harbour.task.portableName"),"Harbour",
+                }, vscode.TaskScope.Workspace, localize("harbour.task.portableName"),"Harbour",
                 new vscode.ShellExecution(section.compilerExecutable,args.concat(["-gh"]),{
                     cwd: file_cwd
                 }),"$harbour"));
@@ -85,7 +86,7 @@ class HRBTask {
                     "input": "${file}",
                     "output": "C code",
                     "c-type": "compact"
-                }, localize("harbour.task.cCodeName"),"Harbour",
+                }, vscode.TaskScope.Workspace, localize("harbour.task.cCodeName"),"Harbour",
                 new vscode.ShellExecution(section.compilerExecutable,args.concat(["-gc0"]),{
                     cwd: file_cwd
                 }),"$harbour"));
@@ -102,7 +103,7 @@ class HRBTask {
         var ext = path.extname(input);
         if(ext!=".prg")
             return undefined;
-        var retTask = new vscode.Task(task.definition,"build "+input ,"Harbour");
+        var retTask = new vscode.Task(task.definition, vscode.TaskScope.Workspace,"build "+input ,"Harbour");
 
         var args = this.GetArgs(input);
         if(task.definition.output=="C code") {
@@ -140,6 +141,12 @@ function getTerminalFn(task) {
     return () => {
         if(!myTerminals[task.name])
             myTerminals[task.name]=new HBMK2Terminal(task);
+        // check if the batch changed
+        var taskBatch = getBatch(task);
+        if((myTerminals[task.name].batch || taskBatch) && taskBatch!=myTerminals[task.name].batch) {
+            myTerminals[task.name]=new HBMK2Terminal(task);
+        }
+        //
         var ret=myTerminals[task.name];
         ret.append(task);
         return ret;
@@ -161,6 +168,28 @@ function ToAbsolute(fileName) {
         }
     }
     return undefined;
+}
+
+function getBatch(task) {
+    var batch = task.definition.setupBatch;
+    var platform = process.platform;
+    if(platform=='win32') platform="windows";
+    if(platform=='darwin') platform="osx";
+    //TODO: other platforms
+    if(platform in task.definition) {
+        var platformSpecific = task.definition[platform];
+        if(platformSpecific.env) {
+            var extraEnv = platformSpecific.env;
+            for (const p in extraEnv) {
+                if (extraEnv.hasOwnProperty(p)) {
+                    this.env[p] = extraEnv[p];
+                }
+            }
+        }
+        if(platformSpecific.setupBatch)
+            batch=platformSpecific.setupBatch;
+    }
+    return batch;
 }
 
 /** @implements {vscode.Pseudoterminal} */
@@ -187,24 +216,8 @@ class HBMK2Terminal {
                 }
             }
         }
-        var batch = task.definition.setupBatch;
-        var platform = process.platform;
-        if(platform=='win32') platform="windows";
-        if(platform=='darwin') platform="osx";
-        //TODO: other platforms
-        if(platform in task.definition) {
-            var platformSpecific = task.definition[platform];
-            if(platformSpecific.env) {
-                var extraEnv = platformSpecific.env;
-                for (const p in extraEnv) {
-                    if (extraEnv.hasOwnProperty(p)) {
-                        this.env[p] = extraEnv[p];
-                    }
-                }
-            }
-            if(platformSpecific.setupBatch)
-                batch=platformSpecific.setupBatch;
-        }
+        var batch = getBatch(task);
+        this.batch=batch;
         if(batch) {
             batch=ToAbsolute(batch);
             if(!batch) {
@@ -281,8 +294,9 @@ class HBMK2Terminal {
             this.closeEvt(0);
         var task = this.tasks.splice(0,1)[0];
         var inputFile = ToAbsolute(resolvePredefinedVariables(task.definition.input)) || task.definition.input;
+        var section = vscode.workspace.getConfiguration('harbour');
 
-        var args = [inputFile];
+        var args = [inputFile, "-w"+section.warningLevel];
         if(task.definition.debugSymbols) {
             args.push("-b");
             args.push(path.resolve(__dirname, path.join('..','extra','dbg_lib.prg')));
@@ -292,7 +306,6 @@ class HBMK2Terminal {
         if(task.definition.platform) args.push("-plat="+task.definition.platform);
         if(task.definition.compiler) args.push("-comp="+task.definition.compiler);
         var file_cwd = path.dirname(inputFile);
-        var section = vscode.workspace.getConfiguration('harbour');
         var hbmk2Path = path.join(path.dirname(section.compilerExecutable), "hbmk2")
         this.write(localize("harbour.task.HBMK2.start")+"\r\n")
         this.p = cp.spawn(hbmk2Path,args,{cwd:file_cwd,env:this.env});
@@ -320,7 +333,7 @@ class HBMK2Task {
             "type": "HBMK2",
             "input": input
             //"c-type": "compact"
-        }, name ,"HBMK2");
+        }, vscode.TaskScope.Workspace, name ,"HBMK2");
         retTask.definition = definition;
         retTask.execution = new vscode.CustomExecution(getTerminalFn(retTask));
         if(!Array.isArray(problemMathes) || problemMathes.length==0 )
@@ -345,7 +358,7 @@ class HBMK2Task {
                 var task = new vscode.Task({
                     "type": "HBMK2",
                     "input": "${file}"
-                }, localize("harbour.task.HBMK2.provideName",path.basename(textDocument.fileName)) ,"HBMK2");
+                }, vscode.TaskScope.Workspace, localize("harbour.task.HBMK2.provideName2") ,"HBMK2");
                 task.execution = new vscode.CustomExecution(getTerminalFn(task));
                 task.problemMatchers = ["$harbour","$msCompile"];
                 var task2 = new vscode.Task({
@@ -353,60 +366,35 @@ class HBMK2Task {
                     "input": "${file}",
                     "debugSymbols": true,
                     "output": "${fileBasenameNoExtension}_dbg"
-                }, localize("harbour.task.HBMK2.provideName",path.basename(textDocument.fileName)+" debug") ,"HBMK2");
+                }, vscode.TaskScope.Workspace, localize("harbour.task.HBMK2.provideName3") ,"HBMK2");
                 task2.execution = new vscode.CustomExecution(getTerminalFn(task));
                 task2.problemMatchers = ["$harbour","$msCompile"];
                 retValue.push(task,task2);
             }
-            /** @type{Array<Promise>} */
-            var promises = [];
-            for(let d=0;d<vscode.workspace.workspaceFolders.length;d++) {
-                let thisDir = vscode.workspace.workspaceFolders[d];
-                /** @type {vscode.Uri} */
-                var uri = vscode.Uri.parse(thisDir.uri)
-                if (uri.scheme != "file") continue;
-                //var r = promisify();
-                var r = new Promise((res,rej)=>{
-                    if(token.isCancellationRequested) {
-                        reject(token);
-                        return;
-                    }
-                    fs.readdir(uri.fsPath, {withFileTypes: true},(err,ff)=>{
-                        if(token.isCancellationRequested) {
-                            reject(token);
-                            return;
-                        }
-                        res(ff);
-                    })
-                });
-                promises.push(r);
-            }
-            if(promises.length>0) {
-                Promise.all(promises).then((values)=>{
-                    if(token.isCancellationRequested) {
-                        reject(token);
-                        return;
-                    }
-                    for(let j=0;j<values.length;j++) {
-                        let ff = values[j];
-                        for(let i=0;i<ff.length;++i) {
-                            if(!ff[i].isFile()) continue;
-                            var ext = path.extname(ff[i].name).toLowerCase();
-                            if(ext==".hbp") {
-                                var task = new vscode.Task({
+            getAllWorkspaceFiles(token).then((values)=>{
+                if(token.isCancellationRequested) {
+                    reject(token);
+                    return;
+                }
+                for(let j=0;j<values.length;j++) {
+                    let ff = values[j];
+                    for(let i=0;i<ff.length;++i) {
+                        if(!ff[i].isFile()) continue;
+                        var ext = path.extname(ff[i].name).toLowerCase();
+                        if(ext==".hbp") {
+                            var task = new vscode.Task({
                                     "type": "HBMK2",
                                     "input": ff[i].name
-                                }, localize("harbour.task.HBMK2.provideName",path.basename(ff[i].name)) ,"HBMK2");
-                                task.execution = new vscode.CustomExecution(getTerminalFn(task));
-                                task.problemMatchers = ["$harbour","$msCompile"];
-                                retValue.push(task);
-                            }
+                                }, vscode.TaskScope.Workspace,
+                                localize("harbour.task.HBMK2.provideName",path.basename(ff[i].name)) ,"HBMK2");
+                            task.execution = new vscode.CustomExecution(getTerminalFn(task));
+                            task.problemMatchers = ["$harbour","$msCompile"];
+                            retValue.push(task);
                         }
                     }
-                    resolve(retValue);
-                });
-            } else
+                }
                 resolve(retValue);
+            });
         });
     }
 
@@ -416,7 +404,8 @@ class HBMK2Task {
      * @param {vscode.CancellationToken} token
      */
     resolveTask(task) {
-        var retTask = new vscode.Task(task.definition,"build "+task.definition.input ,"HBMK2");
+        var retTask = new vscode.Task(task.definition, vscode.TaskScope.Workspace,
+                "build "+task.definition.input ,"HBMK2");
         retTask.execution = new vscode.CustomExecution(getTerminalFn(retTask));
         if(!Array.isArray(task.problemMatchers) || task.problemMatchers.length==0 )
             retTask.problemMatchers = ["$harbour","$msCompile"];

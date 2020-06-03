@@ -7,6 +7,7 @@ const decorator = require('./decorator.js');
 const docCreator = require('./docCreator.js');
 const taskProvider = require('./taskProvider.js');
 const net = require("net");
+const debugProvider = require("./debugProvider.js");
 
 var diagnosticCollection;
 
@@ -41,6 +42,7 @@ function activate(context) {
 	decorator.activate(context,cl);
 	docCreator.activate(context,cl);
 	taskProvider.activate();
+	//debugProvider.activate();
 }
 
 function DebugList(args) {

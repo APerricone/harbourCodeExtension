@@ -25,11 +25,9 @@ function reInit(config)
 function myLocalize()
 {
     var arg = Array.prototype.slice.call(arguments);
-    if(arg[0] in messages)
-    {
+    if(arg[0] in messages) {
         arg[0] = messages[arg[0]];
-    } else
-    {
+    } else {
         arg[0] = "Error: '" + arg[0] + "' not found";
     }
     arg.splice(0,0,null);
