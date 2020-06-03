@@ -9,7 +9,7 @@ do you like this extension? Help me to make it better with a donation, click the
 
 ## Features
 
-- [syntax hightlight](https://github.com/APerricone/harbourCodeExtension/wiki/Syntax-hightlight), with [Edgard Lorraine Messias](mailto:edgardmessias@gmail.com)
+- [syntax hightlight](https://github.com/APerricone/harbourCodeExtension/wiki/Syntax-hightlight), with [Edgard Lorraine Messias](https://github.com/edgardmessias)
 - [Debug support](https://github.com/APerricone/harbourCodeExtension/wiki/Debugger)
 - [Diagnostic infos](https://github.com/APerricone/harbourCodeExtension/wiki/Diagnostics-Lint)
 - Symbol Definitions Within a Document provider (access it by pressing <kbd>CTRL</kbd>+<kbd>SHIFT</kbd>+<kbd>O</kbd> or <kbd>CTRL</kbd>+<kbd>P</kbd> then <kbd>@</kbd>)

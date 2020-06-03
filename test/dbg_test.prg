@@ -67,7 +67,7 @@ proc main( )
 		j:=i*2
 		? "i vale &( str(i) ), j vale &(j), formula &(i*2)"
 	next
-	//AltD()
+	AltD()
 	? "Perry"
 	//begin sequence with {|| QOut("eh") }
 	//	eval(&bs,"",c)

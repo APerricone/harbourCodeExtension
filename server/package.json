@@ -4,6 +4,9 @@
   "version": "0.5.0",
   "author": "aperricone",
   "main": "dist/hb_server.js",
+  "bin": {
+    "hbLanguageServer": "dist/hb_server.js"
+  },
   "license": "GPL",
   "repository": {
     "url": "https://github.com/APerricone/harbourCodeExtension"
