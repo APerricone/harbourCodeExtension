@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to the "Harbour and xHarbour" extension will be documented in this file.
 
+# 0.9.13
+ - **debugger** better stability
+
 # 0.9.12
  - **debugger** better stability
  - **task** better stability
@@ -8,9 +11,7 @@ All notable changes to the "Harbour and xHarbour" extension will be documented i
 
 # 0.9.11
  - **server** fixes case of unfound parent [#57](https://github.com/APerricone/harbourCodeExtension/issues/57)
- - **syntax** fixes [memvar aliasing syntax highlighting #58](https://github.com/APerricone/harbourCodeExtension/issues/58),
-                    [Multiline "inline" class methods syntax highlighting #59](https://github.com/APerricone/harbourCodeExtension/issues/59),
-                    [Try catch syntax highlighting #60](https://github.com/APerricone/harbourCodeExtension/issues/60) by [Edgard Lorraine Messias](https://github.com/edgardmessias)
+ - **syntax** fixes [memvar aliasing syntax highlighting #58](https://github.com/APerricone/harbourCodeExtension/issues/58),                    [Multiline "inline" class methods syntax highlighting #59](https://github.com/APerricone/harbourCodeExtension/issues/59),                    [Try catch syntax highlighting #60](https://github.com/APerricone/harbourCodeExtension/issues/60) by [Edgard Lorraine Messias](https://github.com/edgardmessias)
  - **debugger** better step out and step next support
  - **server** better code folding see [#56](https://github.com/APerricone/harbourCodeExtension/issues/56)
  - **task** added temporary variable solver waiting for [VSCode #81007](https://github.com/microsoft/vscode/issues/81007)
