@@ -295,7 +295,7 @@
 			"patterns": [
 				{
 					"name": "variable.other.readwrite.harbour",
-					"match": "(?i)\\b([a-z_]\\w*)\\b"
+					"match": "\\b(s_)?(mtx)?[a,b,c,d,h,l,n,o,u,x][A-Z][A-Za-z0-9_]*\\b"
 				}
 			]
 		},
