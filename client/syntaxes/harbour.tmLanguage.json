@@ -71,6 +71,9 @@
 				},
 				{
 					"include": "#numbers"
+				},
+				{
+					"include": "#variable-name"
 				}
 			]
 		},
