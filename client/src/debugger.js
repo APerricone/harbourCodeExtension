@@ -386,25 +386,23 @@ harbourDebugSession.prototype.sendStack = function(line) {
 		var found = false;
 		if(infos[0].length>0) {
 				if(path.isAbsolute(infos[0]) && fs.existsSync(infos[0])) {
+					completePath = infos[0];
+					found=true;
 					try {
 						completePath = trueCase.trueCasePathSync(infos[0]);
-						found=true;
-					} catch(ex) {
-						found=false;
-					}
+					} catch(ex) {}
 				} else
 				for(i=0;i<this.sourcePaths.length;i++) {
 					if(fs.existsSync(path.join(this.sourcePaths[i],infos[0]))) {
 						completePath = path.join(this.sourcePaths[i],infos[0]);
+						found=true;
 						try {
 							completePath = trueCase.trueCasePathSync(infos[0],this.sourcePaths[i]);
 						} catch(ex) {
 							try {
 								completePath = trueCase.trueCasePathSync(completePath);
-							} catch(ex2) {
-							}
+							} catch(ex2) {}
 						}
-						found=true;
 						break;
 				}
 				}
