@@ -305,7 +305,13 @@ Provider.prototype.linePrepare = function (line) {
         return;
     }
     var lineStart = 0;
-    for (var i = 0; i < this.currLine.length; i++) {
+    var i = this.currLine.length-line.length;
+    if(i>0) {
+        c = this.currLine[i-1];
+        lineStart = i;
+        justStart = false;
+    }
+    for (; i < this.currLine.length; i++) {
         precC = c;
         precJustStart = justStart;
         c = this.currLine[i];

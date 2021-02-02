@@ -7,6 +7,10 @@
             "label": "prelanch",
             "type": "npm",
             "script": "prelanch",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
             "problemMatcher": []
         }
     ]

@@ -892,9 +892,9 @@ function getDocumentProvider(doc, checkGroup) {
         return pp;
     }
     if (checkGroup)
-        pp = parseDocument(doc, (p) => p.doGroups = true);
+        pp = lastDocOutsideWorkspaceProvider = parseDocument(doc, (p) => p.doGroups = true);
     else
-        pp = parseDocument(doc);
+        pp = lastDocOutsideWorkspaceProvider = parseDocument(doc);
     return pp;
 }
 
