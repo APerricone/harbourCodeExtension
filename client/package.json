@@ -25,10 +25,10 @@
     ],
     "dependencies": {
         "true-case-path": "^2.2.1",
-        "vscode-debugadapter": "^1.38.0",
-        "vscode-debugprotocol": "^1.38.0",
-        "vscode-languageclient": "^6.1.0",
-        "vscode-nls": "^4.1.1"
+        "vscode-debugadapter": "^1.44.0",
+        "vscode-debugprotocol": "^1.44.0",
+        "vscode-languageclient": "^6.1.4",
+        "vscode-nls": "^4.1.2"
     },
     "scripts": {
         "vscode:prepublish": "node copy.js",
@@ -487,7 +487,7 @@
         ]
     },
     "devDependencies": {
-        "webpack": "^4.41.6",
-        "webpack-cli": "^3.3.11"
+        "webpack": "^4.46.0",
+        "webpack-cli": "^3.3.12"
     }
 }
