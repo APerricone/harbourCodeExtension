@@ -4,7 +4,8 @@ const fs = require("fs");
 const path = require("path");
 const Uri = require("vscode-uri").URI;
 const trueCase = require("true-case-path")
-const server_textdocument = require("vscode-languageserver-textdocument")
+const server_textdocument = require("vscode-languageserver-textdocument");
+const { SemanticTokenTypes } = require('vscode-languageserver');
 
 var connection = server.createConnection(
     new server.IPCMessageReader(process),
@@ -115,7 +116,29 @@ connection.onInitialize(params => {
                 supported: true
             },
             hoverProvider: true,
-            foldingRangeProvider: true
+            foldingRangeProvider: true,
+            semanticTokensProvider: {
+                legend: {
+                    //tokenTypes: [
+                    //    server.SemanticTokenTypes.class,
+                    //    server.SemanticTokenTypes.method,
+                    //    server.SemanticTokenTypes.property,
+                    //    server.SemanticTokenTypes.function,
+                    //    server.SemanticTokenTypes.parameter,
+                    //    server.SemanticTokenTypes.variable,
+                    //    server.SemanticTokenTypes.macro],
+                    tokenTypes: [
+                        server.SemanticTokenTypes.variable,
+                        server.SemanticTokenTypes.parameter],
+                    tokenModifiers: [
+                        server.SemanticTokenModifiers.declaration,
+                        server.SemanticTokenModifiers.static
+                    ]
+                },
+                full: true
+            }
+
+
         }
     }
 });
@@ -1398,8 +1421,9 @@ connection.onFoldingRanges((params) => {
     return ranges;
 })
 
-connection.onRequest("groupAtPosition", (params) => {
+connection.onRequest("harbour/groupAtPosition", (params) => {
     var doc = documents.get(params.textDocument.uri);
+    if(!doc) return [];
     var pp = getDocumentProvider(doc, true);
     for (var iGroup = 0; iGroup < pp.groups.length; iGroup++) {
         /** @type {Array<provider.KeywordPos>} */
@@ -1415,7 +1439,7 @@ connection.onRequest("groupAtPosition", (params) => {
     return [];
 })
 
-connection.onRequest("docSnippet", (params) => {
+connection.onRequest("harbour/docSnippet", (params) => {
     var doc = documents.get(params.textDocument.uri);
     var pp = getDocumentProvider(doc);
     /** @type{provider.Info} */
@@ -1470,7 +1494,44 @@ connection.onRequest("docSnippet", (params) => {
     }
     snipppet += "\t\\$END\\$ */"
     return snipppet;
+    })
+
+connection.onRequest(server.SemanticTokensRegistrationType.method, (param)=> {
+    var doc = documents.get(param.textDocument.uri);
+    if(!doc) return [];
+    var ret = [];
+    var pp = getDocumentProvider(doc);
+    for (let i = 0; i < pp.funcList.length; i++) {
+        /** @type{provider.Info} */
+        const info = pp.funcList[i];
+        if (info.kind=="local" || info.kind=="param")
+        {
+            const id = info.kind=="local"? 0 : 1;
+            const p = info.parent;
+            var regex = new RegExp("\\b"+info.nameCmp+"\\b","ig")
+            for (let l = p.startLine; l < p.endLine; l++) {
+                const line = doc.getText(server.Range.create(l, 0, l, 1000));
+                var mm;
+                while(mm=regex.exec(line)) {
+                    ret.push([l,mm.index,info.nameCmp.length,id,0]);
+                }
+            }
+        }
+    }
+    ret = ret.sort((a,b) => a[0]!=b[0] ? a[0]-b[0] : a[1]-b[1])
+    for(let i=ret.length-1;i>0;--i) {
+        if(ret[i][0]!=ret[i-1][0]) {
+            //different lines
+            ret[i][0] -= ret[i-1][0];
+        } else {
+            ret[i][0] = 0;
+            ret[i][1] -= ret[i-1][1]
+        }
+    }
+    ret=ret.flat()
+    return { "data": ret}
 })
+
 
 //connection.onDocumentFormatting =
 

@@ -3,6 +3,7 @@ All notable changes to the "Harbour and xHarbour" extension will be documented i
 
 # 0.9.14
  - **server** better performance on long splitted line [#68](https://github.com/APerricone/harbourCodeExtension/issues/68)
+ - **server** first support for [semantic token](https://code.visualstudio.com/api/language-extensions/semantic-highlight-guide)
 
 # 0.9.13
  - **debugger** better stability

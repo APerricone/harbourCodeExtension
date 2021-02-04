@@ -24,7 +24,7 @@ function WriteDoc(evt) {
     if(!line.startsWith("/* $DOC$")) return;
     var param = {textDocument:{uri:editor.document.uri.toString()}, sel:destRange};
     param["eol"]=editor.document.eol;
-    client.sendRequest("docSnippet",param).then(snippet=>{
+    client.sendRequest("harbour/docSnippet",param).then(snippet=>{
         if(snippet) {
             evt.textEditor.insertSnippet(new vscode.SnippetString(snippet),destRange);
         }

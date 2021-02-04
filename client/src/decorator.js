@@ -32,7 +32,7 @@ function showGroups(evt)
 		return;
 	}
 	var sel = evt.selections[0];
-	client.sendRequest("groupAtPosition",{textDocument:{uri:editor.document.uri.toString()}, sel:sel}).then(ranges=>{
+	client.sendRequest("harbour/groupAtPosition",{textDocument:{uri:editor.document.uri.toString()}, sel:sel}).then(ranges=>{
 		var places = [];
 		for (let k = 0; k < ranges.length; k++) {
 			const rr = ranges[k];
