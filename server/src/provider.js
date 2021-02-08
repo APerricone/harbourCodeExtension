@@ -600,7 +600,9 @@ Provider.prototype.parseHarbour = function (words) {
     if (words[0][0] == '#') {
         if (words[0] == '#include') {
             //TODO: check if words1 first and last letter are "" or <>
-            this.includes.push(words1.substr(1, words1.length - 2));
+            var words = this.currLinePreProc.replace(/\s+/g, " ").trim().split(" ");
+            if (words.length > 1)
+                this.includes.push(words[1].substr(1, words[1].length - 2));
         } else if (words[0] == '#define') {
             var r = defineRegEx.exec(this.currLinePreProc);
             if (r) {

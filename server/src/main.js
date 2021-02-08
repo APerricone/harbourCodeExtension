@@ -1313,14 +1313,12 @@ connection.onHover((params, cancelled) => {
     var w = GetWord(params);
     var doc = documents.get(params.textDocument.uri);
     var pp = getDocumentProvider(doc);
+    if(w.length==0) return undefined;
     if (pp) {
-        for (var iSign = 0; iSign < pp.funcList.length; iSign++) {
-            var info = pp.funcList[iSign];
-            if (info.kind != 'define') continue;
-            if (info.name != w) continue
-            return { contents: { language: 'harbour', value: info.body } };
+        var result = pp.funcList.filter((v)=> v.kind=='define' && v.name==w);
+        if(result.length>0) {
+            return { contents: { language: 'harbour', value: result[0].body } };
         }
-
         var thisDone = doc.uri in files;
         var includes = pp.includes;
         var i = 0;
@@ -1328,13 +1326,11 @@ connection.onHover((params, cancelled) => {
         while (i < includes.length) {
             var pInc = ParseInclude(startDir, includes[i], thisDone);
             if (pInc) {
-                for (var iSign = 0; iSign < pInc.funcList.length; iSign++) {
-                    var info = pInc.funcList[iSign];
-                    if (info.kind != 'define') continue;
-                    if (info.name != w) continue
-                    return { contents: { language: 'harbour', value: info.body } };
+                var result = pInc.funcList.filter((v)=> v.kind=='define' && v.name==w);
+                if(result.length>0) {
+                    return { contents: { language: 'harbour', value: result[0].body } };
                 }
-                for (var j = 0; j < pInc.includes; j++) {
+                for (var j = 0; j < pInc.includes.length; j++) {
                     if (includes.indexOf(pInc.includes[j]) < 0)
                         includes.push(pInc.includes[j]);
                 }
