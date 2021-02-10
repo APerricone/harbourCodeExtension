@@ -664,7 +664,7 @@
 							},
 							{
 								"name": "storage.modifier.harbour",
-								"match": "(?i)\\b(exported|visible|protected|hidden|readonly|ro|persistent|property|sync)\\b"
+								"match": "(?i)\\b(exported|visible|protected|hidden|readonly|ro|persistent|property|sync|shared)\\b"
 							},
 							{
 								"match": "(?i)\\b(type|as)\\s+([a-z_]\\w*)",
@@ -684,7 +684,7 @@
 										"name": "keyword.control.${1:/downcase}.harbour"
 									}
 								},
-								"end": "(?i)(?m:$)|(?=\\b(?:exported|visible|protected|hidden|readonly|ro|persistent|property|sync)\\b)",
+								"end": "(?i)(?m:$)|(?=\\b(?:exported|visible|protected|hidden|readonly|ro|persistent|property|sync|shared)\\b)",
 								"patterns": [{
 									"include": "#inline-staments"
 								}]
