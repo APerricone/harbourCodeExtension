@@ -966,6 +966,7 @@ Provider.prototype.findDBReferences = function (line) {
                 }
             }
             type="field"
+            dbName = "";
         }
         if(match[2].endsWith("->")) {
             var pos = match.index + match[0].length - 3;
@@ -980,7 +981,7 @@ Provider.prototype.findDBReferences = function (line) {
                 if (c == ')') nBracket++;
                 if (c == '(') nBracket--;
             }
-            dbName = line.substring(pdb+1,pos+1).replace(" ", "").replace("\t", "");
+            dbName = line.substring(pdb+1,pos+1).replace(/\s+/g, "")
         }
         if(cmpName) {
             if (!(cmpName in this.references)) {

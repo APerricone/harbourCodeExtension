@@ -1255,7 +1255,7 @@ function CompletionDBFields(word, allText, pos, pp) {
         if (c == '(') nBracket--;
         //dbName = c + dbName;
     }
-    dbName = allText.substring(pdb,pos-2)
+    dbName = allText.substring(pdb+1,pos-1).replace(/\s+/g,"")
     var completitions = [];
     function AddDB(db) {
         for (var f in db.fields) {
