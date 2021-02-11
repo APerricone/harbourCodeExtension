@@ -1493,17 +1493,28 @@ connection.onRequest(server.SemanticTokensRegistrationType.method, (param)=> {
     for (let i = 0; i < pp.funcList.length; i++) {
         /** @type{provider.Info} */
         const info = pp.funcList[i];
-        if (info.kind=="local" || info.kind=="param") {
-            if(info.nameCmp in pp.references) {
-                const id = info.kind=="local"? 0 : 1;
-                const p = info.parent;
-                    for (let ri = 0; ri < pp.references[info.nameCmp].length; ri++) {
-                    const ref = pp.references[info.nameCmp][ri];
-                    if(ref.type == "variable" && 
-                        ref.line>=p.startLine && 
-                        ref.line<=p.endLine) {
-                            ret.push([ref.line,ref.col,info.nameCmp.length,id,0])
-                        }
+        if((info.kind=="local" || info.kind=="param")&&(info.nameCmp in pp.references)) {
+            const id = info.kind=="local"? 0 : 1;
+            const p = info.parent;
+            for (let ri = 0; ri < pp.references[info.nameCmp].length; ri++) {
+                const ref = pp.references[info.nameCmp][ri];
+                if(ref.type == "variable" && 
+                    ref.line>=p.startLine && 
+                    ref.line<=p.endLine) {
+                        var mod = 0;
+                        if(ref.line == info.startLine) mod+=1;
+                        ret.push([ref.line,ref.col,info.nameCmp.length,id,mod])
+                    }
+            }
+        }
+        if (info.kind=="static" && info.nameCmp in pp.references) {
+            const id = 0;
+            for (let ri = 0; ri < pp.references[info.nameCmp].length; ri++) {
+                const ref = pp.references[info.nameCmp][ri];
+                if(ref.type == "variable") {
+                    var mod = 2; //static
+                    if(ref.line == info.startLine) mod+=1;
+                    ret.push([ref.line,ref.col,info.nameCmp.length,id,mod])
                 }
             }
         }
