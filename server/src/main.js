@@ -1493,16 +1493,17 @@ connection.onRequest(server.SemanticTokensRegistrationType.method, (param)=> {
     for (let i = 0; i < pp.funcList.length; i++) {
         /** @type{provider.Info} */
         const info = pp.funcList[i];
-        if (info.kind=="local" || info.kind=="param")
-        {
-            const id = info.kind=="local"? 0 : 1;
-            const p = info.parent;
-            var regex = new RegExp("\\b"+info.nameCmp+"\\b","ig")
-            for (let l = p.startLine; l < p.endLine; l++) {
-                const line = doc.getText(server.Range.create(l, 0, l, 1000));
-                var mm;
-                while(mm=regex.exec(line)) {
-                    ret.push([l,mm.index,info.nameCmp.length,id,0]);
+        if (info.kind=="local" || info.kind=="param") {
+            if(info.nameCmp in pp.references) {
+                const id = info.kind=="local"? 0 : 1;
+                const p = info.parent;
+                    for (let ri = 0; ri < pp.references[info.nameCmp].length; ri++) {
+                    const ref = pp.references[info.nameCmp][ri];
+                    if(ref.type == "variable" && 
+                        ref.line>=p.startLine && 
+                        ref.line<=p.endLine) {
+                            ret.push([ref.line,ref.col,info.nameCmp.length,id,0])
+                        }
                 }
             }
         }
