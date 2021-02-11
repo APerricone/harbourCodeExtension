@@ -505,11 +505,13 @@ function GetWord(params, withPrev) {
                 break;
         }
         if (!word) return [];
-        if (word.index != 0 && (word.index + word[0].length) != (delta + delta) && withPrev) {
-            var idx = word.index-1;
-            prev = text[idx];
-            while(idx>=0 && (prev==' ' || prev=='\t')) {
-                prev = text[--idx];
+        if (word.index != 0 && (word.index + word[0].length) != (delta + delta)) {
+            if(withPrev) {
+                var idx = word.index-1;
+                prev = text[idx];
+                while(idx>=0 && (prev==' ' || prev=='\t')) {
+                    prev = text[--idx];
+                }
             }
             break
         }
@@ -562,9 +564,9 @@ connection.onDefinition((params) => {
         var pThis
         if (!thisDone && !found) {
             pThis = getDocumentProvider(doc);
-            for (var fn in pp.funcList) { //if (pp.funcList.hasOwnProperty(fn)) {
+            for (var fn in pThis.funcList) { //if (pp.funcList.hasOwnProperty(fn)) {
                 /** @type {provider.Info} */
-                var info = pp.funcList[fn];
+                var info = pThis.funcList[fn];
                 if (info.kind != 'class')
                     continue;
                 if (info.nameCmp == className) {
@@ -1563,11 +1565,40 @@ connection.onReferences( (params) => {
     if(prev==':') kind= next=="("? "method" : "data";
              else  kind= next=="("? "function" : "variable";
     if(prev==">") kind="field"
-    var thisDone = false;
     var ret = [];
     word = word[0].toLowerCase()
-    for (var file in files) { //if (files.hasOwnProperty(file)) {
-        if (file == doc.uri) thisDone = true;
+    var pThis;
+    if(doc.uri in files)
+        pThis = files[doc.uri];
+    else
+        pThis = getDocumentProvider(doc);
+    var reqLine = params.position.line
+    var def = pThis.funcList.find((v)=>
+        v.nameCmp==word &&
+        (v.parent==undefined || (v.parent.startLine<=reqLine && v.parent.endLine>=reqLine)));
+    var onlyThis = false;
+    if(def) {
+        if(def.kind.endsWith("*")) onlyThis = true;
+        if(def.kind == "local") onlyThis = true;
+        if(def.kind == "static") onlyThis = true;
+        if(def.kind == "param") onlyThis = true;
+    }
+    if(word in pThis.references) { //always
+        for (let i = 0; i < pThis.references[word].length; i++) {
+            /** @type {provider.reference} */
+            const ref = pThis.references[word][i];
+            if(ref.type!=kind) continue;
+            if(def && def.parent) {
+                if(ref.line<def.parent.startLine) continue;
+                if(ref.line>def.parent.endLine) continue;
+            }
+            ret.push(server.Location.create(doc.uri,
+                server.Range.create(ref.line,ref.col,ref.line,ref.col+word.length)))
+        }
+    }
+
+    if(!onlyThis) for (var file in files) { //if (files.hasOwnProperty(file)) {
+        if (file == doc.uri) continue;
         var pp = files[file];
         if(word in pp.references) {
             for (let i = 0; i < pp.references[word].length; i++) {
