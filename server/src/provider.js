@@ -1077,3 +1077,4 @@ Provider.prototype.updateGroups = function () {
 exports.Info = Info;
 exports.Provider = Provider;
 exports.keywords = keywords;
+exports.reference = reference;

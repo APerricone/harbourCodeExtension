@@ -94,6 +94,7 @@ connection.onInitialize(params => {
             documentSymbolProvider: true,
             workspaceSymbolProvider: true,
             definitionProvider: true,
+            referencesProvider: true,
             // declarationProvider: true,
             signatureHelpProvider: {
                 triggerCharacters: ['(']
@@ -487,11 +488,11 @@ connection.onWorkspaceSymbol((param) => {
     return dest;
 });
 
-function GetWord(params, withPrec) {
+function GetWord(params, withPrev) {
     var doc = documents.get(params.textDocument.uri);
     var pos = doc.offsetAt(params.position);
     var delta = 20;
-    var word, prec;
+    var word, prev;
     //var allText = doc.getText();
     var r = /\b[a-z_][a-z0-9_]*\b/gi
     while (true) {
@@ -504,15 +505,19 @@ function GetWord(params, withPrec) {
                 break;
         }
         if (!word) return [];
-        if (word.index != 0 && (word.index + word[0].length) != (delta + delta)) {
-            prec = text[word.index - 1];
-            break;
+        if (word.index != 0 && (word.index + word[0].length) != (delta + delta) && withPrev) {
+            var idx = word.index-1;
+            prev = text[idx];
+            while(idx>=0 && (prev==' ' || prev=='\t')) {
+                prev = text[--idx];
+            }
+            break
         }
         delta += 10;
     }
     var worldPos = pos - delta + word.index;
     word = word[0];
-    return withPrec ? [word, prec, worldPos] : word;
+    return withPrev ? [word, prev, worldPos] : word;
 }
 
 connection.onDefinition((params) => {
@@ -531,10 +536,10 @@ connection.onDefinition((params) => {
     if (word.length == 0) return undefined;
     var dest = [];
     var thisDone = false;
-    var prec = word[1];
+    var prev = word[1];
     var className;
     var pos = word[2];
-    if (prec == ':' && doc.getText(server.Range.create(doc.positionAt(Math.max(pos - 3, 0)), doc.positionAt(pos))) == "():") {
+    if (prev == ':' && doc.getText(server.Range.create(doc.positionAt(Math.max(pos - 3, 0)), doc.positionAt(pos))) == "():") {
         var tmp = params.position;
         params.position = doc.positionAt(Math.max(pos - 3, 0));
         className = GetWord(params).toLowerCase();
@@ -1498,8 +1503,8 @@ connection.onRequest(server.SemanticTokensRegistrationType.method, (param)=> {
             const p = info.parent;
             for (let ri = 0; ri < pp.references[info.nameCmp].length; ri++) {
                 const ref = pp.references[info.nameCmp][ri];
-                if(ref.type == "variable" && 
-                    ref.line>=p.startLine && 
+                if(ref.type == "variable" &&
+                    ref.line>=p.startLine &&
                     ref.line<=p.endLine) {
                         var mod = 0;
                         if(ref.line == info.startLine) mod+=1;
@@ -1531,6 +1536,51 @@ connection.onRequest(server.SemanticTokensRegistrationType.method, (param)=> {
     }
     ret=ret.flat()
     return { "data": ret}
+});
+
+/**
+ *
+ * @param {server_textdocument.TextDocument} doc
+ * @param {number} startPos
+ */
+function getNextNotSpace(doc,startPos) {
+
+    var p;
+    do {
+        p = doc.getText(server.Range.create(doc.positionAt(startPos),doc.positionAt(startPos+10))).trimStart();
+        startPos+=10;
+    } while(p.length==0)
+    return p[0];
+}
+
+connection.onReferences( (params) => {
+    var word = GetWord(params, true);
+    if (word.length == 0) return undefined;
+    var doc = documents.get(params.textDocument.uri);
+    var prev = word[1]
+    var next = getNextNotSpace(doc,word[2]+word[0].length)
+    var kind = "variable"
+    if(prev==':') kind= next=="("? "method" : "data";
+             else  kind= next=="("? "function" : "variable";
+    if(prev==">") kind="field"
+    var thisDone = false;
+    var ret = [];
+    word = word[0].toLowerCase()
+    for (var file in files) { //if (files.hasOwnProperty(file)) {
+        if (file == doc.uri) thisDone = true;
+        var pp = files[file];
+        if(word in pp.references) {
+            for (let i = 0; i < pp.references[word].length; i++) {
+                /** @type {provider.reference} */
+                const ref = pp.references[word][i];
+                if(ref.type==kind) {
+                    ret.push(server.Location.create(file,
+                        server.Range.create(ref.line,ref.col,ref.line,ref.col+word.length)))
+                }
+            }
+        }
+    }
+    return ret;
 })
 
 
