@@ -1548,10 +1548,15 @@ connection.onRequest(server.SemanticTokensRegistrationType.method, (param)=> {
 function getNextNotSpace(doc,startPos) {
 
     var p;
+    var currPos, endPos = doc.positionAt(startPos);
     do {
-        p = doc.getText(server.Range.create(doc.positionAt(startPos),doc.positionAt(startPos+10))).trimStart();
+        currPos = endPos;
         startPos+=10;
-    } while(p.length==0)
+        endPos = doc.positionAt(startPos);
+        if(endPos.line==currPos.line && endPos.character==currPos.character)
+            return "";
+        p = doc.getText(server.Range.create(currPos,endPos)).trimStart();
+    } while(p.length==0 && endPos.line<=doc.lineCount)
     return p[0];
 }
 

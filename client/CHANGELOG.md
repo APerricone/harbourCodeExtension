@@ -1,10 +1,13 @@
 # Change Log
 All notable changes to the "Harbour and xHarbour" extension will be documented in this file.
 
+# 0.9.15
+ - **server** fixed freeze looking for references last word of the file
+
 # 0.9.14
  - **server** better performance on long splitted line [#68](https://github.com/APerricone/harbourCodeExtension/issues/68)
  - **server** first support for [semantic token](https://code.visualstudio.com/api/language-extensions/semantic-highlight-guide)
- - **server** first support for [reference](https://code.visualstudio.com/api/language-extensions/programmatic-language-features#find-all-references-to-a-symbol)
+ - **server** first support for "[find all references](https://code.visualstudio.com/api/language-extensions/programmatic-language-features#find-all-references-to-a-symbol)"
  - **validation** hightlight of unused symbol
  - **syntax** added shared keyword [#64](https://github.com/APerricone/harbourCodeExtension/issues/64)
 
@@ -25,7 +28,7 @@ All notable changes to the "Harbour and xHarbour" extension will be documented i
  - **server** better code folding see [#56](https://github.com/APerricone/harbourCodeExtension/issues/56)
  - **task** added temporary variable solver waiting for [VSCode #81007](https://github.com/microsoft/vscode/issues/81007)
 
- Many thanks to [Seth Hovestol](https://github.com/Hovestar) for bug reportinh
+ Many thanks to [Seth Hovestol](https://github.com/Hovestar) for bug reporting
 
 # 0.9.10
  - **debugger** added process list on attach, attach by process Id
