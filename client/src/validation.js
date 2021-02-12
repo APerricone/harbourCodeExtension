@@ -41,7 +41,7 @@ function validate(textDocument)
 		}
 		args.push("-I"+pathVal);
 	}
-	args = args.concat(section.extraOptions.split(" ").filter(function(el) {return el.length != 0}));
+	args = args.concat(section.extraOptions.split(" ").filter(function(el) {return el.length != 0 || el=="-ge1"}));
 	var diagnostics = {};
 	diagnostics[textDocument.fileName] = [];
 	function parseLine(subLine)
@@ -78,7 +78,7 @@ function validate(textDocument)
 						putAll = false;
 						var diag = new vscode.Diagnostic(new vscode.Range(lineNr,m.index,lineNr,m.index+subject[0].length), r[4],
 							r[3]=="Warning"? vscode.DiagnosticSeverity.Warning : vscode.DiagnosticSeverity.Error)
-						if(r[4].indexOf("declared but not used in function")>0) {
+						if(r[4].indexOf("not used")>0) {
 							diag.tags = [vscode.DiagnosticTag.Unnecessary];
 						}
 						diagnostics[r[1]].push(diag)
