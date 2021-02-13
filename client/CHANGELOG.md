@@ -3,6 +3,7 @@ All notable changes to the "Harbour and xHarbour" extension will be documented i
 
 # 0.9.15
  - **server** fixed freeze looking for references last word of the file
+ - **server** even better performance on long splitted line [#68](https://github.com/APerricone/harbourCodeExtension/issues/68) (the sample file come from 1.7sec to 0.17 on my PC)
 
 # 0.9.14
  - **server** better performance on long splitted line [#68](https://github.com/APerricone/harbourCodeExtension/issues/68)
