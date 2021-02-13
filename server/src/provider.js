@@ -1,7 +1,7 @@
 const fs = require("fs");
 const readline = require("readline");
 
-const keywords = [
+const keywords = ["local", "static", "private", "memvar",
     "function", "procedure", "return",
     "if", "else", "elseif", "end if",
     "end while", "end case", "end do", "end switch", "end class", "end sequence",
@@ -49,6 +49,8 @@ Provider.prototype.Clear = function () {
     this.currLinePreProc = "";
     /** @type {string} current line parsing, without string and comments */
     this.currLine = "";
+    this.clppArray = [];
+    this.clArray = [];
     /** @type {number} current line number */
     this.lineNr = -1;
     /** @type {number} for statement that continues on next line, it indicates the first */
@@ -824,17 +826,21 @@ Provider.prototype.AddMultilineComment = function (startLine, endLine) {
  */
 Provider.prototype.parse = function (line) {
     this.lineNr++;
+    var wasCont = this.cont;
     var linePP = this.linePP(line);
-    if(this.cont) {
-        this.currLinePreProc += "\r\n"+line
-        this.currLine += "\r\n"+linePP
+    if(wasCont) {
+        this.clppArray.push(line);
+        this.clArray.push(linePP);
     } else {
-        this.currLinePreProc = line
-        this.currLine = linePP;
+        this.clppArray = [line];
+        this.clArray = [linePP];
         this.startLine = this.lineNr;
     }
     if(!this.cMode) this.findDBReferences(linePP)
-    if (this.comment || this.pragmaText || this.currLine.trim().length == 0 || this.cont) return;
+    if (this.comment || this.pragmaText || this.cont) return;
+    this.currLinePreProc = this.clppArray.join("\r\n")
+    this.currLine = this.clArray.join("\r\n")
+    if(this.currLine.trim().length == 0) return;
     /** @type{string[]} */
     if (this.firstLineComment >= 0) {
         if (this.firstLineComment < this.startLine - 1)
@@ -934,7 +940,6 @@ Provider.prototype.parseFile = function (file, docName, cMode, encoding) {
 }
 
 Provider.prototype.findDBReferences = function (line) {
-    //console.log(" searching ref -> "+this.currLine)
     var wordRegEx = /\b([a-z_][a-z0-9_]*)\s*([^a-z0-9_]*)/gi
     var match, refs=[], dbName;
     if(/^\s*#/.test(this.currLine)) {
@@ -955,13 +960,14 @@ Provider.prototype.findDBReferences = function (line) {
         if(prevC=="#") continue; //preproc line
         var type = prevC==":" ? "data" : "variable"
         var cmpName = match[1].toLowerCase();
+        if(keywords.indexOf(cmpName)>=0) continue;
         if(match[2][0] == "(") type = prevC==":" ? "method" : "function"
         else if(dbName) {
             var dbCmd = dbName.toLowerCase();
             if(dbCmd!="field") {
-                if (!(dbCmd in this.databases))
+                if (!(this.databases[dbCmd]))
                     this.databases[dbCmd] = { name: dbName, fields: {} };
-                if (!(dbCmd in this.databases[dbCmd].fields)) {
+                if (!(this.databases[dbCmd].fields[dbCmd])) {
                     this.databases[dbCmd].fields[cmpName] = match[1];
                 }
             }
@@ -984,7 +990,7 @@ Provider.prototype.findDBReferences = function (line) {
             dbName = line.substring(pdb+1,pos+1).replace(/\s+/g, "")
         }
         if(cmpName) {
-            if (!(cmpName in this.references)) {
+            if (!(this.references[cmpName])) {
                 this.references[cmpName] = [];
             }
             if(Array.isArray(this.references[cmpName]))

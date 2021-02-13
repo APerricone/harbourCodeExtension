@@ -3,9 +3,15 @@ var provider = require('./src/provider.js');
 var p = new provider.Provider();
 p.doGroups = true;
 var src = "..\\test\\minimal.prg";
+//src="C:\\Perry\\ProgramFileCreatingHighCPUUseV3.prg"
 //src = "c:\\fwh\\include\\fivewin.ch"
 //src="C:\\Harbour32\\tests\\hbpp\\hbpptest.prg"
+console.log(new Date())
+var s = Number(Date.now())
 p.parseFile(src).then(()=> {
+    console.log(new Date())
+    console.log(Number(Date.now())-s)
+    console.log( Object.keys(p.references).length )
     for (var fn in p.funcList) {
         if (p.funcList.hasOwnProperty(fn)) {
             var info = p.funcList[fn];

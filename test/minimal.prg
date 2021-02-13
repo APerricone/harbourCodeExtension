@@ -1,5 +1,8 @@
 //#xtranslate ( <!name!>{ [<p,...>] } => (<name>():New(<p>))
 //
+
+static prova2
+
 //#xcommand [<nTest>] CMD [<nPart2>] => <nTest> := <nPart2>
 #xcommand @ <nRow>, <nCol> COMBOBOX [ <oCbx> VAR ] <cVar> ;
 [ <it: PROMPTS, ITEMS> <aItems> ] ;
@@ -34,9 +37,13 @@
    <cPicture>, [<{uEChange}>], [<(oCbx)>], <nHGet>, [<nSelHt>], [<nItmHt>], [<nDropW>], [<cDir>], ;
    [<attr>], [<oSayDir>] )
 
+func testFunc
+   LOCAL puppo, ; /* ciao */
+      prova
 
 proc main()
    // se tutti quelli [] dall'altro lato può essere ripetuto
-   local o1,o2, tmp, o3, v, r:=5
+   local o1,o2, tmp, ;
+         o3, v, r:=5
    v CMD r
-   //@ 10,10 COMBOBOX o1 VAR   tmp WINDOW o2 
+   //@ 10,10 COMBOBOX o1 VAR   tmp WINDOW o2

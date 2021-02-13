@@ -34,3 +34,5 @@ testVari
 *.exp
 *.ppt
 trash
+**/.clinic
+*.cpuprofile
