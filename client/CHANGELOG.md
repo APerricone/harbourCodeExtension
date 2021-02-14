@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to the "Harbour and xHarbour" extension will be documented in this file.
 
+# 0.9.16
+ - **server** fixed crash on space before -> [#69](https://github.com/APerricone/harbourCodeExtension/issues/69)
+
 # 0.9.15
  - **server** fixed freeze looking for references last word of the file
  - **server** even better performance on long splitted line [#68](https://github.com/APerricone/harbourCodeExtension/issues/68) (the sample file come from 1.7sec to 0.17 on my PC)
