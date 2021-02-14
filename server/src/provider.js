@@ -979,7 +979,7 @@ Provider.prototype.findDBReferences = function (line) {
             var pdb = pos;
             var dbName = "";
             var nBracket = 0;
-            while ((line[pdb] == ' ' || line[pdb] == '\t') && pdb>0) pbd--;
+            while ((line[pdb] == ' ' || line[pdb] == '\t') && pdb>0) pdb--;
             while ((line[pdb] != ' ' && line[pdb] != '\t') || nBracket > 0) {
                 var c = line[pdb];
                 pdb--;
