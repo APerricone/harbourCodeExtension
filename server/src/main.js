@@ -268,7 +268,10 @@ function AddIncludes(startPath, includesArray) {
         if (!fs.existsSync(completePath)) return false;
         var info = fs.statSync(completePath);
         if (!info.isFile()) return false;
-        var fileUri = Uri.file(trueCase.trueCasePathSync(completePath));
+        var fileUri = Uri.file(completePath);
+        try {
+            fileUri = Uri.file(trueCase.trueCasePathSync(completePath));
+        } catch(ex) { }
         var pp = new provider.Provider(true);
         pp.parseFile(completePath, fileUri.toString(), false).then(
             prov => {
@@ -1218,6 +1221,7 @@ function definitionFiles(fileName, startPath, origin) {
     fileName = fileName.toLowerCase();
     var startDone = false;
     if (startPath) startPath = startPath.toLowerCase();
+    var emptyRange = server.Range.create(0, 0, 0, 0);
     function DefDir(dir) {
         if (startPath && !path.isAbsolute(dir))
             dir = path.join(startPath, dir);
@@ -1225,13 +1229,15 @@ function definitionFiles(fileName, startPath, origin) {
         if (startPath && dir.toLowerCase() == startPath) startDone = true;
         if(fs.existsSync(path.join(dir, fileName))) {
             var fileUri = path.join(dir, fileName);
-            fileUri = trueCase.trueCasePathSync(fileUri);
+            try {
+                fileUri = trueCase.trueCasePathSync(fileUri);
+            } catch(ex) {}
             fileUri = Uri.file(fileUri);
             fileUri = fileUri.toString();
             if (canLocationLink)
-                dest.push(server.LocationLink.create(fileUri, server.Range.create(0, 0, 0, 0), server.Range.create(0, 0, 0, 0), origin));
+                dest.push(server.LocationLink.create(fileUri, emptyRange, emptyRange, origin));
             else
-                dest.push(server.Location.create(fileUri, server.Range.create(0, 0, 0, 0)));
+                dest.push(server.Location.create(fileUri, emptyRange));
         }
     }
     for (var i = 0; i < workspaceRoots.length; i++) {
