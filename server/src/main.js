@@ -273,6 +273,7 @@ function AddIncludes(startPath, includesArray) {
             fileUri = Uri.file(trueCase.trueCasePathSync(completePath));
         } catch(ex) { }
         var pp = new provider.Provider(true);
+        includes[fileName] = pp;
         pp.parseFile(completePath, fileUri.toString(), false).then(
             prov => {
                 includes[fileName] = prov;
@@ -909,6 +910,9 @@ function getDocumentProvider(doc, checkGroup) {
         if (checkGroup && !pp.doGroups)
             pp = files[doc.uri] = parseDocument(doc, (p) => p.doGroups = true);
         return pp;
+    }
+    if(doc.uri in includes) {
+        return includes[doc.uri]
     }
     if (doc.uri == lastDocOutsideWorkspaceProvider.currentDocument) {
         pp = lastDocOutsideWorkspaceProvider;

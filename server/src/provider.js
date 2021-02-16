@@ -929,10 +929,12 @@ Provider.prototype.parseFile = function (file, docName, cMode, encoding) {
         this.cMode = cMode;
     encoding = encoding || "utf8";
     this.currentDocument = docName;
+    //console.log(">>> Start parseFile: "+file)
     return new Promise((resolve, reject) => {
         var reader = readline.createInterface({ input: fs.createReadStream(file, encoding) });
         reader.on("line", d => providerThisContext.parse(d));
         reader.on("close", () => {
+            //console.log("<<<  End  parseFile: "+file)
             providerThisContext.endParse();
             resolve(providerThisContext);
         })
