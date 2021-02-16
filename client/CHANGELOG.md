@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to the "Harbour and xHarbour" extension will be documented in this file.
 
+# 1.0.0
+ - **server** fixed crash [#70](https://github.com/APerricone/harbourCodeExtension/issues/70)
+
 # 0.9.16
  - **server** fixed crash on space before -> [#69](https://github.com/APerricone/harbourCodeExtension/issues/69)
 
