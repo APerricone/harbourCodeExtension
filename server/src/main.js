@@ -1061,6 +1061,24 @@ connection.onCompletion((param, cancelled) => {
             i++;
             if (cancelled.isCancellationRequested) return server.CompletionList.create(completions, false);
         }
+        if (wordBasedSuggestions) {
+            for (const ref in pp.references) {
+                if(ref=='rddi_execute') {
+                    var i=0;
+                }
+                if (Object.hasOwnProperty.call(pp.references, ref)) {
+                    const allRefs = pp.references[ref];
+                    var localDone = {}
+                    for (let i = 0; i < allRefs.length; i++) {
+                        const refObj = allRefs[i];
+                        if(refObj.howWrite in localDone) continue
+                        localDone[refObj.howWrite] = true
+                        CheckAdd(refObj.howWrite,server.CompletionItemKind.Text, "")
+                    }
+
+                }
+            }
+        }
     }
     if (precLetter != ':' && precLetter != '->') {
         for (var i = 0; i < docs.length; i++) {
@@ -1078,7 +1096,7 @@ connection.onCompletion((param, cancelled) => {
         }
         //AddCommands(param, completions)
     }
-    if (wordBasedSuggestions) {
+    if (wordBasedSuggestions && !pp) {
         var wordRE = /\b[a-z_][a-z0-9_]*\b/gi
         var foundWord;
         var pos = doc.offsetAt(param.position);

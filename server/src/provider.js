@@ -127,11 +127,13 @@ function lineState(type,comment) {
  * @param {("variable"|"function"|"data"|"method"|"field")} type
  * @param {number} line
  * @param {number} col
+ * @param {string} howWrite
  */
-function reference(type,line,col) {
+function reference(type,line,col,howWrite) {
     this.type = type;
     this.line = line;
     this.col = col;
+    this.howWrite = howWrite
 }
 
 Provider.prototype.resetComments = function () {
@@ -1009,7 +1011,7 @@ Provider.prototype.findDBReferences = function (line) {
                 this.references[cmpName] = [];
             }
             if(Array.isArray(this.references[cmpName]))
-                this.references[cmpName].push( new reference(type,this.lineNr,match.index))
+                this.references[cmpName].push( new reference(type,this.lineNr,match.index, match[1]))
         }
         //console.log(`${this.lineNr.toString().padStart(5)}:${match.index.toString().padEnd(5)} ${type.padEnd(20)} ${match[1]} ${match.index} `)
     }
