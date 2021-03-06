@@ -1593,7 +1593,11 @@ connection.onReferences( (params) => {
         (v.parent==undefined || (v.parent.startLine<=reqLine && v.parent.endLine>=reqLine)));
     var onlyThis = false;
     if(def) {
-        if(def.kind.endsWith("*")) onlyThis = true;
+        kind = def.kind
+        if(def.kind.endsWith("*")) {
+            onlyThis = true;
+            kind = kind.substr(0,kind.length-1)
+        }
         if(def.kind == "local") onlyThis = true;
         if(def.kind == "static") onlyThis = true;
         if(def.kind == "param") onlyThis = true;
@@ -1603,7 +1607,7 @@ connection.onReferences( (params) => {
             /** @type {provider.reference} */
             const ref = pThis.references[word][i];
             if(ref.type!=kind) continue;
-            if(def && def.parent) {
+            if(def && def.parent && onlyThis) {
                 if(ref.line<def.parent.startLine) continue;
                 if(ref.line>def.parent.endLine) continue;
             }

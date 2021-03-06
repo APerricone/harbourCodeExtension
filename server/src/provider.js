@@ -942,6 +942,7 @@ Provider.prototype.parseFile = function (file, docName, cMode, encoding) {
 }
 
 Provider.prototype.findDBReferences = function (line) {
+    var charRegEx= /[a-z0-9_\(\)]/
     var wordRegEx = /\b([a-z_][a-z0-9_]*)\s*([^a-z0-9_]*)/gi
     var match, refs=[], dbName;
     if(/^\s*#/.test(this.currLine)) {
@@ -953,7 +954,9 @@ Provider.prototype.findDBReferences = function (line) {
             line = " ".repeat(arrow+2) + line.substr(arrow+2)
         }
     }
+    var precWord, cmpName = ""
     while (match = wordRegEx.exec(line)) {
+        precWord = cmpName
         var prevC = match.index>0? line[match.index-1] : ""
         if(match[2][0] == "." && prevC==".") // logical keyword
             continue;
@@ -961,7 +964,7 @@ Provider.prototype.findDBReferences = function (line) {
             continue;
         if(prevC=="#") continue; //preproc line
         var type = prevC==":" ? "data" : "variable"
-        var cmpName = match[1].toLowerCase();
+        cmpName = match[1].toLowerCase();
         if(keywords.indexOf(cmpName)>=0) continue;
         if(match[2][0] == "(") type = prevC==":" ? "method" : "function"
         else if(dbName) {
@@ -976,18 +979,28 @@ Provider.prototype.findDBReferences = function (line) {
             type="field"
             dbName = "";
         }
+        if(precWord.startsWith("func") || precWord.startsWith("proc")) type = "function"
+        if(precWord=="method") type = "method"
+        if(precWord=="access" || precWord=="assign" || precWord=="data") type = "data"
+
         if(match[2].endsWith("->")) {
             var pos = match.index + match[0].length - 3;
             var pdb = pos;
             var dbName = "";
             var nBracket = 0;
             while ((line[pdb] == ' ' || line[pdb] == '\t') && pdb>0) pdb--;
-            while ((line[pdb] != ' ' && line[pdb] != '\t') || nBracket > 0) {
+            while (nBracket > 0 || charRegEx.test(line[pdb])) {
                 var c = line[pdb];
                 pdb--;
                 if(pdb==-1) break;
                 if (c == ')') nBracket++;
-                if (c == '(') nBracket--;
+                if (c == '(') {
+                    if(nBracket==0) {
+                        pdb++;
+                        break;
+                    }
+                    nBracket--;
+                }
             }
             dbName = line.substring(pdb+1,pos+1).replace(/\s+/g, "")
         }

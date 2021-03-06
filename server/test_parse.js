@@ -4,6 +4,7 @@ var p = new provider.Provider();
 p.doGroups = true;
 var src = "..\\test\\minimal.prg";
 //src="C:\\Perry\\ProgramFileCreatingHighCPUUseV3.prg"
+src="C:\\Perry\\beta\\c_artmod.prg"
 //src = "c:\\fwh\\include\\fivewin.ch"
 //src="C:\\Harbour32\\tests\\hbpp\\hbpptest.prg"
 console.log(new Date())
@@ -12,13 +13,28 @@ p.parseFile(src).then(()=> {
     console.log(new Date())
     console.log(Number(Date.now())-s)
     console.log( Object.keys(p.references).length )
+    /*
+    for (var refId in p.references) if (p.references.hasOwnProperty(refId)) {
+        const rr = p.references[refId]
+        var msg = `reference ${refId}`;
+        console.log(msg)
+        msg = " ".repeat(msg.length)
+        var baseType = rr[0].type, oneDifferent = false;
+        for (let i = 0; i < rr.length; i++) {
+            const ref = rr[i];
+            console.log(msg+`${ref.type} in ${ref.line}:${ref.col}`)
+            if(ref.type!=baseType) oneDifferent = true
+        }
+        if(oneDifferent) console.log("**************************")
+    }
+    process.exit();*/
     for (var fn in p.funcList) {
         if (p.funcList.hasOwnProperty(fn)) {
             var info = p.funcList[fn];
             var msg = `${info.kind}: ${info.name} (${info.foundLike})`;
             if(info.parent) msg+= ` of ${info.parent.name}`
-            if(info.comment) msg+= `(${info.comment})`
             msg+= ` in ${info.document}(${info.startLine}:${info.startCol})-(${info.endLine}:${info.endCol})`
+            if(info.comment) msg+= ` (${info.comment})`
             console.log(msg)
         }
     }

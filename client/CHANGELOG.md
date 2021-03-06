@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to the "Harbour and xHarbour" extension will be documented in this file.
 
+# 1.0.1
+ - **server** fixed table name reader [#73](https://github.com/APerricone/harbourCodeExtension/issues/73)
+ - **server** better go to declarection [#74](https://github.com/APerricone/harbourCodeExtension/issues/74)
+
 # 1.0.0
  - **server** fixed crash [#70](https://github.com/APerricone/harbourCodeExtension/issues/70)
 
