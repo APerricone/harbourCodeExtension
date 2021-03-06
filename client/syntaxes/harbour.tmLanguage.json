@@ -14,11 +14,11 @@
 		},{
 			"include": "#variable-declaration"
 		},{
-			"include": "#inline-staments"
+			"include": "#inline-statements"
 		}
 	],
 	"repository": {
-		"inline-staments": {
+		"inline-statements": {
 			"patterns": [{
 					"include": "#continue-expression"
 				},
@@ -74,12 +74,12 @@
 				}
 			]
 		},
-		"function-staments": {
+		"function-statements": {
 			"patterns": [{
 					"include": "#variable-declaration"
 				},
 				{
-					"include": "#inline-staments"
+					"include": "#inline-statements"
 				}
 			]
 		},
@@ -90,7 +90,7 @@
 				},
 				{
 					"match": "(?i)\\b0x[0-9a-f]+\\b",
-					"name": "constant.numeric.exadecimal.harbour"
+					"name": "constant.numeric.hexadecimal.harbour"
 				}
 			]
 		},
@@ -319,12 +319,12 @@
 							"include": "#variable-initializer"
 						},
 						{
-							"include": "#inline-staments"
+							"include": "#inline-statements"
 						}
 					]
 				},
 				{
-					"include": "#inline-staments"
+					"include": "#inline-statements"
 				}
 			]
 		},
@@ -686,7 +686,7 @@
 								},
 								"end": "(?i)(?m:$)|(?=\\b(?:exported|visible|protected|hidden|readonly|ro|persistent|property|sync|shared)\\b)",
 								"patterns": [{
-									"include": "#inline-staments"
+									"include": "#inline-statements"
 								}]
 							},
 							{
@@ -729,7 +729,7 @@
 						"include": "#comments"
 					},
 					{
-						"include": "#function-staments"
+						"include": "#function-statements"
 					}
 				]
 			}]
@@ -784,7 +784,7 @@
 						},
 						"end": "(?m:$)",
 						"patterns": [{
-							"include": "#inline-staments"
+							"include": "#inline-statements"
 						}]
 					},
 					{
@@ -864,7 +864,7 @@
 					"include": "#codeblock-parameters"
 				},
 				{
-					"include": "#inline-staments"
+					"include": "#inline-statements"
 				}
 			]
 		},
@@ -891,7 +891,7 @@
 					"name": "punctuation.separator.array"
 				},
 				{
-					"include": "#inline-staments"
+					"include": "#inline-statements"
 				}
 			]
 		},
@@ -923,7 +923,7 @@
 					"include": "#punctuation-comma"
 				},
 				{
-					"include": "#inline-staments"
+					"include": "#inline-statements"
 				}
 			]
 		},
@@ -949,7 +949,7 @@
 					"include": "#punctuation-comma"
 				},
 				{
-					"include": "#inline-staments"
+					"include": "#inline-statements"
 				}
 			]
 		},
@@ -976,7 +976,7 @@
 					"include": "#punctuation-comma"
 				},
 				{
-					"include": "#inline-staments"
+					"include": "#inline-statements"
 				}
 			]
 		},
@@ -994,7 +994,7 @@
 				}
 			},
 			"patterns": [{
-				"include": "#inline-staments"
+				"include": "#inline-statements"
 			}]
 		},
 		"macro-var": {
@@ -1046,7 +1046,7 @@
 				}
 			},
 			"patterns": [{
-				"include": "#inline-staments"
+				"include": "#inline-statements"
 			}]
 		},
 		"keywords": {
@@ -1291,7 +1291,7 @@
 							"end": "(?=\\||(?m:$))",
 							"patterns": [
 								{
-									"include": "#inline-staments"
+									"include": "#inline-statements"
 								}
 							]
 						}
@@ -1343,7 +1343,7 @@
 							"end": "(?=\\||(?m:$))",
 							"patterns": [
 								{
-									"include": "#inline-staments"
+									"include": "#inline-statements"
 								},
 								{
 									"include": "#variable-name"
@@ -1398,7 +1398,7 @@
 							"end": "(?=\\||(?m:$))",
 							"patterns": [
 								{
-									"include": "#inline-staments"
+									"include": "#inline-statements"
 								}
 							]
 						},
@@ -1770,7 +1770,7 @@
 							},
 							"patterns": [
 								{
-									"include": "#inline-staments"
+									"include": "#inline-statements"
 								}
 							]
 						},
@@ -1798,7 +1798,7 @@
 					},
 					"patterns": [
 						{
-							"include": "#inline-staments"
+							"include": "#inline-statements"
 						}
 					]
 				},

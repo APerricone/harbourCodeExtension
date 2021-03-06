@@ -206,7 +206,7 @@ class HBMK2Terminal {
         this.closeEvt = ()=>{};
         this.tasks = [];
         /** @type {boolean} indicates that this HBMK2Terminal is executing the setup shell or batch */
-        this.settingup = false;
+        this.settingUp = false;
         this.env=process.env;
         if(task.definition.options && task.definition.options.env) {
             var extraEnv = task.definition.options.env;
@@ -224,7 +224,7 @@ class HBMK2Terminal {
                 this.unableToStart=true;
                 return;
             }
-            this.settingup = true;
+            this.settingUp = true;
             var cmd="setup"; //TODO: make unique
             if(os.platform()=='win32') {
                 cmd+=".bat";
@@ -256,7 +256,7 @@ class HBMK2Terminal {
             p1.on("exit", () => {
                 fs.unlink(cmd, ()=>{});
                 tc.env=env1;
-                tc.settingup = false;
+                tc.settingUp = false;
                 tc.start();
             });
         }
@@ -286,7 +286,7 @@ class HBMK2Terminal {
             this.closeEvt();
             return;
         }
-        if(this.settingup){
+        if(this.settingUp){
             this.write(localize("harbour.task.HBMK2.setup")+"\r\n");
             return;
         }
@@ -328,7 +328,7 @@ class HBMK2Terminal {
 }
 
 class HBMK2Task {
-    getValidTask(name,input, definition, problemMathes) {
+    getValidTask(name,input, definition, problemMatches) {
         var retTask = new vscode.Task({
             "type": "HBMK2",
             "input": input
@@ -336,7 +336,7 @@ class HBMK2Task {
         }, vscode.TaskScope.Workspace, name ,"HBMK2");
         retTask.definition = definition;
         retTask.execution = new vscode.CustomExecution(getTerminalFn(retTask));
-        if(!Array.isArray(problemMathes) || problemMathes.length==0 )
+        if(!Array.isArray(problemMatches) || problemMatches.length==0 )
             retTask.problemMatchers = ["$harbour","$msCompile"];
         return retTask;
     }

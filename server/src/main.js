@@ -236,15 +236,15 @@ function UpdateFile(pp) {
         }
     files[doc] = pp;
     for (var db in pp.databases) {
-        var ppdb = pp.databases[db];
-        if (!(db in databases)) databases[db] = { name: ppdb.name, fields: {} };
-        var gbdb = databases[db];
-        for (var f in ppdb.fields) {
-            if (!(f in gbdb.fields))
-                gbdb.fields[f] = { name: ppdb.fields[f], files: [doc] };
+        var ppDB = pp.databases[db];
+        if (!(db in databases)) databases[db] = { name: ppDB.name, fields: {} };
+        var gbDB = databases[db];
+        for (var f in ppDB.fields) {
+            if (!(f in gbDB.fields))
+                gbDB.fields[f] = { name: ppDB.fields[f], files: [doc] };
             else {
-                var idx = gbdb.fields[f].files.indexOf(doc);
-                if (idx < 0) gbdb.fields[f].files.push(doc);
+                var idx = gbDB.fields[f].files.indexOf(doc);
+                if (idx < 0) gbDB.fields[f].files.push(doc);
             }
         }
     }
@@ -336,7 +336,7 @@ function ParseInclude(startPath, includeName, addGlobal) {
     }
 }
 
-function kindTOVS(kind, sk) {
+function kindToVS(kind, sk) {
     if (sk == undefined) sk = true;
     switch (kind) {
         case "class":
@@ -384,7 +384,7 @@ connection.onDocumentSymbol((param) => {
             selRange.end = server.Position.create(info.startLine, 1000);
         var docSym = server.DocumentSymbol.create(info.name,
             (info.comment && info.comment.length > 0 ? info.comment.replace(/[\r\n]+/g, " ") : ""),
-            kindTOVS(info.kind),
+            kindToVS(info.kind),
             server.Range.create(info.startLine, info.startCol,
                 info.endLine, info.endCol), selRange, undefined);
         var parent = dest;
@@ -481,7 +481,7 @@ connection.onWorkspaceSymbol((param) => {
             if (parent && info.kind != "public" && (!info.parent || !IsInside(parent, info.parent.nameCmp)))
                 continue;
             dest.push(server.SymbolInformation.create(
-                info.name, kindTOVS(info.kind),
+                info.name, kindToVS(info.kind),
                 server.Range.create(info.startLine, info.startCol,
                     info.endLine, info.endCol),
                 file, info.parent ? info.parent.name : ""));
@@ -597,11 +597,11 @@ connection.onDefinition((params) => {
             if (info.kind == 'static' && file != doc.uri)
                 continue;
             if (info.kind == 'data' || info.kind == 'method') {
-                //if(prec!=':') continue;
+                //if(prev!=':') continue;
                 if (className && className != info.parent.nameCmp)
                     continue;
             }
-            //if(info.kind=='field' && prec!='>')
+            //if(info.kind=='field' && prev!='>')
             //    continue;
             if (info.kind == 'local' || info.kind == 'param') {
                 if (file != doc.uri)
@@ -669,8 +669,8 @@ connection.onSignatureHelp((params) => {
     }
     word = word.toLowerCase();
     // special case for new, search the class name
-    var prec = text.substring(pos - 2, pos + 1);
-    if (prec == "():") // se è un metodo
+    var prev = text.substring(pos - 2, pos + 1);
+    if (prev == "():") // se è un metodo
     {
         pos -= 3;
         className = "";
@@ -783,15 +783,15 @@ function getWorkspaceSignatures(word, doc, className, nC) {
         var subParams = [];
         for (var iParam = iSign + 1; iParam < pp.funcList.length; iParam++) {
             /** @type {provider.Info} */
-            var subinfo = pp.funcList[iParam];
-            if (subinfo.parent == info && subinfo.kind == "param") {
-                var pInfo = { "label": subinfo.name }
-                if (subinfo.comment && subinfo.comment.trim().length > 0)
-                    pInfo["documentation"] = "<" + subinfo.name + "> " + subinfo.comment
+            var subInfo = pp.funcList[iParam];
+            if (subInfo.parent == info && subInfo.kind == "param") {
+                var pInfo = { "label": subInfo.name }
+                if (subInfo.comment && subInfo.comment.trim().length > 0)
+                    pInfo["documentation"] = "<" + subInfo.name + "> " + subInfo.comment
                 subParams.push(pInfo)
                 if (!s.label.endsWith("("))
                     s.label += ", "
-                s.label += subinfo.name
+                s.label += subInfo.name
             } else
                 break;
         }
@@ -931,9 +931,9 @@ connection.onCompletion((param, cancelled) => {
     var doc = documents.get(param.textDocument.uri);
     var line = doc.getText(server.Range.create(param.position.line, 0, param.position.line, 1000));
     var include = /^\s*#(pragma\s+__(?:c|binary)?stream)?include\s+[<"]([^>"]*)/i.exec(line);
-    var precLetter = doc.getText(server.Range.create(server.Position.create(param.position.line, param.position.character - 1), param.position));
+    var prevLetter = doc.getText(server.Range.create(server.Position.create(param.position.line, param.position.character - 1), param.position));
     if (include !== null) {
-        if (precLetter == '>') {
+        if (prevLetter == '>') {
             return server.CompletionList.create([], false); // wrong call
         }
         var startPath = undefined;
@@ -957,10 +957,10 @@ connection.onCompletion((param, cancelled) => {
         pos--;
     }
     word = word.toLowerCase();
-    var precLetter = allText[pos];
-    if (precLetter == '>') {
+    var prevLetter = allText[pos];
+    if (prevLetter == '>') {
         if (allText[pos - 1] == '-') {
-            precLetter = '->';
+            prevLetter = '->';
             completions = CompletionDBFields(word, allText, pos, pp)
             if (completions.length > 0)
                 return server.CompletionList.create(completions, true); // put true because added all known field of this db
@@ -987,9 +987,9 @@ connection.onCompletion((param, cancelled) => {
         }
         return c;
     }
-    if (precLetter != '->' && precLetter != ':') precLetter = undefined;
-    if (word.length == 0 && precLetter == undefined) return server.CompletionList.create(completions, false);
-    if (!precLetter) {
+    if (prevLetter != '->' && prevLetter != ':') prevLetter = undefined;
+    if (word.length == 0 && prevLetter == undefined) return server.CompletionList.create(completions, false);
+    if (!prevLetter) {
         for (var dbName in databases) {
             CheckAdd(databases[dbName].name, server.CompletionItemKind.Struct, "AAAA")
             if (cancelled.isCancellationRequested) return server.CompletionList.create(completions, false);
@@ -1009,13 +1009,13 @@ connection.onCompletion((param, cancelled) => {
                 continue;
             if (info.endCol == param.position.character && info.endLine == param.position.line && file == doc.uri)
                 continue;
-            if (precLetter == '->' && info.kind != "field")
+            if (prevLetter == '->' && info.kind != "field")
                 continue;
-            if (precLetter != '->' && info.kind == "field")
+            if (prevLetter != '->' && info.kind == "field")
                 continue;
-            if (precLetter == ':' && info.kind != "method" && info.kind != "data")
+            if (prevLetter == ':' && info.kind != "method" && info.kind != "data")
                 continue;
-            if (precLetter != ':' && (info.kind == "method" || info.kind == "data"))
+            if (prevLetter != ':' && (info.kind == "method" || info.kind == "data"))
                 continue;
             if (info.kind == "function*" || info.kind == "procedure*" || info.kind == "static") {
                 if (file != doc.uri)
@@ -1028,7 +1028,7 @@ connection.onCompletion((param, cancelled) => {
                     param.position.line > info.parent.endLine)
                     continue;
             }
-            var added = CheckAdd(info.name, kindTOVS(info.kind, false), "AAA");
+            var added = CheckAdd(info.name, kindToVS(info.kind, false), "AAA");
             if (added && (info.kind == "method" || info.kind == "data") && info.parent)
                 added.documentation = info.parent.name;
             if (cancelled.isCancellationRequested) return
@@ -1063,9 +1063,6 @@ connection.onCompletion((param, cancelled) => {
         }
         if (wordBasedSuggestions) {
             for (const ref in pp.references) {
-                if(ref=='rddi_execute') {
-                    var i=0;
-                }
                 if (Object.hasOwnProperty.call(pp.references, ref)) {
                     const allRefs = pp.references[ref];
                     var localDone = {}
@@ -1080,7 +1077,7 @@ connection.onCompletion((param, cancelled) => {
             }
         }
     }
-    if (precLetter != ':' && precLetter != '->') {
+    if (prevLetter != ':' && prevLetter != '->') {
         for (var i = 0; i < docs.length; i++) {
             var c = CheckAdd(docs[i].name, server.CompletionItemKind.Function, "AA")
             if (c) c.documentation = docs[i].documentation;
@@ -1124,9 +1121,9 @@ function AddCommands(param, completions) {
     var endLine=param.position.line;
     var i=1;
     while((param.position.line-i)>0) {
-        var precLine=doc.getText(server.Range.create(param.position.line-i,0,param.position.line-i,1000));
-        if(precLine.match(contTest)) {
-            line = precLine+line;
+        var prevLine=doc.getText(server.Range.create(param.position.line-i,0,param.position.line-i,1000));
+        if(prevLine.match(contTest)) {
+            line = prevLine+line;
             startLine = param.position.line-i;
             i++;
         } else
@@ -1145,7 +1142,7 @@ function AddCommands(param, completions) {
         if(line.match(thisCommand.regEx)) {
             for(var j=0;thisCommand.length; j++) {
                 const thisPart = thisCommand[j];
-                //completitions.
+                //completions.
             }
         }
     }
@@ -1159,7 +1156,7 @@ function AddCommands(param, completions) {
  * @param {server.Range} includeRange
  */
 function completionFiles(word, startPath, allFiles, includeRange) {
-    var completitons = [], foundSlash=path.sep;
+    var completions = [], foundSlash=path.sep;
     word = word.replace("\r", "").replace("\n", "");
     var startDone = false;
     var deltaPath = ""
@@ -1192,7 +1189,7 @@ function completionFiles(word, startPath, allFiles, includeRange) {
         if (startPath && dir.toLowerCase() == startPath) startDone = true;
         var ff = fs.readdirSync(dir)
         /** @type {Array<String>} */
-        var subfiles;
+        var subFiles;
         var extRE = /\.c?h$/i;
         for (var fi = 0; fi < ff.length; fi++) {
             var fileName = ff[fi];
@@ -1201,8 +1198,8 @@ function completionFiles(word, startPath, allFiles, includeRange) {
             var completePath = path.join(dir, ff[fi]);
             var info = fs.statSync(completePath);
             if (info.isDirectory()) {
-                subfiles = fs.readdirSync(completePath);
-                if (!allFiles && subfiles.findIndex((v) => extRE.test(v)) == -1)
+                subFiles = fs.readdirSync(completePath);
+                if (!allFiles && subFiles.findIndex((v) => extRE.test(v)) == -1)
                     continue;
             } else if (!allFiles && !extRE.test(ff[fi]))
                 continue;
@@ -1218,7 +1215,7 @@ function completionFiles(word, startPath, allFiles, includeRange) {
             c.sortText = sortText ? sortText : ff[fi];
             c.detail = dir;
             c.textEdit = server.TextEdit.replace(includeRange, result);
-            completitons.push(c);
+            completions.push(c);
         }
     }
 
@@ -1235,7 +1232,7 @@ function completionFiles(word, startPath, allFiles, includeRange) {
     if (startPath && !startDone) {
         CheckDir(startPath);
     }
-    return server.CompletionList.create(completitons, false);
+    return server.CompletionList.create(completions, false);
 }
 
 function definitionFiles(fileName, startPath, origin) {
@@ -1279,7 +1276,7 @@ function definitionFiles(fileName, startPath, origin) {
 }
 
 function CompletionDBFields(word, allText, pos, pp) {
-    //precLetter = '->';
+    //prevLetter = '->';
     var pdb = pos - 2;
     var dbName = "";
     var nBracket = 0;
@@ -1291,7 +1288,7 @@ function CompletionDBFields(word, allText, pos, pp) {
         //dbName = c + dbName;
     }
     dbName = allText.substring(pdb+1,pos-1).replace(/\s+/g,"")
-    var completitions = [];
+    var competitions = [];
     function AddDB(db) {
         for (var f in db.fields) {
             var name = db.fields[f];
@@ -1301,12 +1298,12 @@ function CompletionDBFields(word, allText, pos, pp) {
                 sortText = IsInside(word, f);
             }
             if (!sortText) continue;
-            if (!completitions.find((v) => v.label.toLowerCase() == name.toLowerCase())) {
+            if (!competitions.find((v) => v.label.toLowerCase() == name.toLowerCase())) {
                 var c = server.CompletionItem.create(name);
                 c.kind = server.CompletionItemKind.Field;
                 c.documentation = db.name;
                 c.sortText = "AAAA" + sortText;
-                completitions.push(c);
+                competitions.push(c);
             }
         }
     }
@@ -1334,7 +1331,7 @@ function CompletionDBFields(word, allText, pos, pp) {
             CheckDB(pp.databases);
         }
     }
-    return completitions;
+    return competitions;
 }
 
 connection.onHover((params, cancelled) => {
@@ -1364,7 +1361,7 @@ connection.onHover((params, cancelled) => {
                 }
             }
             i++;
-            if (cancelled.isCancellationRequested) return server.CompletionList.create(completitions, false);
+            if (cancelled.isCancellationRequested) return undefined;
         }
     }
     return undefined;
@@ -1398,16 +1395,16 @@ connection.onFoldingRanges((params) => {
             rr.endCharacter = poss[i].startCol;
             ranges.push(rr);
         } else {
-            var prec = 0;
+            var prev = 0;
             for (let i = 1; i < poss.length; i++) {
                 if (poss[i].text != "exit") {
                     var rr = {};
-                    rr.startLine = poss[prec].line;
+                    rr.startLine = poss[prev].line;
                     rr.endLine = poss[i].line - deltaLine;
-                    rr.startCharacter = poss[prec].endCol;
+                    rr.startCharacter = poss[prev].endCol;
                     rr.endCharacter = poss[i].startCol;
                     ranges.push(rr);
-                    prec = i;
+                    prev = i;
                 }
             }
         }
@@ -1485,46 +1482,50 @@ connection.onRequest("harbour/docSnippet", (params) => {
     var subParams = [];
     for (var iParam = iSign + 1; iParam < pp.funcList.length; iParam++) {
         /** @type {provider.Info} */
-        var subinfo = pp.funcList[iParam];
-        if (subinfo.parent == funcInfo && subinfo.kind == "param") {
-            subParams.push(subinfo);
+        var subInfo = pp.funcList[iParam];
+        if (subInfo.parent == funcInfo && subInfo.kind == "param") {
+            subParams.push(subInfo);
         } else
             break;
     }
 
-    var snipppet = "/* \\$DOC\\$\r\n";
-    snipppet += "\t\\$TEMPLATE\\$\r\n\t\t" + funcInfo.kind + "\r\n";
-    snipppet += "\t\\$ONELINER\\$\r\n\t\t$1\r\n"
-    snipppet += "\t\\$SYNTAX\\$\r\n\t\t" + funcInfo.name + "("
+    var snippet = "/* \\$DOC\\$\r\n";
+    snippet += "\t\\$TEMPLATE\\$\r\n\t\t" + funcInfo.kind + "\r\n";
+    snippet += "\t\\$ONELINER\\$\r\n\t\t$1\r\n"
+    snippet += "\t\\$SYNTAX\\$\r\n\t\t" + funcInfo.name + "("
     for (let iParam = 0; iParam < subParams.length; iParam++) {
         const param = subParams[iParam];
-        snipppet += "<" + param.name + ">";
-        if (iParam != subParams.length - 1) snipppet += ", "
+        snippet += "<" + param.name + ">";
+        if (iParam != subParams.length - 1) snippet += ", "
     }
     if (funcInfo.kind.startsWith("function"))
-        snipppet += ") --> ${2:retValue}\r\n"
+        snippet += ") --> ${2:retValue}\r\n"
     else
-        snipppet += ")\r\n"
-    snipppet += "\t\\$ARGUMENTS\\$\r\n"
+        snippet += ")\r\n"
+    snippet += "\t\\$ARGUMENTS\\$\r\n"
     var nTab = 3;
     for (let iParam = 0; iParam < subParams.length; iParam++) {
         const param = subParams[iParam];
-        snipppet += "\t\t<" + param.name + "> $" + nTab + "\r\n";
+        snippet += "\t\t<" + param.name + "> $" + nTab + "\r\n";
         nTab++;
     }
     if (funcInfo.kind.startsWith("function")) {
-        snipppet += "\t\\$RETURNS\\$\r\n"
-        snipppet += "\t\t${2:retValue} $" + nTab + "\r\n"
+        snippet += "\t\\$RETURNS\\$\r\n"
+        snippet += "\t\t${2:retValue} $" + nTab + "\r\n"
     }
-    snipppet += "\t\\$END\\$ */"
-    return snipppet;
+    snippet += "\t\\$END\\$ */"
+    return snippet;
     })
 
 connection.onRequest(server.SemanticTokensRegistrationType.method, (param)=> {
     var doc = documents.get(param.textDocument.uri);
     if(!doc) return [];
     var ret = [];
-    var pp = getDocumentProvider(doc);
+    var pp// = getDocumentProvider(doc);
+    if (doc.uri in files)
+        pp = files[doc.uri]
+    else
+        return [] // does not parse unknown files
     for (let i = 0; i < pp.funcList.length; i++) {
         /** @type{provider.Info} */
         const info = pp.funcList[i];

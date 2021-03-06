@@ -49,7 +49,7 @@ Provider.prototype.Clear = function () {
     this.currLinePreProc = "";
     /** @type {string} current line parsing, without string and comments */
     this.currLine = "";
-    this.clppArray = [];
+    this.clPPArray = [];
     this.clArray = [];
     /** @type {number} current line number */
     this.lineNr = -1;
@@ -223,7 +223,7 @@ Provider.prototype.addInfo = function (name, kind, like, parent, search) {
                         (this.removedComments[ic].pos < nextComma && //inside this elements commas
                             this.removedComments[ic].pos > prevComma) ||
                         (this.removedComments[ic].pos >= line.length &&  // the comment is at end of line
-                            line.indexOf(",", nextComma + 1) < 0))) // it is the last elemen in the line
+                            line.indexOf(",", nextComma + 1) < 0))) // it is the last element in the line
                         thisComment = this.removedComments[ic].value;
                 }
                 var ii = new Info(name, kind, like, parent, this.currentDocument,
@@ -482,7 +482,7 @@ function CommandPartToRegex(text) {
 		return undefined;
 	var pattern;
     // https://stackoverflow.com/a/3561711/854279
-	// escape all control charecters
+	// escape all control characters
 	pattern = text.trim().replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 	//
 	pattern = pattern.replace(/\s+/g, "\\s*");
@@ -831,16 +831,16 @@ Provider.prototype.parse = function (line) {
     var wasCont = this.cont;
     var linePP = this.linePP(line);
     if(wasCont) {
-        this.clppArray.push(line);
+        this.clPPArray.push(line);
         this.clArray.push(linePP);
     } else {
-        this.clppArray = [line];
+        this.clPPArray = [line];
         this.clArray = [linePP];
         this.startLine = this.lineNr;
     }
     if(!this.cMode) this.findDBReferences(linePP)
     if (this.comment || this.pragmaText || this.cont) return;
-    this.currLinePreProc = this.clppArray.join("\r\n")
+    this.currLinePreProc = this.clPPArray.join("\r\n")
     this.currLine = this.clArray.join("\r\n")
     if(this.currLine.trim().length == 0) return;
     /** @type{string[]} */
@@ -956,9 +956,9 @@ Provider.prototype.findDBReferences = function (line) {
             line = " ".repeat(arrow+2) + line.substr(arrow+2)
         }
     }
-    var precWord, cmpName = ""
+    var prevWord, cmpName = ""
     while (match = wordRegEx.exec(line)) {
-        precWord = cmpName
+        prevWord = cmpName
         var prevC = match.index>0? line[match.index-1] : ""
         if(match[2][0] == "." && prevC==".") // logical keyword
             continue;
@@ -981,9 +981,9 @@ Provider.prototype.findDBReferences = function (line) {
             type="field"
             dbName = "";
         }
-        if(precWord.startsWith("func") || precWord.startsWith("proc")) type = "function"
-        if(precWord=="method") type = "method"
-        if(precWord=="access" || precWord=="assign" || precWord=="data") type = "data"
+        if(prevWord.startsWith("func") || prevWord.startsWith("proc")) type = "function"
+        if(prevWord=="method") type = "method"
+        if(prevWord=="access" || prevWord=="assign" || prevWord=="data") type = "data"
 
         if(match[2].endsWith("->")) {
             var pos = match.index + match[0].length - 3;
@@ -1049,7 +1049,7 @@ removeStrings(group_keywords);
  * @param {Array<Group>} destStack destination array of pending groups
  * @param {Array<Array<string|RegExp>>} keywords  array of groups keywords
  * @param {String} checkString string to check, already trimmed at start  and converted to lowercase
- * @param {numer} pos number of trimmed character at start
+ * @param {number} pos number of trimmed character at start
  * @param {number} lineNr current line number
  */
 function GroupManagement(dest, destStack, keywords, checkString, pos, lineNr) {
