@@ -48,10 +48,11 @@ function showEditor(context) {
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body>`;
     for(let subZone in section) {
-        html += `<h1>${subZone}</h1><div>`
+        let k0 = `harbour.formatter.${subZone}`;
+        html += `<h1>${localize(k0)}</h1><div>`
         for(let zone in section[subZone]) {
             let cnf = section[subZone][zone];
-            let k = `harbour.formatter.${subZone}.${zone}`;
+            let k = k0+`.${zone}`;
             let cfg = package[k];
             html += `<label>`
             switch (cfg.type) {
