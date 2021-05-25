@@ -2,7 +2,7 @@
     "name": "harbour",
     "displayName": "Harbour and xHarbour",
     "description": "Harbour and xHarbour languages support for visual studio code",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "publisher": "aperricone",
     "icon": "harbourIcon.png",
     "main": "./dist/extension",
@@ -11,7 +11,8 @@
     },
     "activationEvents": [
         "onLanguage:harbour",
-        "onCommand:harbour.getDbgCode",
+        "onCommand:harbour.getdbgcode",
+        "onCommand:harbour.setupCodeFormat",
         "workspaceContains:**/*.prg"
     ],
     "engines": {
@@ -25,6 +26,7 @@
     ],
     "dependencies": {
         "true-case-path": "^2.2.1",
+        "vscode-codicons": "0.0.17",
         "vscode-debugadapter": "^1.44.0",
         "vscode-debugprotocol": "^1.44.0",
         "vscode-languageclient": "^6.1.4",
@@ -54,6 +56,10 @@
             {
                 "command": "harbour.getDbgCode",
                 "title": "%harbour.dbgCodeCmd%"
+            },
+            {
+                "command": "harbour.setupCodeFormat",
+                "title": "%harbour.formatter.cmd%"
             }
         ],
         "configuration": {
@@ -100,6 +106,102 @@
                     "default": 0,
                     "minimum": 0,
                     "description": "%harbour.workspaceDepth%"
+                },
+                "harbour.formatter.indent.funcBody": {
+                    "type": "boolean",
+                    "description": "%harbour.formatter.indent.funcBody%",
+                    "default": true
+                },
+                "harbour.formatter.indent.variables": {
+                    "type": "boolean",
+                    "description": "%harbour.formatter.indent.local%",
+                    "default": true
+                },
+                "harbour.formatter.indent.logical": {
+                    "type": "boolean",
+                    "description": "%harbour.formatter.indent.logical%",
+                    "default": true
+                },
+                "harbour.formatter.indent.case": {
+                    "type": "boolean",
+                    "description": "%harbour.formatter.indent.case%",
+                    "default": true
+                },
+                "harbour.formatter.replace.not": {
+                    "type": "string",
+                    "description": "%harbour.formatter.replace.not%",
+                    "enum": [
+                        "ignore",
+                        "use .not.",ù
+                        "use !"
+                    ],
+                    "default": "use !"
+                },
+                "harbour.formatter.replace.asterisk": {
+                    "type": "string",
+                    "description": "%harbour.formatter.replace.asterisk%",
+                    "enum": [
+                        "ignore",
+                        "use //",
+                        "use *",
+                        "use &&"
+                    ],
+                    "default": "use //"
+                },
+                "harbour.formatter.replace.amp": {
+                    "type": "string",
+                    "description": "%harbour.formatter.replace.amp%",
+                    "enum": [
+                        "ignore",
+                        "use //",
+                        "use &&"
+                    ],
+                    "default": "use //"
+                },
+                "harbour.formatter.case.commands": {
+                    "type": "string",
+                    "description": "%harbour.formatter.case.commands%",
+                    "enum": [
+                        "ignore",
+                        "upperCase",
+                        "lowerCase",
+                        "title"
+                    ],
+                    "default": "upperCase"
+                },
+                "harbour.formatter.case.knowFunction": {
+                    "type": "string",
+                    "description": "%harbour.formatter.case.knowFunction%",
+                    "enum": [
+                        "ignore",
+                        "upperCase",
+                        "lowerCase",
+                        "title",
+                        "asDefine"
+                    ],
+                    "default": "asDefine"
+                },
+                "harbour.formatter.case.unknowFunction": {
+                    "type": "string",
+                    "description": "%harbour.formatter.case.unknowFunction%",
+                    "enum": [
+                        "ignore",
+                        "upperCase",
+                        "lowerCase",
+                        "title"
+                    ],
+                    "default": "ignore"
+                },
+                "harbour.formatter.case.directives": {
+                    "type": "string",
+                    "description": "%harbour.formatter.case.directives%",
+                    "enum": [
+                        "ignore",
+                        "upperCase",
+                        "lowerCase",
+                        "title"
+                    ],
+                    "default": "lowerCase"
                 }
             }
         },

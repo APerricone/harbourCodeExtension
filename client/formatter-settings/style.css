@@ -1,0 +1,94 @@
+body {
+    font-family: var(--vscode-font-family);
+    font-weight: var(--vscode-font-weight);
+    font-size: var(--vscode-font-size);
+}
+
+* {
+    font-family: inherit;
+}
+
+h1 {
+    font-size: 1.85em;
+}
+
+input {
+    border-color: var(--vscode-editorWidget-border);
+    background-color: var(--vscode-editorWidget-background);
+    color: var(--vscode-editorWidget-foreground);
+}
+
+*:focus {
+    outline-color: var(--vscode-focusBorder) !important;
+    border-color: var(--vscode-focusBorder) !important;
+}
+
+label {
+    border: 1px solid transparent;
+    display: block;
+}
+label:focus-within {
+    background: var(--vscode-settings-focusedRowBackground);
+    border-color: var(--vscode-notebook-focusedRowBorder);
+}
+label:hover, div:hover {
+    background: var(--vscode-settings-focusedRowBackground);
+}
+
+select {
+    background-color: var(--vscode-editorWidget-background);
+    color: var(--vscode-editorWidget-foreground);
+    border-color: var(--vscode-editorWidget-border);
+    width: 25em;
+    padding: 0.15px 0.6em;
+    height: 2em;
+}
+
+input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    -webkit-appearance: none;
+}
+
+input[type="checkbox"]::before {
+    content: '';
+    font-family: codicon;
+    width: 1rem;
+    height: 1rem;
+    border-color: var(--vscode-editorWidget-border);
+    background: var(--vscode-editorWidget-background);
+    color: var(--vscode-editorWidget-foreground);
+    display: inline-block;
+    font-size: 1rem;
+    text-align: center;
+}
+
+input[type="checkbox"]:checked:before {
+    content: '\eab2';
+}
+label {
+    user-select: none;
+    cursor: pointer;
+}
+
+#preview {
+    display: block;
+    position: fixed;
+    top: 2rem;
+    bottom: 2rem;
+    right: 2rem;
+    width: 40%;
+    border: 1px solid var(--vscode-editorWidget-border);
+    background: var(--vscode-editorWidget-background);
+    white-space: pre;
+    font-family: var(--vscode-editor-font-family);
+    padding: 1rem;
+}
+
+#preview > .keyword {
+    color: var(--vscode-debugTokenExpression-name);
+}
+
+#preview > .comment {
+    color: var(--vscode-input-placeholderForeground);
+}

@@ -7,10 +7,7 @@ const decorator = require('./decorator.js');
 const docCreator = require('./docCreator.js');
 const taskProvider = require('./taskProvider.js');
 const net = require("net");
-const debugProvider = require("./debugProvider.js");
-
-var diagnosticCollection;
-
+const formatEditor = require("./formatEditor.js");
 
 function activate(context) {
 	vscode.languages.setLanguageConfiguration('harbour', {
@@ -37,13 +34,12 @@ function activate(context) {
 	var cl = new client.LanguageClient('HarbourServer', 'Harbour Server', serverOptions, clientOptions);
 	cl.registerProposedFeatures()
 	context.subscriptions.push(cl.start());
-	vscode.commands.registerCommand('harbour.getDbgCode', GetDbgCode);
+	vscode.commands.registerCommand('harbour.getDbgCode', () => { getDbgCode(context); })
 	vscode.commands.registerCommand("harbour.debugList", DebugList)
-	//vscode.languages.registerFoldingRangeProvider(['harbour'], new decorator.HBProvider());
+	vscode.commands.registerCommand("harbour.setupCodeFormat", () => { formatEditor.showEditor(context); })
 	decorator.activate(context,cl);
 	docCreator.activate(context,cl);
 	taskProvider.activate();
-	//debugProvider.activate();
 }
 
 function DebugList(args) {
@@ -91,8 +87,8 @@ function DebugList(args) {
 	});
 }
 
-function GetDbgCode() {
-	fs.readFile(path.resolve(__dirname, path.join('..','extra','dbg_lib.prg')),(err,data) =>
+function getDbgCode(context) {
+	fs.readFile(path.join(context.extensionPath,'extra','dbg_lib.prg'),(err,data) =>
     {
         if(!err)
 			vscode.workspace.openTextDocument({
