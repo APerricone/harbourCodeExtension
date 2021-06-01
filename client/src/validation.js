@@ -83,6 +83,7 @@ function validate(textDocument)
 						}
 						diagnostics[r[1]].push(diag)
 					}
+					if(lineNr==0) break;
 					testLine = textDocument.lineAt(--lineNr);
 				} while(lineContRegEx.test(testLine.text))
 			}

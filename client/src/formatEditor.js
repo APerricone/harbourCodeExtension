@@ -72,7 +72,7 @@ function showEditor(context) {
                             } else {
                                 v = localize("harbour.formatter.enum.value."+v);
                             }
-                            html += `<option`
+                            html += `<option value="${cfg.enum[idx]}"`
                             if(cnf==cfg.enum[idx]) html += " selected "
                             html += `>${escapeHTML(v)}</option>`
                         }
@@ -91,7 +91,36 @@ function showEditor(context) {
     }
     html += `<div id="preview"></div>`;
     html += `</body></html>`;
+    panel.webview.onDidReceiveMessage((m)=> onEditorMessage(m));
     panel.webview.html =html;
+}
+
+function onEditorMessage(m) {
+    switch (m.command) {
+        case "currConfig":
+            updateConfig(m.value)
+            break;
+
+        default:
+            break;
+    }
+}
+
+function updateConfig(readedValue) {
+    var currValue = vscode.workspace.getConfiguration('harbour');
+    var section = readedValue.formatter;
+    for(let subZone in section) {
+        let k0 = `formatter.${subZone}`;
+        for(let zone in section[subZone]) {
+            let k = k0+`.${zone}`;
+            var ins = currValue.inspect(k);
+            var rv = section[subZone][zone];
+            if(rv==ins.defaultValue)
+                currValue.update(k,undefined);
+            else
+                currValue.update(k,rv);
+        }
+    }
 }
 
 exports.showEditor = showEditor;

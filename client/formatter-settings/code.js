@@ -1,3 +1,6 @@
+/* eslint-env browser */
+const vscode = acquireVsCodeApi();
+
 var harbour = {};
 function readConfig() {
     harbour = {};
@@ -21,13 +24,16 @@ function readConfig() {
                 }
                 break;
             case "SELECT":
-                currDest[depth[depth.length-1]] = ele.selectedIndex;
+                currDest[depth[depth.length-1]] = ele.value;
             default:
                 break;
         }
         $.extend(true,harbour,obj);
         //console.log(ele);
     })
+    var changeCmd = {"command":"currConfig","value":harbour}
+    vscode.postMessage(changeCmd);
+
 }
 String.prototype.contains = function(p) {
     return this.indexOf(p)>=0;
@@ -75,39 +81,39 @@ function naiveFormat(code) {
                 inIf += 1;
             currTab+=tabSize*inIf;
         }
-        if(harbour.formatter.replace.not>0 && line.startsWith("if "))
+        if(harbour.formatter.replace.not!="ignore" && line.startsWith("if "))
             switch (harbour.formatter.replace.not) {
-                case 1:
+                case "use .not.":
                     lines[i] = lines[i].replace(/!/g,".not.")
                     break;
-                case 2:
+                case "use !":
                     lines[i] = lines[i].replace(/\.not\./g,"!")
                     break;
                 default:
                     break;
             }
-        if(harbour.formatter.replace.asterisk>0 && (line.startsWith("*")||line.startsWith("//")||line.startsWith("&&"))) {
+        if(harbour.formatter.replace.asterisk!="ignore" && (line.startsWith("*")||line.startsWith("//")||line.startsWith("&&"))) {
             line = line.substring(line.startsWith("*")?1:2);
             switch (harbour.formatter.replace.asterisk) {
-                case 1:
+                case "use //":
                     lines[i] = spaces+"//"+line
                     break;
-                case 2:
+                case "use *":
                     lines[i] = spaces+"*"+line
                     break;
-                case 3:
+                case "use &&":
                     lines[i] = spaces+"&&"+line
                     break;
                 default:
                     break;
             }
         } else
-        if(harbour.formatter.replace.amp>0 && (line.contains("//")||line.contains("&&"))) {
+        if(harbour.formatter.replace.amp!="ignore" && (line.contains("//")||line.contains("&&"))) {
             switch (harbour.formatter.replace.amp) {
-                case 1:
+                case "use //":
                     lines[i] = lines[i].replace("&&","//");
                     break;
-                case 2:
+                case "use &&":
                     lines[i] = lines[i].replace("//","&&");
                     break;
                 default:
@@ -169,7 +175,7 @@ return a+b // how much is it?
 // end
 `;
 
-function onChange() {
+function onChange(e) {
     console.log("change")
     readConfig();
     setPreview(code);

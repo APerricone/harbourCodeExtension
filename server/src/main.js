@@ -5,7 +5,7 @@ const path = require("path");
 const Uri = require("vscode-uri").URI;
 const trueCase = require("true-case-path")
 const server_textdocument = require("vscode-languageserver-textdocument");
-const { SemanticTokenTypes } = require('vscode-languageserver');
+const { SemanticTokenTypes, TextEdit } = require('vscode-languageserver');
 
 var connection = server.createConnection(
     new server.IPCMessageReader(process),
@@ -45,6 +45,8 @@ var databases;
 var canLocationLink;
 /** @type {boolean} */
 var lineFoldingOnly;
+/** @type {object} */
+var currStyleConfig;
 
 var keywords = provider.keywords
 
@@ -129,9 +131,8 @@ connection.onInitialize(params => {
                     ]
                 },
                 full: true
-            }
-
-
+            },
+            documentFormattingProvider: true
         }
     }
 });
@@ -143,11 +144,21 @@ connection.workspace.onDidChangeWorkspaceFolders(params=>{
 connection.onDidChangeConfiguration(params => {
     var searchExclude = params.settings.search.exclude;
     // minimatch
+    wordBasedSuggestions = params.settings.editor.wordBasedSuggestions
+    currStyleConfig = params.settings.harbour.formatter;
+    var oldDirs = includeDirs;
+    var oldDepth = workspaceDepth;
     includeDirs = params.settings.harbour.extraIncludePaths;
     includeDirs.splice(0, 0, ".")
     workspaceDepth = params.settings.harbour.workspaceDepth;
-    wordBasedSuggestions = params.settings.editor.wordBasedSuggestions
-    ParseWorkspace();
+    var doParse = workspaceDepth!=oldDepth || oldDirs.length!=includeDirs.length;
+    if(!doParse) {
+        for(let i=0;i<includeDirs.length;++i) {
+            doParse = doParse || includeDirs[i]!=oldDirs[i];
+        }
+    }
+    if(doParse)
+        ParseWorkspace();
 
 })
 
@@ -1652,7 +1663,86 @@ connection.onReferences( (params) => {
     return ret;
 })
 
-
-//connection.onDocumentFormatting =
+connection.onDocumentFormatting( (params) => {
+    var ret = [];
+    var doc = documents.get(params.textDocument.uri);
+    var pThis;
+    if(doc.uri in files)
+        pThis = files[doc.uri];
+    else
+        pThis = getDocumentProvider(doc);
+    var tabs=Array(doc.lineCount);
+    tabs.fill(0);
+    for (let iSign = 0; iSign < pThis.funcList.length; iSign++) {
+        /** @type {provider.Info} */
+        var info = pThis.funcList[iSign];
+        if (info.startLine != info.endLine) {
+            var doTab = false;
+            if(currStyleConfig.indent.funcBody && ["class", "method", "function","procedure", "function*","procedure*"].indexOf(info.kind) >= 0)
+                doTab = true;
+            if(doTab) {
+                for(let l=info.startLine+1;l<info.endLine;++l) {
+                    tabs[l]+=1;
+                }
+            }
+        }
+    }
+    for(let i=0;i<pThis.groups.length;++i) {
+        var group = pThis.groups[i];
+        var doTab = false;
+        switch(group.type) {
+            case "if": case "try": case "sequence":
+                doTab = currStyleConfig.indent.logical;
+                break;
+            case "for": case "while":
+                doTab = currStyleConfig.indent.cycle;
+                break;
+            case "case":
+                // simple "case" case,
+                doTab = currStyleConfig.indent.switch && !currStyleConfig.indent.case;
+                break;
+        }
+        if(doTab) {
+            const startLine = group.positions[0].line+1;
+            const endLine = group.positions[group.positions.length-1].line;
+            for(let l=startLine;l<endLine;++l) {
+                tabs[l]+=1;
+            }
+        }
+        if(currStyleConfig.indent.switch && currStyleConfig.indent.case &&
+                group.type=="case") {
+            // complex "case" case,
+            const startLine = group.positions[0].line+1;
+            const endLine = group.positions[group.positions.length-1].line;
+            for(let l=startLine;l<endLine;++l) {
+                tabs[l]+=2;
+            }
+            for(let p=1;p<group.positions.length;++p) {
+                if(group.positions[p].text=="case")
+                    tabs[group.positions[p].line]-=1;
+            }
+        }
+    }
+    for(let i=0;i<doc.lineCount;++i) {
+        if(tabs[i]>0) {
+            let line = doc.getText(server.Range.create(i, 0, i, 1000));
+            var unspaced = line.trimStart();
+            if(unspaced.length>0) {
+                var space = "";
+                if(params.options.insertSpaces)
+                    space = " ".repeat(params.options.tabSize * tabs[i]);
+                else
+                    space = "\t".repeat(tabs[i]);
+                if(!line.startsWith(space) || line[space.length]==" " || line[space.length]=="\t") {
+                    var firstNoSpace=0;
+                    while(line[firstNoSpace]==" " || line[firstNoSpace]=="\t") firstNoSpace++;
+                    var currRange = server.Range.create(i, 0, i, firstNoSpace);
+                    ret.push(server.TextEdit.replace(currRange, space));
+                }
+            }
+        }
+    }
+    return ret;
+})
 
 connection.listen();
