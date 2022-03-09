@@ -35,7 +35,7 @@
                 "-lcode_dbg", "-L.", "-gtcgi", "-w", "-ql", "-b", "-gc3", "-winuni", "-debug"
             ],
             "windows": {
-                "setupBatch": "c:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build\\vcvars32.bat"
+                "setupBatch": "c:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\vcvars32.bat"
             }
         },
         {
@@ -52,9 +52,9 @@
                     "HB_INSTALL_PREFIX": "C:\\harbour"
                 }
             },
-            "window":
+            "windows":
             {
-                "setupBatch": "c:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build\\vcvars32.bat"
+                "setupBatch": "c:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\vcvars32.bat"
             },
             "extraArgs": ["-w3", "-es2", "-ocode_dbg","-gc3", "-hblib","-inc","-winuni"]
         },
