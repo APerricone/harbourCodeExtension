@@ -490,7 +490,7 @@ static func sendAreaInfo(t_oDebugInfo, nArea, lSend)
          cLine += hb_ntos((nArea)->(FCount()))+":"
          cLine += hb_ntos((nArea)->(RecNo()))+":"
          cLine += hb_ntos((nArea)->(RecCount()))+":"
-         cLine += hb_ntos((nArea)->(OrdName(IndexOrd())))+":"
+         cLine += (nArea)->(OrdName(IndexOrd()))+":"
          hb_inetSend(t_oDebugInfo['socket'], cLine+CRLF)
       endif
       return .T.

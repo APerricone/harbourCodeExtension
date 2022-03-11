@@ -54,7 +54,7 @@ harbourDebugSession.prototype.processInput = function(buff)
     for (var i = 0; i < lines.length; i++)
     {
         var line = lines[i];
-        //if (!line.startsWith("LOG:")) this.sendEvent(new debugadapter.OutputEvent(">>"+line+"\r\n","stdout"))
+        //if(!line.startsWith("LOG:")) this.sendEvent(new debugadapter.OutputEvent(">>"+line+"\r\n","stdout"))
         if(line.length==0) continue;
         if(this.processLine)
         {
@@ -483,8 +483,10 @@ harbourDebugSession.prototype.sendAreaHeaders = function(response,cmd) {
     var infos = this.areasInfos[parseInt(cmd.substring(4))];
     var vars = [];
     var baseEval = infos[1]+"->"
-    var v;
+    var v, recNo = parseInt(infos[4]), recCount = parseInt(infos[5]);
     v = new debugadapter.Variable("recNo",infos[4]);
+    if(recNo>recCount) v.value="eof"
+    if(recNo<=0) v.value="bof"
     v.evaluateName = baseEval+"(recNo())"
     vars.push(v);
     v = new debugadapter.Variable("recCount",infos[5]);
@@ -492,6 +494,7 @@ harbourDebugSession.prototype.sendAreaHeaders = function(response,cmd) {
     vars.push(v);
     v = new debugadapter.Variable("Scope",'"'+infos[6]+'"')
     v.evaluateName = baseEval+"(OrdName(IndexOrd()))"
+    v.type="C"
     vars.push(v);
     var columns = new debugadapter.Variable("Fields","")
     columns.indexedVariables = parseInt(infos[3]);
@@ -586,10 +589,9 @@ harbourDebugSession.prototype.sendVariables = function(id,line) {
         var infos = line.split(":");
         if(infos[0]=="AREA") {
             // workareas
-            // AREA:Alias:Area:fCount:01selected:recno:reccount:scope:
-            //   0    1    2     3     4           5     6       7
+            // AREA:Alias:Area:fCount:recno:reccount:scope:
+            //   0    1    2     3       4     5       6
             var value = "AREA "+infos[2];
-            if(parseInt(infos[4])>0) value+=" selected"
             var v = new debugadapter.Variable(infos[1],value);
             v.indexedVariables = 4; //recno-recCount-Scope-Fields
             this.areasInfos[parseInt(infos[2])]=infos;
