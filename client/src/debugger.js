@@ -1,5 +1,5 @@
-const debugadapter = require("vscode-debugadapter");
-const debugprotocol = require("vscode-debugprotocol");
+const debugadapter = require("@vscode/debugadapter");
+const debugprotocol = require("@vscode/debugprotocol");
 const net = require("net");
 const path = require("path");
 const fs = require("fs");
@@ -39,6 +39,7 @@ var harbourDebugSession = function()
     this.evaluateResponses = [];
     /** @type{DebugProtocol.CompletionsResponse} */
     this.completionsResponse = undefined;
+    this.areasInfos = [];
 }
 
 harbourDebugSession.prototype = new debugadapter.DebugSession();
@@ -53,7 +54,7 @@ harbourDebugSession.prototype.processInput = function(buff)
     for (var i = 0; i < lines.length; i++)
     {
         var line = lines[i];
-        if (!line.startsWith("LOG:")) this.sendEvent(new debugadapter.OutputEvent(">>"+line+"\r\n","stdout"))
+        //if (!line.startsWith("LOG:")) this.sendEvent(new debugadapter.OutputEvent(">>"+line+"\r\n","stdout"))
         if(line.length==0) continue;
         if(this.processLine)
         {
@@ -473,16 +474,45 @@ harbourDebugSession.prototype.sendScope = function(inError)
     this.sendResponse(response)
 }
 
+/**
+ * @param {String} cmd
+ */
+harbourDebugSession.prototype.sendAreaHeaders = function(response,cmd) {
+    // AREA:Alias:Area:fCount:recno:reccount:scope:
+    //   0    1    2     3      4     5       6
+    var infos = this.areasInfos[parseInt(cmd.substring(4))];
+    var vars = [];
+    var baseEval = infos[1]+"->"
+    var v;
+    v = new debugadapter.Variable("recNo",infos[4]);
+    v.evaluateName = baseEval+"(recNo())"
+    vars.push(v);
+    v = new debugadapter.Variable("recCount",infos[5]);
+    v.evaluateName = baseEval+"(recCount())"
+    vars.push(v);
+    v = new debugadapter.Variable("Scope",'"'+infos[6]+'"')
+    v.evaluateName = baseEval+"(OrdName(IndexOrd()))"
+    vars.push(v);
+    var columns = new debugadapter.Variable("Fields","")
+    columns.indexedVariables = parseInt(infos[3]);
+    columns.variablesReference = this.getVarReference(cmd+":FIELDS",baseEval);
+    vars.push(columns);
+    response.body = {variables: vars}
+    this.sendResponse(response)
+}
+
 harbourDebugSession.prototype.variablesRequest = function(response,args)
 {
-    var hbStart = args.start ? args.start+1 : 1;
-    var hbCount = args.count ? args.count : 0;
-    var prefix;
-    if(args.variablesReference<=this.variableCommands.length)
-    {
+    if(args.variablesReference<=this.variableCommands.length) {
+        var hbStart = args.start ? args.start+1 : 1;
+        var hbCount = args.count ? args.count : 0;
+        var cmd = this.variableCommands[args.variablesReference-1];
+        if(cmd.startsWith("AREA") && cmd.indexOf(":")<0) {
+            this.sendAreaHeaders(response,cmd)
+            return;
+        }
         this.varResp[args.variablesReference-1] = response;
-        this.command(`${this.variableCommands[args.variablesReference-1]}\r\n`+
-                          `${this.currentStack}:${hbStart}:${hbCount}\r\n`);
+        this.command(`${cmd}\r\n${this.currentStack}:${hbStart}:${hbCount}\r\n`);
     } else
         this.sendResponse(response)
 }
@@ -504,10 +534,8 @@ harbourDebugSession.prototype.getVarReference = function(line,eval)
     return this.variableCommands.length;
 }
 
-harbourDebugSession.prototype.getVariableFormat = function(dest,type,value,valueName,line,id)
-{
-    if(type=="C")
-    {
+harbourDebugSession.prototype.getVariableFormat = function(dest,type,value,valueName,line,id) {
+    if(type=="C") {
         value = value.replace(/\\\$\\n/g,"\n")
         value = value.replace(/\\\$\\r/g,"\r")
     }
@@ -521,8 +549,7 @@ harbourDebugSession.prototype.getVariableFormat = function(dest,type,value,value
         if(this.variableEvaluations[id] && this.variableEvaluations[id].endsWith("["))
             dest.evaluateName += "]";
     }
-    switch(type)
-    {
+    switch(type) {
         case "A":
             dest.variablesReference = this.getVarReference(line,dest.evaluateName+"[");
             dest[valueName] = `ARRAY(${value})`;
@@ -543,8 +570,7 @@ harbourDebugSession.prototype.getVariableFormat = function(dest,type,value,value
     return dest;
 }
 
-harbourDebugSession.prototype.sendVariables = function(id,line)
-{
+harbourDebugSession.prototype.sendVariables = function(id,line) {
     var vars = [];
     this.processLine = function(line)
     {
@@ -560,10 +586,15 @@ harbourDebugSession.prototype.sendVariables = function(id,line)
         var infos = line.split(":");
         if(infos[0]=="AREA") {
             // workareas
-            // AREA:Alias:Area:fCount
-            var v = new debugadapter.Variable(infos[1],"AREA");
-            v.indexedVariables = parseInt(infos[3])
-            v.variablesReference = this.getVarReference("AREA"+infos[2],+infos[1]+"->")
+            // AREA:Alias:Area:fCount:01selected:recno:reccount:scope:
+            //   0    1    2     3     4           5     6       7
+            var value = "AREA "+infos[2];
+            if(parseInt(infos[4])>0) value+=" selected"
+            var v = new debugadapter.Variable(infos[1],value);
+            v.indexedVariables = 4; //recno-recCount-Scope-Fields
+            this.areasInfos[parseInt(infos[2])]=infos;
+            //parseInt(infos[3])
+            v.variablesReference = this.getVarReference("AREA"+infos[2],infos[1]+"->")
             //v = this.getVariableFormat(v,infos[5],infos[6],"value",line,id);
             vars.push(v);
             return

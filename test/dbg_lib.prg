@@ -454,28 +454,48 @@ static procedure sendWorkAreas(cParams,prefix)
    local aParams := hb_aTokens(cParams,":")
    local iStart := val(aParams[2])
    local iCount := val(aParams[3]), iEnd
-   local nArea, idxSend, cAlias,cLine
+   local nArea, idxSend
+   local nCurrent := Select()
 
    hb_inetSend(t_oDebugInfo['socket'],prefix+CRLF)
+   //hb_inetSend(t_oDebugInfo['socket'],"END"+CRLF)
    iStart := iif(iStart<1				   , 1  , iStart )
    iCount := iif(iCount<1				   , 65535 , iCount )
    iEnd := iStart+iCount
-   idxSend := 0
+   idxSend := 1
+   if sendAreaInfo(t_oDebugInfo, nCurrent, idxSend>=iStart)
+      idxSend++
+   endif
    FOR nArea := 1 TO 65535
-      cAlias := Alias(nArea)
-      if !empty(cAlias)
-         idxSend++
-         if idxSend>iEnd
-            exit
-         endif
-         if idxSend>=iStart .and. idxSend<=iEnd
-            cLine := "AREA:"+ cAlias+":"+hb_ntos(nArea)+":"+hb_ntos((nArea)->(FCount()))
-            hb_inetSend(t_oDebugInfo['socket'], cLine+CRLF)
+      if nArea!=nCurrent
+         if sendAreaInfo(t_oDebugInfo, nArea, idxSend>=iStart)
+            idxSend++
+            if idxSend>iEnd
+               exit
+            endif
          endif
       endif
    next
    hb_inetSend(t_oDebugInfo['socket'],"END"+CRLF)
 return
+
+static func sendAreaInfo(t_oDebugInfo, nArea, lSend)
+   LOCAL cAlias, cLine
+   cAlias := Alias(nArea)
+   if !empty(cAlias)
+      if lSend
+         // AREA:Alias:Area:fCount:recno:reccount:scope:
+         cLine := "AREA:"+ cAlias+":"
+         cLine += hb_ntos(nArea)+":"
+         cLine += hb_ntos((nArea)->(FCount()))+":"
+         cLine += hb_ntos((nArea)->(RecNo()))+":"
+         cLine += hb_ntos((nArea)->(RecCount()))+":"
+         cLine += hb_ntos((nArea)->(OrdName(IndexOrd())))+":"
+         hb_inetSend(t_oDebugInfo['socket'], cLine+CRLF)
+      endif
+      return .T.
+   endif
+return .F.
 
 static procedure sendArea(cParams,prefix)
    LOCAL t_oDebugInfo := __DEBUGITEM()
@@ -499,7 +519,7 @@ static procedure sendArea(cParams,prefix)
    //idxSend := 0
    FOR i := iStart TO iEnd
       value := (nArea)->(FieldGet(i))
-      cLine := prefix + ":"+hb_ntos(i)+":::" + ;
+      cLine := prefix + ":"+hb_ntos(i)+"::" + ;
          (nArea)->(FieldName(i)) + ":" + valtype(value) + ":" + format(value)
          hb_inetSend(t_oDebugInfo['socket'],cLine + CRLF )
 
