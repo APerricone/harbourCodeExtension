@@ -4,5 +4,7 @@ debugger.md
 copy.*
 .gitignore
 node_modules
+!node_modules/@vscode/codicons/dist/codicon.css
+!node_modules/@vscode/codicons/dist/codicon.ttf
 src
 webpack.config.js

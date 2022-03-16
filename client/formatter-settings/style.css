@@ -83,6 +83,7 @@ label {
     white-space: pre;
     font-family: var(--vscode-editor-font-family);
     padding: 1rem;
+    overflow: hidden;
 }
 
 #preview > .keyword {

@@ -1684,6 +1684,12 @@ connection.onDocumentFormatting( (params) => {
                 for(let l=info.startLine+1;l<info.endLine;++l) {
                     tabs[l]+=1;
                 }
+                let doLast = false;
+                if((info.kind.startsWith("func") || info.kind.startsWith("proc")) && info.foundLike=="definition") {
+                    let line = doc.getText(server.Range.create(info.endLine, 0, info.endLine, 1000));
+                    doLast = !/^\s*ret(u(r(n?)?)?)?/.test(line);
+                }
+                if(doLast) tabs[info.endLine]+=1
             }
         }
     }
@@ -1724,15 +1730,18 @@ connection.onDocumentFormatting( (params) => {
         }
     }
     for(let i=0;i<doc.lineCount;++i) {
-        if(tabs[i]>0) {
+        let state = pThis.lineStates[i];
+        if(state.type==0) {
+            let t = tabs[i];
+            if(i>0 && pThis.lineStates[i-1].state==2) t++;
             let line = doc.getText(server.Range.create(i, 0, i, 1000));
             var unspaced = line.trimStart();
             if(unspaced.length>0) {
                 var space = "";
                 if(params.options.insertSpaces)
-                    space = " ".repeat(params.options.tabSize * tabs[i]);
+                    space = " ".repeat(params.options.tabSize * t);
                 else
-                    space = "\t".repeat(tabs[i]);
+                    space = "\t".repeat(t);
                 if(!line.startsWith(space) || line[space.length]==" " || line[space.length]=="\t") {
                     var firstNoSpace=0;
                     while(line[firstNoSpace]==" " || line[firstNoSpace]=="\t") firstNoSpace++;

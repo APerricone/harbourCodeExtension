@@ -114,12 +114,12 @@ Provider.prototype.Clear = function () {
 
 /**
  * @constructor
- * @param {(0|1|2)} type the state of line: 0 is an harbour line, 1 is a C line, 2 is a text line
- * @param {Boolean} comment this indicate that next line starts with a comment (this line or a previous ones contains a /* )
+ * @param {(0|1|2)} type the type of line: 0 is an harbour line, 1 is a C line, 2 is a text line
+ * @param {(0|1|2)} state the state: 0 normal, 1 ends inside a multiline comment, ends with a ; so the statement continues
  */
-function lineState(type,comment) {
+function lineState(type,state) {
     this.type = typeof(type)=="number"? type : 0;
-    this.comment = typeof(comment)=="boolean"? comment :  false;
+    this.state = typeof(state)=="number"? state : 0;
 }
 
 /**
@@ -284,7 +284,7 @@ Provider.prototype.linePP = function (line) {
         var endComment = line.indexOf("*/");
         if (endComment == -1) {
             this.lastComment += "\r\n" + line;
-            this.lineStates.push(new lineState(this.cMode? 1 : 0,true))
+            this.lineStates.push(new lineState(this.cMode? 1 : 0,1))
             return "";
         }
         this.lastComment += "\r\n" + line.substr(0, endComment)
@@ -391,8 +391,8 @@ Provider.prototype.linePP = function (line) {
             continue;
         }
     }
-    this.lineStates.push(new lineState(this.cMode? 1 : 0,this.comment))
     this.cont = line.trim().endsWith(";");
+    this.lineStates.push(new lineState(this.cMode? 1 : 0,this.comment? 1 :this.cont? 2 : 0))
     return line
 }
 

@@ -29,9 +29,9 @@ const config = {
     __dirname: false
   },
   plugins: [
-    new CopyPlugin([
-      {from: "src/hbdocs.*", flatten: true}
-    ])
+    new CopyPlugin({patterns:[
+      {from: "src/hbdocs.*",to:"[name][ext]"}
+    ]})
   ]
 };
 module.exports = config;

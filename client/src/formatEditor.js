@@ -28,25 +28,24 @@ function showEditor(context) {
         localResourceRoots: [localResources],
         enableScripts: true
     }
-    const codiconsUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'formatter-settings', 'codicon.css'));
-    const codiconsFontUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'formatter-settings', 'codicon.ttf'));
+    const codiconsUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'node_modules', '@vscode/codicons', 'dist', 'codicon.css'));
+    const codiconsFontUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'node_modules', '@vscode/codicons', 'dist', 'codicon.ttf'));
     const baseUri = panel.webview.asWebviewUri(localResources);
     const cspSource = panel.webview.cspSource;
     var debug = typeof v8debug === 'object';
     var html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
-        <meta http-equiv="Content-Security-Policy" content="default-src 'none';
-            img-src ${cspSource} data:;
-            font-src ${cspSource};
-            script-src ${cspSource};
-            style-src ${cspSource} 'self' 'unsafe-inline';" />
-        <link rel="stylesheet" href="${baseUri}/style.css">
-        <link rel="stylesheet" href="${codiconsUri}"  />
-        <script src="${baseUri}/jquery-3.6.0${debug?"":".slim"}.min.js"></script>
-        <script src="${baseUri}/code.js"></script>
-        <meta http-equiv="Content-Security-Policy" content="default-src 'none';
-            font-src ${codiconsFontUri}; style-src ${panel.webview.cspSource} ${codiconsUri};">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none';
+        font-src ${cspSource};
+        style-src ${cspSource};
+        script-src ${cspSource};">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat Coding</title>
+    <link href="${baseUri}/style.css" rel="stylesheet" />
+    <link href="${codiconsUri}" rel="stylesheet" />
+    <script src="${baseUri}/jquery-3.6.0${debug?"":".slim"}.min.js"></script>
+    <script src="${baseUri}/code.js"></script>
+    </head><body>`;
 
-        <meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body>`;
     for(let subZone in section) {
         let k0 = `harbour.formatter.${subZone}`;
         html += `<h1>${localize(k0)}</h1><div>`

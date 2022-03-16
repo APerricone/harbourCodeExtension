@@ -6,7 +6,7 @@ const path = require('path');
 
 /**@type {import('webpack').Configuration}*/
 const config = {
-  target: 'node', 
+  target: 'node',
   entry: {
     "extension": './src/extension.js',
     "debugger": './src/debugger.js'
@@ -18,7 +18,7 @@ const config = {
   },
   devtool: 'source-map',
   externals: {
-vscode: 'commonjs vscode'
+    vscode: 'commonjs vscode'
   },
   resolve: {
     extensions: ['.js']
