@@ -59,7 +59,6 @@ input[type="checkbox"]::before {
     background: var(--vscode-editorWidget-background);
     color: var(--vscode-editorWidget-foreground);
     display: inline-block;
-    font-size: 1rem;
     text-align: center;
 }
 

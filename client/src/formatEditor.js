@@ -14,9 +14,8 @@ function escapeHTML(html) {
 
 /** @param {vscode.ExtensionContext} context  */
 function showEditor(context) {
-    const localResources = vscode.Uri.file(path.join(context.extensionPath,"formatter-settings"));
     const panel = vscode.window.createWebviewPanel(
-        'harbourFmtEdito',
+        'harbourFmtEditor',
         localize('harbour.formatter.title'),
         vscode.ViewColumn.Active, {}
     );
@@ -24,12 +23,12 @@ function showEditor(context) {
     package = package.contributes.configuration.properties;
     var section = vscode.workspace.getConfiguration('harbour').formatter;
     // And set its HTML content
+    const localResources = vscode.Uri.file(path.join(context.extensionPath,"formatter-settings"));
+    const codiconsUri = vscode.Uri.joinPath(context.extensionUri, 'node_modules', '@vscode/codicons', 'dist');
     panel.webview.options = {
-        localResourceRoots: [localResources],
+        localResourceRoots: [localResources,codiconsUri],
         enableScripts: true
     }
-    const codiconsUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'node_modules', '@vscode/codicons', 'dist', 'codicon.css'));
-    const codiconsFontUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'node_modules', '@vscode/codicons', 'dist', 'codicon.ttf'));
     const baseUri = panel.webview.asWebviewUri(localResources);
     const cspSource = panel.webview.cspSource;
     var debug = typeof v8debug === 'object';
@@ -40,8 +39,8 @@ function showEditor(context) {
         script-src ${cspSource};">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cat Coding</title>
+    <link href="${panel.webview.asWebviewUri(codiconsUri)}/codicon.css" rel="stylesheet" />
     <link href="${baseUri}/style.css" rel="stylesheet" />
-    <link href="${codiconsUri}" rel="stylesheet" />
     <script src="${baseUri}/jquery-3.6.0${debug?"":".slim"}.min.js"></script>
     <script src="${baseUri}/code.js"></script>
     </head><body>`;
