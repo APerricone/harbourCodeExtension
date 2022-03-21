@@ -1,4 +1,5 @@
 {
+    "terminal.integrated.defaultProfile.windows": "Command Prompt",
     "cSpell.words": [
         "aperricone",
         "harbourdoc",

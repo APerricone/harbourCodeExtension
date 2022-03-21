@@ -1815,14 +1815,15 @@ connection.onDocumentFormatting( (params) => {
     }
     for(let i=0;i<doc.lineCount;++i) {
         let state = pThis.lineStates[i];
-        if(state.type==0) {
+        let precState = i==0? state : pThis.lineStates[i-1]
+        if(state.type==0 && precState.state!=1) {
             let t = tabs[i];
-            let precCont = pThis.lineStates[i-1]?.state==2
+            let precCont = precState.state==2
             if(i>0 && precCont) t++;
             let line = doc.getText(server.Range.create(i, 0, i, 1000));
             let firstNoSpace=0;
             while(line[firstNoSpace]==" " || line[firstNoSpace]=="\t") firstNoSpace++;
-            let line2 = getCleanline(line, pThis.lineStates[i], pThis.lineStates[i-1]);
+            let line2 = getCleanline(line, state, precState);
             if(currStyleConfig.replace.not!="ignore") {
                 if(currStyleConfig.replace.not=="use .not.") {
                     let p = line2.lastIndexOf("!")
@@ -1843,7 +1844,7 @@ connection.onDocumentFormatting( (params) => {
             }
             let commentReplaced = false
             if(!precCont && currStyleConfig.replace.asterisk!="ignore") {
-                if(/^\s*(\*|\/\/|&&|note)/i.test(line)) {
+                if(/^\s*(\*[^\/]|\/\/|&&|note)/i.test(line)) {
                     commentReplaced = true
                     let firstChar = line.substring(firstNoSpace,firstNoSpace+1);//line2.trimStart().substr(0,1);
                     let commentLen = 2;

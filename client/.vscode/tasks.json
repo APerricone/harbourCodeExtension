@@ -1,6 +1,4 @@
 {
-    // Vedere https://go.microsoft.com/fwlink/?LinkId=733558
-    // per la documentazione relativa al formato tasks.json
     "version": "2.0.0",
     "tasks": [
         {
@@ -8,6 +6,7 @@
             "type": "npm",
             "script": "prelanch",
             "problemMatcher": [],
+            "detail": "webpack --mode development",
             "group": {
                 "kind": "build",
                 "isDefault": true
