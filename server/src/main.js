@@ -1843,8 +1843,8 @@ connection.onDocumentFormatting( (params) => {
                 }
             }
             let commentReplaced = false
-            if(!precCont && currStyleConfig.replace.asterisk!="ignore") {
-                if(/^\s*(\*[^\/]|\/\/|&&|note)/i.test(line)) {
+            if(precState.state==0 && currStyleConfig.replace.asterisk!="ignore") {
+                if(/^\s*(\*|\/\/|&&|note)/i.test(line)) {
                     commentReplaced = true
                     let firstChar = line.substring(firstNoSpace,firstNoSpace+1);//line2.trimStart().substr(0,1);
                     let commentLen = 2;
