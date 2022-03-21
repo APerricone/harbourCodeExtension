@@ -1663,6 +1663,83 @@ connection.onReferences( (params) => {
     return ret;
 })
 
+//TODO: merge this wit linePP
+function getCleanline(_line, lineState, precLineState) {
+    var line = _line;
+    var i=0;
+    if(line.trim().length==0) return ""
+    if(lineState && lineState.type!=0) return "";
+    if(precLineState && precLineState.state==1) {
+        let endComment = line.indexOf("*/");
+        if (endComment == -1) {
+            return "";
+        }
+        line = " ".repeat(endComment+2) + line.substr(endComment + 2);
+        i = endComment+2;
+    }
+    let precCont = precLineState && precLineState.state==2
+    if((!precCont) && ( /^\s*#\s*pragma\s+(?:__text|__stream|__cstream)\b/i.test(line) || /^\s*(text)\b/i.test(line))) {
+        return "";
+    }
+    var prevJustStart, justStart = !precCont;
+    var prevC = " ", c = " ", prevCNoSpace="";
+    var lineStart = 0;
+    for (; i < line.length; i++) {
+        prevC = c;
+        prevCNoSpace = (c == " " || c == '\t') ? prevCNoSpace : c;
+        prevJustStart = justStart;
+        c = line[i];
+        if (justStart) {
+            justStart = (prevC == " " || prevC == '\t');
+            lineStart = i;
+        }
+        // check code
+        if (justStart && (c=='n' || c=='N') && line.substr(i,i+4).toLowerCase()=='note') {
+            return "";
+        }
+        if (c == "*") {
+            if (justStart) {
+                // commented line: skip
+                return "";
+            }
+            if (prevC == "/") {
+                var endComment = line.indexOf("*/", i + 1)
+                if (endComment > 0) {
+                    line = line.substr(0, i - 1) + " ".repeat(endComment - i + 3) + line.substr(endComment + 2);
+                    c=" ";
+                    i=endComment;
+                    continue;
+                } else {
+                    line = line.substr(0, i - 1)
+                    break;
+                }
+            }
+        }
+        if ((c == "/" && prevC == "/") || (c == "&" && prevC == "&")) {
+            //line = line.substr(0, i - 1)
+            break;
+        }
+        if (c == '"' || c=="'" || (c == "[" && /[^a-zA-Z0-9_\[\]]/.test(prevCNoSpace) && !/^\s*#/.test(line))) {
+            var endString = line.indexOf(c=="["? "]" : c, i+1);
+            if (c=='"' && (prevC == "e")) {
+                while(endString>0 && line[endString-1]=="\\") {
+                    endString = line.indexOf('"', endString+1);
+                }
+            }
+            if(endString<0) {
+                //error
+                line = line.substr(0, i - 1)
+                break;
+            }
+            line = line.substr(0, i+1) + " ".repeat(endString - i-1) + line.substr(endString);
+            i = endString+1;
+            c=" ";
+            continue;
+        }
+    }
+    return line;
+}
+
 connection.onDocumentFormatting( (params) => {
     var ret = [];
     var doc = documents.get(params.textDocument.uri);
@@ -1694,11 +1771,13 @@ connection.onDocumentFormatting( (params) => {
         }
     }
     for(let i=0;i<pThis.groups.length;++i) {
-        var group = pThis.groups[i];
-        var doTab = false;
+        let group = pThis.groups[i];
+        let doTab = false;
+        let checkInside = false;
         switch(group.type) {
             case "if": case "try": case "sequence":
                 doTab = currStyleConfig.indent.logical;
+                checkInside = true;
                 break;
             case "for": case "while":
                 doTab = currStyleConfig.indent.cycle;
@@ -1714,6 +1793,12 @@ connection.onDocumentFormatting( (params) => {
             for(let l=startLine;l<endLine;++l) {
                 tabs[l]+=1;
             }
+            if(checkInside) {
+                for(let p=1;p<group.positions.length-1;++p) {
+                    tabs[group.positions[p].line]-=1;
+                }
+            }
+
         }
         if(currStyleConfig.indent.switch && currStyleConfig.indent.case &&
                 group.type=="case") {
@@ -1724,8 +1809,7 @@ connection.onDocumentFormatting( (params) => {
                 tabs[l]+=2;
             }
             for(let p=1;p<group.positions.length;++p) {
-                if(group.positions[p].text=="case")
-                    tabs[group.positions[p].line]-=1;
+                tabs[group.positions[p].line]-=1;
             }
         }
     }
@@ -1733,8 +1817,69 @@ connection.onDocumentFormatting( (params) => {
         let state = pThis.lineStates[i];
         if(state.type==0) {
             let t = tabs[i];
-            if(i>0 && pThis.lineStates[i-1].state==2) t++;
+            let precCont = pThis.lineStates[i-1]?.state==2
+            if(i>0 && precCont) t++;
             let line = doc.getText(server.Range.create(i, 0, i, 1000));
+            let firstNoSpace=0;
+            while(line[firstNoSpace]==" " || line[firstNoSpace]=="\t") firstNoSpace++;
+            let line2 = getCleanline(line, pThis.lineStates[i], pThis.lineStates[i-1]);
+            if(currStyleConfig.replace.not!="ignore") {
+                if(currStyleConfig.replace.not=="use .not.") {
+                    let p = line2.lastIndexOf("!")
+                    while(p>0) {
+                        let currRange = server.Range.create(i, p, i, p+1);
+                        ret.push(server.TextEdit.replace(currRange, ".not."));
+                        p = line2.lastIndexOf("!",p-1)
+                    }
+                }
+                if(currStyleConfig.replace.not=="use !") {
+                    let p = line2.lastIndexOf(".not.")
+                    while(p>0) {
+                        let currRange = server.Range.create(i, p, i, p+5);
+                        ret.push(server.TextEdit.replace(currRange, "!"));
+                        p = line2.lastIndexOf(".not.",p-1)
+                    }
+                }
+            }
+            let commentReplaced = false
+            if(!precCont && currStyleConfig.replace.asterisk!="ignore") {
+                if(/^\s*(\*|\/\/|&&|note)/i.test(line)) {
+                    commentReplaced = true
+                    let firstChar = line.substring(firstNoSpace,firstNoSpace+1);//line2.trimStart().substr(0,1);
+                    let commentLen = 2;
+                    if(firstChar=="*") commentLen = 1;
+                    if(firstChar=="n") commentLen = 4;
+                    if(firstChar=="N") commentLen = 4;
+                    if(currStyleConfig.replace.asterisk=="use //" && firstChar!="/") {
+                        let currRange = server.Range.create(i, firstNoSpace, i, firstNoSpace+commentLen);
+                        ret.push(server.TextEdit.replace(currRange, "//"));
+                    }
+                    if(currStyleConfig.replace.asterisk=="use &&" && firstChar!="&") {
+                        let currRange = server.Range.create(i, firstNoSpace, i, firstNoSpace+commentLen);
+                        ret.push(server.TextEdit.replace(currRange, "&&"));
+                    }
+                    if(currStyleConfig.replace.asterisk=="use *" && firstChar!="*") {
+                        let currRange = server.Range.create(i, firstNoSpace, i, firstNoSpace+commentLen);
+                        ret.push(server.TextEdit.replace(currRange, "*"));
+                    }
+                }
+            }
+            if(!commentReplaced && currStyleConfig.replace.amp!="ignore") {
+                if(currStyleConfig.replace.asterisk=="use //") {
+                    let pAmp = line2.indexOf("&&");
+                    if(pAmp>0) {
+                        let currRange = server.Range.create(i, pAmp, i, pAmp+2);
+                        ret.push(server.TextEdit.replace(currRange, "//"));
+                    }
+                }
+                if(currStyleConfig.replace.asterisk=="use &&") {
+                    let pAmp = line2.indexOf("//");
+                    if(pAmp>0) {
+                        let currRange = server.Range.create(i, pAmp, i, pAmp+2);
+                        ret.push(server.TextEdit.replace(currRange, "&&"));
+                    }
+                }
+            }
             var unspaced = line.trimStart();
             if(unspaced.length>0) {
                 var space = "";
@@ -1743,9 +1888,7 @@ connection.onDocumentFormatting( (params) => {
                 else
                     space = "\t".repeat(t);
                 if(!line.startsWith(space) || line[space.length]==" " || line[space.length]=="\t") {
-                    var firstNoSpace=0;
-                    while(line[firstNoSpace]==" " || line[firstNoSpace]=="\t") firstNoSpace++;
-                    var currRange = server.Range.create(i, 0, i, firstNoSpace);
+                    let currRange = server.Range.create(i, 0, i, firstNoSpace);
                     ret.push(server.TextEdit.replace(currRange, space));
                 }
             }

@@ -115,7 +115,7 @@ Provider.prototype.Clear = function () {
 /**
  * @constructor
  * @param {(0|1|2)} type the type of line: 0 is an harbour line, 1 is a C line, 2 is a text line
- * @param {(0|1|2)} state the state: 0 normal, 1 ends inside a multiline comment, ends with a ; so the statement continues
+ * @param {(0|1|2)} state the state: 0 normal, 1 ends inside a multiline comment, 2 ends with a ; so the statement continues
  */
 function lineState(type,state) {
     this.type = typeof(type)=="number"? type : 0;
