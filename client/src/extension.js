@@ -13,7 +13,8 @@ function activate(context) {
 	vscode.languages.setLanguageConfiguration('harbour', {
 		indentationRules: {
 			increaseIndentPattern: /^\s*((?:(?:static|init|exit)\s+)?(?:proc(?:e(?:d(?:u(?:r(?:e)?)?)?)?)?|func(?:t(?:i(?:o(?:n)?)?)?)?)|class|method|if|else(?:if)?|for|if|try|case|otherwise|(?:do\s+)?while|switch|begin)\b/i,
-			decreaseIndentPattern: /^\s*(end\s*([a-z]*)?|next|else|elseif|return)\b/i
+			decreaseIndentPattern: /^\s*(end\s*([a-z]*)?|next|else|elseif|return)\b/i,
+			indentNextLinePattern: /;((?:\/\/|&&).*)?$/
 		}
 	});
 	validation.activate(context);

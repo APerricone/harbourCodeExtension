@@ -1,8 +1,13 @@
 # Change Log
 All notable changes to the "Harbour and xHarbour" extension will be documented in this file.
 
+# 1.0.3
+ - **Server** fixed some formatter behaviour
+
 # 1.0.2
   - **Debugger** Added workareas
+  - **Server** first version of formatter
+  - **Client** added code style configurator
 
 # 1.0.1
  - **server** fixed table name reader [#73](https://github.com/APerricone/harbourCodeExtension/issues/73)
