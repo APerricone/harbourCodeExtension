@@ -287,7 +287,7 @@ Provider.prototype.linePP = function (line) {
             this.lineStates.push(new lineState(this.cMode? 1 : 0,1))
             return "";
         }
-        this.lastComment += "\r\n" + line.substr(0, endComment)
+        this.lastComment += "\r\n" + line.substring(0, endComment)
         line = " ".repeat(endComment+2) + line.substr(endComment + 2);
         this.comment = false;
         i = endComment+2;
@@ -326,7 +326,7 @@ Provider.prototype.linePP = function (line) {
             lineStart = i;
         }
         // check code
-        if (justStart && !this.cMode && (c=='n' || c=='N') && !this.cMode && line.substr(i,i+4).toLowerCase()=='note') {
+        if (justStart && !this.cMode && (c=='n' || c=='N') && !this.cMode && line.substring(i,i+4).toLowerCase()=='note') {
             this.lastComment += "\r\n" + line.trim().substr(4);
             if (this.firstLineComment < 0) this.firstLineComment = this.lineNr;
             this.lineStates.push(new lineState(this.cMode? 1 : 0))
@@ -347,7 +347,7 @@ Provider.prototype.linePP = function (line) {
                     this.lastComment = "\r\n" + line.substr(i + 1, endComment - i - 1)
                     this.lastCommentPos = i - lineStart;
                     this.newComment();
-                    line = line.substr(0, i - 1) + " ".repeat(endComment - i + 3) + line.substr(endComment + 2);
+                    line = line.substring(0, i - 1) + " ".repeat(endComment - i + 3) + line.substr(endComment + 2);
                     c=" ";
                     i=endComment;
                     continue;
@@ -357,7 +357,7 @@ Provider.prototype.linePP = function (line) {
                     this.lastComment += "\r\n" + line.substr(i + 1)
                     this.lastCommentPos = i - lineStart;
                     this.comment = true;
-                    line = line.substr(0, i - 1)
+                    line = line.substring(0, i - 1)
                     if (this.firstLineComment < 0) this.firstLineComment = this.lineNr;
                     break;
                 }
@@ -370,7 +370,7 @@ Provider.prototype.linePP = function (line) {
             }
             this.lastComment += "\r\n" + line.substr(i + 1)
             this.lastCommentPos = i + 1 - lineStart;
-            line = line.substr(0, i - 1)
+            line = line.substring(0, i - 1)
             break;
         }
         if (c == '"' || c=="'" || (c == "[" && /[^a-zA-Z0-9_\[\]]/.test(prevCNoSpace) && !/^\s*#/.test(line))) {
@@ -382,10 +382,10 @@ Provider.prototype.linePP = function (line) {
             }
             if(endString<0) {
                 //error
-                line = line.substr(0, i - 1)
+                line = line.substring(0, i - 1)
                 break;
             }
-            line = line.substr(0, i+1) + " ".repeat(endString - i-1) + line.substr(endString);
+            line = line.substring(0, i+1) + " ".repeat(endString - i-1) + line.substr(endString);
             i = endString+1;
             c=" ";
             continue;
@@ -508,7 +508,7 @@ function CommandPartToSnippet(text, fixed, resultPart) {
                 for (let i = 0; i < names.length; i++) {
 				snippetPart += `|${names[i].trim()}`
                 }
-                currVar = currVar.substr(0, colonPos).trim();
+                currVar = currVar.substring(0, colonPos).trim();
             }
 		if (repeatable) {
 			var resMatch;
@@ -627,7 +627,7 @@ Provider.prototype.parseHarbour = function (words) {
                         this.parseDeclareList(words.slice(1).join(" "), 'data', this.currentClass)
                     }
                 } else
-                    if (words[0] == "method".substr(0, words[0].length)) {
+                    if (words[0] == "method".substring(0, words[0].length)) {
                         var r = methodRegEx.exec(this.currLine);
                         if (r) {
                             var fLike = "definition"
@@ -647,18 +647,18 @@ Provider.prototype.parseHarbour = function (words) {
                                 this.parseDeclareList(r[3], "param", this.currentMethod);
                         }
                     } else
-                        if (words[0] == "procedure".substr(0, words[0].length) ||
-                            words[0] == "function".substr(0, words[0].length) ||
+                        if (words[0] == "procedure".substring(0, words[0].length) ||
+                            words[0] == "function".substring(0, words[0].length) ||
                             (
                                 (
-                                    words[0] == "static".substr(0, words[0].length) ||
+                                    words[0] == "static".substring(0, words[0].length) ||
                                     words[0] == "init" ||
                                     words[0] == "exit"
                                 ) &&
                                 words[1].length >= 4 &&
                                 (
-                                    words[1] == "procedure".substr(0, words[1].length) ||
-                                    words[1] == "function".substr(0, words[1].length)
+                                    words[1] == "procedure".substring(0, words[1].length) ||
+                                    words[1] == "function".substring(0, words[1].length)
                                 )
                             )) {
                             var r = procRegEx.exec(this.currLine);
@@ -672,12 +672,12 @@ Provider.prototype.parseHarbour = function (words) {
 
                             }
                         } else
-                            if (words[0] == "local".substr(0, words[0].length) ||
-                                words[0] == "public".substr(0, words[0].length) ||
-                                words[0] == "private".substr(0, words[0].length) ||
-                                words[0] == "static".substr(0, words[0].length) ||
-                                words[0] == "memvar".substr(0, words[0].length) ||
-                                words[0] == "field".substr(0, words[0].length)) {
+                            if (words[0] == "local".substring(0, words[0].length) ||
+                                words[0] == "public".substring(0, words[0].length) ||
+                                words[0] == "private".substring(0, words[0].length) ||
+                                words[0] == "static".substring(0, words[0].length) ||
+                                words[0] == "memvar".substring(0, words[0].length) ||
+                                words[0] == "field".substring(0, words[0].length)) {
                                 // skip this in light mode
                                 if (this.currentMethod && this.light)
                                     return
@@ -874,7 +874,7 @@ Provider.prototype.parse = function (line) {
             pre += " ".repeat(lines[i].length+1); //add the ; see #44
         }
     }
-    if (code)
+    if (code && !line.trimStart().startsWith('#'))
         this.lastCodeLine = this.lineNr;
     this.resetComments();
 }

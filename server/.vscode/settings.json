@@ -16,5 +16,7 @@
         "memv",
         "memvar",
         "preproc"
-    ]
+    ],
+    "files.trimFinalNewlines": true,
+    "files.trimTrailingWhitespace": true
 }

@@ -1663,7 +1663,14 @@ connection.onReferences( (params) => {
     return ret;
 })
 
-//TODO: merge this wit linePP
+/**
+ * Removes comment block and empties strings
+ * @param {String} _line
+ * @param {LineState} lineState
+ * @param {LineState} precLineState
+ * @returns String
+ * @note merge this wit linePP
+ */
 function getCleanline(_line, lineState, precLineState) {
     var line = _line;
     var i=0;
@@ -1674,16 +1681,15 @@ function getCleanline(_line, lineState, precLineState) {
         if (endComment == -1) {
             return "";
         }
-        line = " ".repeat(endComment+2) + line.substr(endComment + 2);
+        line = " ".repeat(endComment+2) + line.substring(endComment + 2);
         i = endComment+2;
     }
     let precCont = precLineState && precLineState.state==2
-    if((!precCont) && ( /^\s*#\s*pragma\s+(?:__text|__stream|__cstream)\b/i.test(line) || /^\s*(text)\b/i.test(line))) {
+    if((!precCont) && line.trimStart().startsWith("#")) {
         return "";
     }
-    var prevJustStart, justStart = !precCont;
+    var justStart = !precCont;
     var prevC = " ", c = " ", prevCNoSpace="";
-    var lineStart = 0;
     for (; i < line.length; i++) {
         prevC = c;
         prevCNoSpace = (c == " " || c == '\t') ? prevCNoSpace : c;
@@ -1694,7 +1700,7 @@ function getCleanline(_line, lineState, precLineState) {
             lineStart = i;
         }
         // check code
-        if (justStart && (c=='n' || c=='N') && line.substr(i,i+4).toLowerCase()=='note') {
+        if (justStart && (c=='n' || c=='N') && line.substring(i,i+4).toLowerCase()=='note') {
             return "";
         }
         if (c == "*") {
@@ -1705,12 +1711,12 @@ function getCleanline(_line, lineState, precLineState) {
             if (prevC == "/") {
                 var endComment = line.indexOf("*/", i + 1)
                 if (endComment > 0) {
-                    line = line.substr(0, i - 1) + " ".repeat(endComment - i + 3) + line.substr(endComment + 2);
+                    line = line.substring(0, i - 1) + " ".repeat(endComment - i + 3) + line.substr(endComment + 2);
                     c=" ";
                     i=endComment;
                     continue;
                 } else {
-                    line = line.substr(0, i - 1)
+                    line = line.substring(0, i - 1)
                     break;
                 }
             }
@@ -1728,10 +1734,10 @@ function getCleanline(_line, lineState, precLineState) {
             }
             if(endString<0) {
                 //error
-                line = line.substr(0, i - 1)
+                line = line.substring(0, i - 1)
                 break;
             }
-            line = line.substr(0, i+1) + " ".repeat(endString - i-1) + line.substr(endString);
+            line = line.substring(0, i+1) + " ".repeat(endString - i-1) + line.substr(endString);
             i = endString+1;
             c=" ";
             continue;
@@ -1764,7 +1770,8 @@ connection.onDocumentFormatting( (params) => {
                 let doLast = false;
                 if((info.kind.startsWith("func") || info.kind.startsWith("proc")) && info.foundLike=="definition") {
                     let line = doc.getText(server.Range.create(info.endLine, 0, info.endLine, 1000));
-                    doLast = !/^\s*ret(u(r(n?)?)?)?/.test(line);
+                    //doLast = !/^\s*ret(u(r(n?)?)?)?/i.test(line);
+                    doLast = !(line.trimStart().toLowerCase().startsWith("ret"))
                 }
                 if(doLast) tabs[info.endLine]+=1
             }
@@ -1809,7 +1816,8 @@ connection.onDocumentFormatting( (params) => {
                 tabs[l]+=2;
             }
             for(let p=1;p<group.positions.length;++p) {
-                tabs[group.positions[p].line]-=1;
+                if(group.positions[p].text[0].startsWith('case'))
+                    tabs[group.positions[p].line]-=1;
             }
         }
     }
