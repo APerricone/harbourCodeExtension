@@ -50,6 +50,9 @@ function resolvePredefinedVariables(v) {
     return v;
 }
 
+/**
+ * @implements {vscode.TaskProvider}
+ */
 class HRBTask {
     constructor() {
     }
@@ -327,6 +330,9 @@ class HBMK2Terminal {
     }
 }
 
+/**
+ * @implements {vscode.TaskProvider}
+ */
 class HBMK2Task {
     getValidTask(name,input, definition, problemMatches) {
         var retTask = new vscode.Task({
@@ -414,6 +420,7 @@ class HBMK2Task {
         return retTask;
     }
 }
+
 function activate() {
 	vscode.tasks.registerTaskProvider("Harbour", new HRBTask());
 	vscode.tasks.registerTaskProvider("HBMK2", new HBMK2Task());
