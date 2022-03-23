@@ -3,6 +3,7 @@ All notable changes to the "Harbour and xHarbour" extension will be documented i
 
 # 1.0.3
  - **Server** fixed some formatter behaviour
+ - **Debugger** better completition
 
 # 1.0.2
   - **Debugger** Added workareas

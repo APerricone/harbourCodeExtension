@@ -2,8 +2,10 @@ goto start
 :setup
 set HB_INSTALL_PREFIX=C:\xharbour
 SET CD_SRC=%CD%
-:: I use visual studio 2017 x86 on a win64 system.
-CALL "c:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
+:: I use visual studio 
+CALL "c:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars32.bat"
+if %ERRORLEVEL%==1 CALL "c:\Program Files\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars32.bat"
+if %ERRORLEVEL%==1 CALL "c:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars32.bat"
 echo on
 cd %CD_SRC%
 set path=%PATH%;%HB_INSTALL_PREFIX%\bin;%HB_INSTALL_PREFIX%\bin\win\msvc

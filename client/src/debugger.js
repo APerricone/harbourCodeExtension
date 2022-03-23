@@ -823,7 +823,16 @@ harbourDebugSession.prototype.processExpression = function(line)
 harbourDebugSession.prototype.completionsRequest = function(response, args)
 {
     this.completionsResponse = response;
-    this.command(`COMPLETITION\r\n${args.frameId+1 || this.currentStack}:${args.text}\r\n`)
+    let completitonText = args.text.split(/[\r\n]{1,2}/);
+    if(args.line) {
+        completitonText = completitonText[args.line-1];
+    } else {
+        completitonText = completitonText[0];
+    }
+    completitonText = completitonText.substring(0,args.column-1);
+    let lastWord = completitonText.match(/[\w\:]+$/i)
+    if(lastWord) completitonText = lastWord[0];
+    this.command(`COMPLETITION\r\n${args.frameId+1 || this.currentStack}:${completitonText}\r\n`)
 }
 
 /**
