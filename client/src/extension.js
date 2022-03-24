@@ -41,6 +41,15 @@ function activate(context) {
 	decorator.activate(context,cl);
 	docCreator.activate(context,cl);
 	taskProvider.activate();
+	// https://code.visualstudio.com/updates/v1_30#:~:text=Finalized%20Debug%20Adapter%20Tracker%20API
+	vscode.debug.registerDebugAdapterTrackerFactory('harbour-dbg', {
+		createDebugAdapterTracker(  ) {
+		  return {
+			onWillReceiveMessage: m => console.log(`> ${m.seq} - ${m.command}`)
+			//onDidSendMessage: m => console.log(`< ${JSON.stringify(m, undefined, 2)}`)
+		  };
+		}
+	  });
 }
 
 function DebugList(args) {

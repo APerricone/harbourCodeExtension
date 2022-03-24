@@ -8,6 +8,7 @@ const localize = require("./myLocalize.js").localize;
 const process = require("process")
 const trueCase = require("true-case-path")
 
+// https://code.visualstudio.com/updates/v1_30#:~:text=Finalized%20Debug%20Adapter%20Tracker%20API
 /** @requires vscode-debugadapter   */
 /// CLASS DEFINITION
 
@@ -341,6 +342,12 @@ class harbourDebugSession extends debugadapter.DebugSession {
      * @param args{DebugProtocol.StackTraceArguments} arguments
      */
     stackTraceRequest(response,args) {
+        // reset references
+        this.variableCommands = [];
+        //TODO: "GLOBALS","EXTERNALS"
+        this.varResp = [];
+        this.variableEvaluations =  [];
+        
         if(this.stack.length==0)
             this.command("STACK\r\n");
         this.stack.push(response);
@@ -426,30 +433,26 @@ class harbourDebugSession extends debugadapter.DebugSession {
     }
 
     sendScope(inError) {
-        // reset references
-        this.variableCommands = [];
-        if(inError)
-            this.variableCommands.push("ERROR_VAR")
-        this.variableCommands = this.variableCommands.concat(["LOCALS","PUBLICS","PRIVATES", "PRIVATE_CALLEE","STATICS","WORKAREAS"]);
-        //TODO: "GLOBALS","EXTERNALS"
-        this.varResp = [];
-        this.varResp.length = this.variableCommands.length;
-        this.variableEvaluations =  [];
-        this.variableEvaluations.length = this.variableCommands.length;
-        var n=0;
-        var scopes = [];
-        if(inError)
-        {
-            n=1;
-            scopes.push(new debugadapter.Scope("Error",1))
+        var commands = [];
+        if(inError) commands.push("ERROR_VAR")
+        commands = commands.concat(["LOCALS","PUBLICS","PRIVATES", "PRIVATE_CALLEE","STATICS","WORKAREAS"]);
+        var n=this.variableCommands.indexOf(commands[0]);
+        if(n<0) {
+            n = this.variableCommands.length;
+            // TODO: put these 3 members together on 'AOS'
+            this.variableCommands = this.variableCommands.concat(commands)
+            this.varResp.length += commands.length
+            this.variableEvaluations.length += commands.length
         }
+        var scopes = [];
+        if(inError) scopes.push(new debugadapter.Scope("Error",++n))
         scopes = scopes.concat([
-            new debugadapter.Scope("Local",n+1),
-            new debugadapter.Scope("Public",n+2),
-            new debugadapter.Scope("Private local",n+3),
-            new debugadapter.Scope("Private external",n+4),
-            new debugadapter.Scope("Statics",n+5),
-            new debugadapter.Scope("Workareas",n+6)
+            new debugadapter.Scope("Local",++n),
+            new debugadapter.Scope("Public",++n),
+            new debugadapter.Scope("Private local",++n),
+            new debugadapter.Scope("Private external",++n),
+            new debugadapter.Scope("Statics",++n),
+            new debugadapter.Scope("Workareas",++n)
         ])
         var response = this.scopeResponse;
         response.body =  { scopes: scopes };
