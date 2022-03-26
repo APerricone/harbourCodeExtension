@@ -1,7 +1,9 @@
+REQUEST HB_CODEPAGE_ITWIN
+
 proc test(n)
    LOCAL c := {1,2,3,{4,5,6}}
-   local a := 100
-
+   local a := 100, cPrice:="€ 199,99"
+   hb_cdpSelect("ITWIN")
    subProc()
 
    /*switch Mod(a,2)

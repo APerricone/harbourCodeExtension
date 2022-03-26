@@ -308,21 +308,27 @@ static procedure sendStack()
    //next
 return
 
+static function formatString(value)
+   value=StrTran(value,e"\n","\$\n")
+   value=StrTran(value,e"\r","\$\r")
+   if at('"',value)==0
+      value='"'+value+'"'
+   elseif at("'",value)==0
+      value="'"+value+"'"
+   elseif at("[",value)==0
+      value="["+value+"]" //i don't like it decontexted
+   else
+      value='e"'+StrTran(value,'"','\"')+'"'
+   endif
+return hb_StrToUTF8(value)
+
 static function format(value)
    switch valtype(value)
       case "U"
          return "nil"
       case "C"
       case "M"
-         value=StrTran(value,e"\n","\$\n")
-         value=StrTran(value,e"\r","\$\r")
-         if at('"',value)==0
-            return '"'+value+'"'
-         elseif at("'",value)==0
-            return "'"+value+"'"
-         else
-            return "["+value+"]" //i don't like it decontexted
-         endif
+         return formatString(value)
       case "N"
          return alltrim(str(value))
       case "L"
