@@ -4,6 +4,7 @@ const vscode = require('vscode');
 var decoration;
 /** @type{client.LanguageClient} */
 var client;
+
 function activate(context,_client) {
 	client=_client;
 	vscode.window.onDidChangeTextEditorSelection((e) => WriteDoc(e) );
