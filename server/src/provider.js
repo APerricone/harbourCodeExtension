@@ -924,7 +924,7 @@ Provider.prototype.endParse = function () {
  * @param {string} encoding the encoding to use
  * @returns {Promise<Provider>} this
  */
-Provider.prototype.parseFile = function (file, docName, cMode, encoding) {
+Provider.prototype.parseFile = function (file, docName, cMode, encoding, opened) {
     var providerThisContext = this;
     this.Clear();
     if (cMode != undefined)
@@ -933,12 +933,14 @@ Provider.prototype.parseFile = function (file, docName, cMode, encoding) {
     this.currentDocument = docName;
     //console.log(">>> Start parseFile: "+file)
     return new Promise((resolve, reject) => {
+        opened.count++;
         var reader = readline.createInterface({ input: fs.createReadStream(file, encoding) });
         reader.on("line", d => providerThisContext.parse(d));
         reader.on("close", () => {
             //console.log("<<<  End  parseFile: "+file)
             providerThisContext.endParse();
             resolve(providerThisContext);
+            opened.count--;
         })
     });
 }

@@ -9,7 +9,7 @@ src="C:\\Perry\\beta\\c_artmod.prg"
 //src="C:\\Harbour32\\tests\\hbpp\\hbpptest.prg"
 console.log(new Date())
 var s = Number(Date.now())
-p.parseFile(src).then(()=> {
+p.parseFile(src, undefined, undefined, undefined, { count: 0 }).then(()=> {
     console.log(new Date())
     console.log(Number(Date.now())-s)
     console.log( Object.keys(p.references).length )

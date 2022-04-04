@@ -50,6 +50,36 @@ var currStyleConfig;
 
 var keywords = provider.keywords
 
+var opened = {
+    count: 0
+};
+var toDo = [];
+var interval = null;
+
+function PushParaExecutar(provider, completePath, fileUriString, cMode, then) {
+    toDo.push( { provider: provider,
+                 completePath: completePath,
+                 fileUriString: fileUriString,
+                 cMode: cMode,
+                 then: then } );
+    if (interval === null) {
+        interval = setInterval(IntervalFunction, 1000)
+    }
+}
+
+function IntervalFunction() {
+    if (toDo.length > 0) {
+        while (toDo.length > 0 && opened.count < 1000) {
+            var toDoIten = toDo.shift();
+            var pp = new toDoIten.provider.Provider(true);
+            pp.parseFile(toDoIten.completePath, toDoIten.fileUriString, toDoIten.cMode, undefined, opened).then(toDoIten.then);
+        }
+    } else {
+        clearInterval(interval);
+        interval = null;
+    }
+}
+
 /*
     every database contains a name (the text before the ->)
     and a list of field, objects with name (the text after the ->)
@@ -187,12 +217,7 @@ function ParseDir(dir, onlyHeader, depth, subirPaths) {
                 if (ext == ".prg" || ext == ".ch" || cMode) {
                     subirPaths.push(completePath);
                     var fileUri = Uri.file(completePath);
-                    var pp = new provider.Provider(true);
-                    pp.parseFile(completePath, fileUri.toString(), cMode).then(
-                        prov => {
-                            UpdateFile(prov)
-                        }
-                    )
+                    PushParaExecutar(provider, completePath, fileUri.toString(), cMode, prov => { UpdateFile(prov) });
                 }
             } else if (info.isDirectory() && depth > 0) {
                 ParseDir(path.join(dir, fileName), onlyHeader, depth - 1, subirPaths);
@@ -285,7 +310,7 @@ function AddIncludes(startPath, includesArray) {
         } catch(ex) { }
         var pp = new provider.Provider(true);
         includes[fileName] = pp;
-        pp.parseFile(completePath, fileUri.toString(), false).then(
+        pp.parseFile(completePath, fileUri.toString(), false, undefined, opened).then(
             prov => {
                 includes[fileName] = prov;
                 AddIncludes(dir, prov.includes);
