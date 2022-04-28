@@ -146,62 +146,83 @@ connection.onDidChangeConfiguration(params => {
     // minimatch
     wordBasedSuggestions = params.settings.editor.wordBasedSuggestions
     currStyleConfig = params.settings.harbour.formatter;
-    var oldDirs = includeDirs;
     var oldDepth = workspaceDepth;
     includeDirs = params.settings.harbour.extraIncludePaths;
     includeDirs.splice(0, 0, ".")
     workspaceDepth = params.settings.harbour.workspaceDepth;
-    var doParse = workspaceDepth!=oldDepth || oldDirs.length!=includeDirs.length;
-    if(!doParse) {
-        for(let i=0;i<includeDirs.length;++i) {
-            doParse = doParse || includeDirs[i]!=oldDirs[i];
-        }
-    }
-    if(doParse)
-        ParseWorkspace();
-
+    if(workspaceDepth!=oldDepth)
+        parseWorkspace();
 })
 
-function ParseDir(dir, onlyHeader, depth, subirPaths) {
-    if (!subirPaths) subirPaths = [];
-    //fs.readdir(dir,{withFileTypes:true},function(err,ff)
-    fs.readdir(dir, function (err, ff) {
-        if (ff == undefined) return;
-        for (var i = 0; i < ff.length; i++) {
-            var fileName = ff[i];
-            var completePath = path.join(dir, fileName);
-            var info = fs.statSync(completePath);
-            if (info.isFile()) {
-                var ext = path.extname(fileName).toLowerCase();
-                if (onlyHeader && ext != ".ch" && ext != ".h") {
-                    continue;
+function parseWorkspace() {
+    var nOpenend=0, fileQueue = [];
+    function appendFile(completePath, cMode) {
+        if(nOpenend<1000) {
+            var fileUri = Uri.file(completePath);
+            var pp = new provider.Provider(true);
+            nOpenend++;
+            pp.parseFile(completePath, fileUri.toString(), cMode).then(
+                prov => {
+                    nOpenend--;
+                    UpdateFile(prov)
+                    if(fileQueue.length>0) {
+                        let nextFile = fileQueue.pop()
+                        appendFile(nextFile[0],nextFile[1])
+                    }
                 }
-                var cMode = (ext.startsWith(".c") && ext != ".ch") || ext == ".h"
-                if (cMode) {
-                    var harbourFile = path.basename(fileName)
-                    var pos = harbourFile.lastIndexOf(".");
-                    harbourFile = harbourFile.substr(0, pos < 0 ? harbourFile.length : pos) + ".prg";
-                    if (subirPaths.findIndex((v) => v.indexOf(harbourFile) >= 0) >= 0)
-                        continue;
-                }
-                if (ext == ".prg" || ext == ".ch" || cMode) {
-                    subirPaths.push(completePath);
-                    var fileUri = Uri.file(completePath);
-                    var pp = new provider.Provider(true);
-                    pp.parseFile(completePath, fileUri.toString(), cMode).then(
-                        prov => {
-                            UpdateFile(prov)
-                        }
-                    )
-                }
-            } else if (info.isDirectory() && depth > 0) {
-                ParseDir(path.join(dir, fileName), onlyHeader, depth - 1, subirPaths);
-            }
+            )
+        } else {
+            fileQueue.push([completePath,cMode])
         }
-    });
-}
+    }
+    function parseDir(dir, depth, prgFiles) {
+        if (!prgFiles) prgFiles = [];
+        //fs.readdir(dir,{withFileTypes:true},function(err,ff)
+        fs.readdir(dir, function (err, ff) {
+            if (ff == undefined) return;
+            let files = []; files.length=ff.length;
+            for (let i = 0; i < ff.length; i++) {
+                let dest = {name: ff[i]}
+                dest.completePath = path.join(dir, ff[i]);
+                dest.info = fs.statSync(dest.completePath);
+                dest.pathParse = path.parse(ff[i]);
+                dest.pathParse.ext = dest.pathParse.ext.toLowerCase()
+                if(dest.info.isFile()) {
+                    dest.prgFile = dest.pathParse.ext == ".prg" || dest.pathParse.ext == ".ch";
+                    dest.cFile = !dest.prgFile && (dest.pathParse.ext.startsWith(".c") || dest.pathParse.ext == ".h");
+                } else {
+                    dest.cFile = false;
+                    dest.prgFile = false;
+                }
+                files[i]=dest;
+            }
+            // 1st cycle: parse all harbour file
+            for (let i = 0; i < files.length; i++) {
+                let dest = files[i];
+                if(dest.prgFile) {
+                    prgFiles.push(dest.completePath);
+                    appendFile(dest.completePath, false)
+                }
+            }
+            // 2nd cycle: parse all c file
+            for (let i = 0; i < files.length; i++) {
+                let dest = files[i];
+                if(dest.cMode && (prgFiles.findIndex((v) => v.indexOf(dest.pathParse.name) >= 0) >= 0)) {
+                    appendFile(dest.completePath, true)
+                }
+            }
+            if(depth>0) {
+                // 1rd cycle: parse all sub dir
+                for (let i = 0; i < files.length; i++) {
+                    var dest = files[i];
+                    if(dest.info.isDirectory()) {
+                        parseDir(dest.completePath, depth - 1, prgFiles);
+                    }
+                }
 
-function ParseWorkspace() {
+            }
+        });
+    }
     databases = {};
     files = {};
     includes = {};
@@ -211,12 +232,8 @@ function ParseWorkspace() {
         /** @type {vscode-uri.default} */
         var uri = Uri.parse(workspaceRoots[i]);
         if (uri.scheme != "file") continue;
-        ParseDir(uri.fsPath, false, workspaceDepth);
+        parseDir(uri.fsPath, workspaceDepth);
     }
-    //for(var i=0;i<includeDirs.length;i++)
-    //{
-    //    ParseDir(includeDirs[i], true,0);
-    //}
 }
 
 /**
