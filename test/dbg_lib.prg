@@ -538,11 +538,13 @@ static function MyGetSta(iStack,varIndex)
    local aStack := t_oDebugInfo['aStack']
    local aModules := t_oDebugInfo['aModules']
    LOCAL cModule, idxModule
-   local nVarMod, aInfo, nVarStack := iif(iStack>0,len(aStack[iStack,HB_DBG_CS_STATICS]),0)
-   if iStack>0
+   local nVarMod, aInfo, nVarStack
+   if iStack>0 .and. iStack<=len(aStack)
+      nVarStack := len(aStack[iStack,HB_DBG_CS_STATICS])
       cModule := lower(allTrim(aStack[iStack,HB_DBG_CS_MODULE]))
       idxModule := aScan(aModules, {|v| v[1]=cModule})
    else
+      nVarStack := 0
       idxModule := 0
    endif
    if idxModule>0
