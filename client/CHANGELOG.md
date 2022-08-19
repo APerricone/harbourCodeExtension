@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to the "Harbour and xHarbour" extension will be documented in this file.
 
+# 1.0.4
+ - **Debugger** Added messages in case of early exit [#84](https://github.com/APerricone/harbourCodeExtension/issues/84)
+
 # 1.0.3
  - **Server** fixed some formatter behaviour
  - **Debugger** better completition

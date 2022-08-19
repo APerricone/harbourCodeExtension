@@ -53,6 +53,7 @@ class harbourDebugSession extends debugadapter.DebugSession {
         /** @type{DebugProtocol.CompletionsResponse} */
         this.completionsResponse = undefined;
         this.areasInfos = [];
+        this.processId = undefined;
     }
 
     /**
@@ -202,7 +203,13 @@ class harbourDebugSession extends debugadapter.DebugSession {
                     tc.sendEvent(new debugadapter.OutputEvent(localize("harbour.dbgError1", args.program, args.workingDir), "stderr"))
                     tc.sendEvent(new debugadapter.TerminatedEvent());
                     return
-                })
+                });
+                process.on("exit", (code,signal) => {
+                    if(!tc.processId) {
+                        tc.sendEvent(new debugadapter.OutputEvent(localize("harbour.prematureExit", code), "stderr"))
+                        tc.sendEvent(new debugadapter.TerminatedEvent());
+                    }
+                });
                 process.stderr.on('data', data =>
                     tc.sendEvent(new debugadapter.OutputEvent(data.toString(), "stderr"))
                 );

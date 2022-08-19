@@ -22,6 +22,7 @@
     "harbour.launch.terminalType": "Tipo di terminale da usare per avviare l'applicazione",
     "harbour.launch.port": "Porta usata dal debugger, deve essere uguale a DBG_PORT nel codice del debugger linea 6",
     "harbour.dbgError1": "Incapace di avviare {0} in {1}, controlla che tutti i percorsi esistano",
+    "harbour.prematureExit": "Uscito anticipatamente con codice {0}",
     "harbour.dbgNoModule": "modulo non trovato",
     "harbour.dbgNoLine": "linea non valida",
     "harbour.dbgError.all": "Fermati su tutti gli errori",

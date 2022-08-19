@@ -22,6 +22,7 @@
     "harbour.launch.terminalType": "Tipo de terminal a utilizar para ejecutar la aplicación",
     "harbour.launch.port": "Puerto utilizado por el depurador, debe ser el mismo valor de DBG_PORT en código del depurador línea 6",
     "harbour.dbgError1": "No se puede iniciar {0} en {1}, compruebe que existen todas las rutas",
+    "harbour.prematureExit": "Sal antes con el código {0}",
     "harbour.dbgNoModule": "módulo no encontrado",
     "harbour.dbgNoLine": "lí­nea inválida",
     "harbour.dbgError.all": "Parar en todos los errores",

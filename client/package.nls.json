@@ -22,6 +22,7 @@
     "harbour.launch.terminalType": "Type of terminal to use to run the application",
     "harbour.launch.port": "Port used by debugger, It must be the same value of DBG_PORT in debugger code line 6",
     "harbour.dbgError1": "Unable to start {0} in {1}, check that all path exists",
+    "harbour.prematureExit": "Exit early with code {0}",
     "harbour.dbgNoModule": "Module not found",
     "harbour.dbgNoLine": "Invalid line",
     "harbour.dbgError.all": "Stop on all errors",
