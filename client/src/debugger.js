@@ -107,7 +107,7 @@ class harbourDebugSession extends debugadapter.DebugSession {
                 continue;
             }
             for (var j = this.variables.length - 1; j >= 0; j--) {
-                if (line.startsWith(this.variables[j])) {
+                if (line.startsWith(this.variables[j].command)) {
                     this.sendVariables(j, line);
                     break;
                 }
@@ -467,11 +467,11 @@ class harbourDebugSession extends debugadapter.DebugSession {
         var commands = [];
         if (inError) commands.push("ERROR_VAR")
         commands = commands.concat(["LOCALS", "PUBLICS", "PRIVATES", "PRIVATE_CALLEE", "STATICS", "WORKAREAS"]);
-        var n = this.variables.indexOf(commands[0]);
+        var n = this.variables.findIndex((v) => v.command==commands[0]);
         if (n < 0) {
             n = this.variables.length;
             // TODO: put these 3 members together on 'AOS'
-            this.variables.forEach((cmd) => {
+            commands.forEach((cmd) => {
                 this.variables.push(new HBVar(cmd));
             })
         }
@@ -524,7 +524,7 @@ class harbourDebugSession extends debugadapter.DebugSession {
         if (args.variablesReference <= this.variables.length) {
             var hbStart = args.start ? args.start + 1 : 1;
             var hbCount = args.count ? args.count : 0;
-            var cmd = this.variables[args.variablesReference - 1];
+            var cmd = this.variables[args.variablesReference - 1].command;
             if (cmd.startsWith("AREA") && cmd.indexOf(":") < 0) {
                 this.sendAreaHeaders(response, cmd)
                 return;
@@ -536,7 +536,7 @@ class harbourDebugSession extends debugadapter.DebugSession {
     }
 
     getVarReference(line, evalTxt) {
-        var r = this.variables.indexOf(line);
+        var r = this.variables.findIndex((v) => v.command==line);
         if (r >= 0) return r + 1;
         var infos = line.split(":");
         if (infos.length > 4) { //the value can contains : , we need to rejoin it.
@@ -558,7 +558,7 @@ class harbourDebugSession extends debugadapter.DebugSession {
         }
         dest[valueName] = value;
         dest.type = type;
-        if (["E", "B", "P"].indexOf(dest.type) == -1) {
+        if (["E", "B", "P"].indexOf(dest.type) == -1 && id>=0 && id<this.variables.length) {
             dest.evaluateName = "";
             if (this.variables[id].evaluation)
                 dest.evaluateName = this.variables[id].evaluation;

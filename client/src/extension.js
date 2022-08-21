@@ -42,14 +42,16 @@ function activate(context) {
 	docCreator.activate(context,cl);
 	taskProvider.activate();
 	// https://code.visualstudio.com/updates/v1_30#:~:text=Finalized%20Debug%20Adapter%20Tracker%20API
-	vscode.debug.registerDebugAdapterTrackerFactory('harbour-dbg', {
+	/*vscode.debug.registerDebugAdapterTrackerFactory('harbour-dbg', {
 		createDebugAdapterTracker(  ) {
 		  return {
-			onWillReceiveMessage: m => console.log(`> ${m.seq} - C ${m.command} - ${JSON.stringify(m.arguments).substring(0,50)}`),
-			onDidSendMessage: m => console.log(`< ${m.seq} - ${m.command ? "C" : "E"} ${m.command ? m.command : m.event} - ${m.body? JSON.stringify(m.body).substring(0,50) : 'no-body'}`)
+			//onWillReceiveMessage: m => console.log(`> ${m.seq} - C ${m.command} - ${JSON.stringify(m.arguments).substring(0,50)}`),
+			//onDidSendMessage: m => console.log(`< ${m.seq} - ${m.command ? "C" : "E"} ${m.command ? m.command : m.event} - ${m.body? JSON.stringify(m.body).substring(0,50) : 'no-body'}`)
+			onWillReceiveMessage: m => console.log(`> ${JSON.stringify(m, undefined, 2)}`),
+			onDidSendMessage: m => console.log(`< ${JSON.stringify(m, undefined, 2)}`)
 		  };
 		}
-	  });
+	  });*/
 }
 
 function DebugList(args) {
