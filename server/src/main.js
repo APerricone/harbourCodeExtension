@@ -5,7 +5,6 @@ const path = require("path");
 const Uri = require("vscode-uri").URI;
 const trueCase = require("true-case-path")
 const server_textdocument = require("vscode-languageserver-textdocument");
-const { SemanticTokenTypes, TextEdit } = require('vscode-languageserver');
 
 var connection = server.createConnection(
     new server.IPCMessageReader(process),
@@ -488,8 +487,8 @@ connection.onWorkspaceSymbol((param) => {
     var colon = src.indexOf(':');
     if (colon > 0) {
         parent = src.substring(0, colon);
-        if (parent.endsWith("()")) parent = parent.substr(0, parent.length - 2);
-        src = src.substr(colon + 1);
+        if (parent.endsWith("()")) parent = parent.substring(0, parent.length - 2);
+        src = src.substring(colon + 1);
     }
     for (var file in files) { //if (files.hasOwnProperty(file)) {
         var pp = files[file];
@@ -520,6 +519,12 @@ connection.onWorkspaceSymbol((param) => {
     return dest;
 });
 
+/**
+ *
+ * @param {server.TextDocumentPositionParams} params
+ * @param {Boolean} withPrev
+ * @returns
+ */
 function GetWord(params, withPrev) {
     var doc = documents.get(params.textDocument.uri);
     var pos = doc.offsetAt(params.position);
@@ -544,8 +549,16 @@ function GetWord(params, withPrev) {
                 while(idx>=0 && (prev==' ' || prev=='\t')) {
                     prev = text[--idx];
                 }
-            }
-            break
+                let canBreak = (prev!=' ' || prev!='\t')
+                if(prev==">") {
+                    canBreak=idx>0;
+                    if(canBreak)
+                        prev=text[--idx]+prev; //can become ->
+                }
+                if(canBreak)
+                    break
+            } else
+                break
         }
         delta += 10;
     }
@@ -1605,15 +1618,10 @@ connection.onRequest(server.SemanticTokensRegistrationType.method, (param)=> {
 function getNextNotSpace(doc,startPos) {
 
     var p;
-    var currPos, endPos = doc.positionAt(startPos);
-    do {
-        currPos = endPos;
-        startPos+=10;
-        endPos = doc.positionAt(startPos);
-        if(endPos.line==currPos.line && endPos.character==currPos.character)
-            return "";
-        p = doc.getText(server.Range.create(currPos,endPos)).trimStart();
-    } while(p.length==0 && endPos.line<=doc.lineCount)
+    var currPos = doc.positionAt(startPos);
+    var endPos = doc.positionAt(startPos);
+    endPos.character=doc.line;
+    p = doc.getText(server.Range.create(currPos,endPos)).trimStart();
     return p[0];
 }
 
@@ -1626,7 +1634,7 @@ connection.onReferences( (params) => {
     var kind = "variable"
     if(prev==':') kind= next=="("? "method" : "data";
              else  kind= next=="("? "function" : "variable";
-    if(prev==">") kind="field"
+    if(prev=="->") kind="field" //
     var ret = [];
     word = word[0].toLowerCase()
     var pThis;
@@ -1643,7 +1651,7 @@ connection.onReferences( (params) => {
         kind = def.kind
         if(def.kind.endsWith("*")) {
             onlyThis = true;
-            kind = kind.substr(0,kind.length-1)
+            kind = kind.substring(0,kind.length-1)
         }
         if(def.kind == "local") onlyThis = true;
         if(def.kind == "static") onlyThis = true;

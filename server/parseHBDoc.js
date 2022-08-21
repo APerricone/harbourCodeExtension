@@ -165,35 +165,34 @@ parseFile.prototype.parseLine = function(line)
 			}
 			break;
 		case "$ARGUMENTS$":
-			if(this.doc && line.length>0)
-			{
-				var ck = /<[^>]+>/;
+			if(this.doc && line.length>0) {
+				var ck = /^\s*<[^>]+>/;
 				var mm = line.match(ck);
-				if(mm)
-				{
-					var arg = {};
-					arg["label"] = mm[0];
-					arg["documentation"] = line;
+				if(mm) {
+					var arg = {label:mm[0],documentation: line.replace(mm[0],"").trim()};
 					this.doc.arguments.push(arg);
-				}else
-				if(this.doc.arguments.length>0)
+				}else if(this.doc.arguments.length>0)
 					this.doc.arguments[this.doc.arguments.length-1].documentation += " " + line;
 			}
 			break;
 		case "$RETURNS$":
-			if(this.doc)
-			{
-				var ck = /<[^>]+>/;
+			if(this.doc && line.length>0) {
+				var ck = /^\s*<[^>]+>/;
 				var mm = line.match(ck);
-				if(mm)
-				{
-					var arg = {};
-					arg["name"] = mm[0];
-					arg["help"] = line.replace(mm[0],"").trim();
-					this.doc.return = arg;
-				}else
-				if(this.doc.return)
-					this.doc.return.help += " " + line;
+				if(mm) {
+					if(this.doc.return) {
+						this.doc.return.help += " " + line;
+					} else {
+						var arg = {name:mm[0], help: line.replace(mm[0],"").trim()};
+						this.doc.return = arg;
+					}
+				} else {
+					if(this.doc.return) {
+						this.doc.return.help += " " + line;
+					} else
+						this.doc.return = {name:"", help: line};
+
+				}
 			}
 			break;
 	}
