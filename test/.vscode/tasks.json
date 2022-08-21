@@ -32,7 +32,7 @@
                 "isDefault": true
             },
             "extraArgs": [
-                "-lcode_dbg", "-L.", "-gtcgi", "-w", "-ql", "-b", "-gc3", "-winuni", "-debug"
+                "-lcode_dbg", "-L.", "-gtcgi", "-w", "-ql", "-b", "-gc3", "-winuni", "-debug","hbwin.hbc"
             ],
             "windows": {
                 "setupBatch": "c:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\Build\\vcvars32.bat"

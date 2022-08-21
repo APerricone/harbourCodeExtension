@@ -57,25 +57,25 @@ static procedure CheckSocket(lStopSent)
    // if no server then search it.
    // 140+130+120+110+100+90+80+70+60+50+40+30+20+10=1050 wait 1sec at start, then 0
    do while (empty(t_oDebugInfo['socket']) .and. t_oDebugInfo['timeCheckForDebug']<=14)
-      //QOut("try to connect to debug server",t_oDebugInfo['timeCheckForDebug'], seconds()," timeout:",140-t_oDebugInfo['timeCheckForDebug']*10)
+      ? "try to connect to debug server",t_oDebugInfo['timeCheckForDebug'], seconds()," timeout:",140-t_oDebugInfo['timeCheckForDebug']*10
       hb_inetInit()
       t_oDebugInfo['socket'] := hb_inetCreate(140-t_oDebugInfo['timeCheckForDebug']*10)
       hb_inetConnect("127.0.0.1",DBG_PORT,t_oDebugInfo['socket'])
       if hb_inetErrorCode(t_oDebugInfo['socket']) <> 0
-         //QOut("failed")			// no server found
+         ? "failed"			// no server found
          tmp := "NO"
       else
-         //QOut("connected") //server found, send my exeName and my processId
 #ifdef INAPACHE
          hb_inetSend(t_oDebugInfo['socket'],GetAppName()+CRLF+str(__PIDNum())+CRLF)
 #else
          hb_inetSend(t_oDebugInfo['socket'],HB_ARGV(0)+CRLF+str(__PIDNum())+CRLF)
 #endif
+         ? "connected" //server found, send my exeName and my processId
          do while hb_inetDataReady(t_oDebugInfo['socket']) != 1 //waiting for response
             hb_idleSleep(0.2)
          end do
          tmp := hb_inetRecvLine(t_oDebugInfo['socket']) // if the server does not respond "NO" it is ok
-         //QOut("returned ",tmp)
+         ? "returned ",tmp
          // End of handshake
       endif
       if tmp="NO" //server not found or handshake failed
@@ -91,7 +91,7 @@ static procedure CheckSocket(lStopSent)
    do while .T.
       if hb_inetErrorCode(t_oDebugInfo['socket']) <> 0
          // disconected?
-         //QOut("socket error",hb_inetErrorDesc( t_oDebugInfo['socket'] ))
+         QOut("socket error",hb_inetErrorDesc( t_oDebugInfo['socket'] ))
          t_oDebugInfo['socket'] := nil
          t_oDebugInfo['lRunning'] := .T.
          t_oDebugInfo['aBreaks'] := {=>}
@@ -102,7 +102,7 @@ static procedure CheckSocket(lStopSent)
       do while hb_inetDataReady(t_oDebugInfo['socket']) = 1
          tmp := hb_inetRecvLine(t_oDebugInfo['socket'])
          if .not. empty(tmp)
-				//? "<<", tmp
+				? "<<", tmp
             if subStr(tmp,4,1)==":"
                sendCoumpoundVar(tmp, hb_inetRecvLine(t_oDebugInfo['socket']))
                loop
@@ -1257,7 +1257,7 @@ return cRet
 STATIC PROCEDURE SetErrorType( nType )
    LOCAL t_oDebugInfo := __DEBUGITEM()
    t_oDebugInfo["errorType"] := val(nType)
-   //? "errorType = ",t_oDebugInfo["errorType"]
+   ? "errorType = ",t_oDebugInfo["errorType"]
    __DEBUGITEM(t_oDebugInfo)
 return
 
@@ -1517,11 +1517,14 @@ static proc dbgQOut(...)
    LOCAL nPar := PCOUNT()
    LOCAL cMsg := ""
    LOCAL oSocket := __DEBUGITEM()['socket']
-   IF nPar == 0 .or. empty(oSocket)
+   IF nPar == 0
          RETURN
    ENDIF
    aEval(HB_APARAMS(), {|x| cMsg += hb_ValToStr(x)+" " })
-   hb_inetSend(oSocket,"LOG:"+cMsg+CRLF)
+   wapi_OutputDebugString(cMsg)
+   if !empty(oSocket)
+      hb_inetSend(oSocket,"LOG:"+cMsg+CRLF)
+   endif
 RETURN
 #endif
 

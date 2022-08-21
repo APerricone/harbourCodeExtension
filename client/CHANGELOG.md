@@ -3,6 +3,8 @@ All notable changes to the "Harbour and xHarbour" extension will be documented i
 
 # 1.0.4
  - **Debugger** Added messages in case of early exit [#84](https://github.com/APerricone/harbourCodeExtension/issues/84)
+ - **Debugger** Added wapi_OutputDebugString/hb_OutDebug support on windows using [@yagisumi/win-output-debug-string](https://github.com/yagisumi/node-win-output-debug-string)
+ - **Sever** Added some documented in not-standard way functions and procedures
 
 # 1.0.3
  - **Server** fixed some formatter behaviour

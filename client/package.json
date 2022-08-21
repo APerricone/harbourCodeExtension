@@ -28,6 +28,7 @@
         "@vscode/codicons": "^0.0.28",
         "@vscode/debugadapter": "^1.54.0",
         "@vscode/debugprotocol": "^1.44.0",
+        "@yagisumi/win-output-debug-string": "^1.0.0",
         "true-case-path": "^2.2.1",
         "vscode-languageclient": "^6.1.4",
         "vscode-nls": "^4.1.2"

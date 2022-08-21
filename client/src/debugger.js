@@ -6,7 +6,9 @@ const fs = require("fs");
 const cp = require("child_process");
 const localize = require("./myLocalize.js").localize;
 const process = require("process")
-const trueCase = require("true-case-path")
+const trueCase = require("true-case-path");
+const platform = require("os").platform();
+const winMonitor = require("@yagisumi/win-output-debug-string").monitor;
 
 // https://code.visualstudio.com/updates/v1_30#:~:text=Finalized%20Debug%20Adapter%20Tracker%20API
 /** @requires vscode-debugadapter   */
@@ -190,6 +192,10 @@ class harbourDebugSession extends debugadapter.DebugSession {
                     "kind": args.terminalType,
                     "cwd": args.workingDir,
                     "args": [args.program].concat(args.arguments ? args.arguments : [])
+                }, undefined, runResp =>{
+                    if(runResp && runResp.body && runResp.body.processId) {
+                        tc.setProcess(runResp.body.processId)
+                    }
                 })
                 break;
             case 'none':
@@ -205,6 +211,7 @@ class harbourDebugSession extends debugadapter.DebugSession {
                     return
                 });
                 process.on("exit", (code,signal) => {
+                    tc.sendEvent(new debugadapter.ExitedEvent(code));
                     if(!tc.processId) {
                         tc.sendEvent(new debugadapter.OutputEvent(localize("harbour.prematureExit", code), "stderr"))
                         tc.sendEvent(new debugadapter.TerminatedEvent());
@@ -216,6 +223,8 @@ class harbourDebugSession extends debugadapter.DebugSession {
                 process.stdout.on('data', data =>
                     tc.sendEvent(new debugadapter.OutputEvent(data.toString(), "stdout"))
                 );
+                if(process.pid)
+                    this.setProcess(process.pid)
                 break;
         }
         this.sendResponse(response);
@@ -258,7 +267,24 @@ class harbourDebugSession extends debugadapter.DebugSession {
 
     setProcess(pid) {
         var tc = this
+        if(!pid) {
+            return
+        }
+        if(this.processId) {
+            if(this.processId != pid) {
+                // uncomment for debugging
+                //throw new Error("2 pid?! "+this.processId +" and "+ pid)
+            }
+            return
+        }
         this.processId = pid;
+        if(platform=="win32") {
+            winMonitor.start(mInfo=>{
+                if(mInfo.pid==pid) {
+                    this.sendEvent(new debugadapter.OutputEvent(mInfo.message + "\r\n", "console"))
+                }
+            })
+        }
         var interval = setInterval(() => {
             try {
                 process.kill(pid, 0);
@@ -295,21 +321,31 @@ class harbourDebugSession extends debugadapter.DebugSession {
                     socket.end();
                     return;
                 }
-                if (args.program && args.program.length > 0) {
-                    var exeTarget = path.basename(args.program, path.extname(args.program)).toLowerCase();
-                    var clPath = path.basename(lines[0], path.extname(lines[0])).toLowerCase();
-                    if (clPath != exeTarget) {
+                var processId = parseInt(lines[1]);
+                if(tc.processId) {
+                    if(tc.processId!=processId) {
+                        socket.write("NO\r\n")
+                        socket.end();
+                        return;
+                    }
+                } else {
+                    if (args.program && args.program.length > 0) {
+                        var exeTarget = path.basename(args.program, path.extname(args.program)).toLowerCase();
+                        var clPath = path.basename(lines[0], path.extname(lines[0])).toLowerCase();
+                        if (clPath != exeTarget) {
+                            socket.write("NO\r\n")
+                            socket.end();
+                            return;
+                        }
+                    }
+
+                    if (args.process && args.process > 0 && args.process != processId) {
                         socket.write("NO\r\n")
                         socket.end();
                         return;
                     }
                 }
-                var processId = parseInt(lines[1]);
-                if (args.process && args.process > 0 && args.process != processId) {
-                    socket.write("NO\r\n")
-                    socket.end();
-                    return;
-                }
+
                 socket.write("HELLO\r\n")
                 tc.setProcess(processId);
                 //connected!
@@ -727,12 +763,57 @@ class harbourDebugSession extends debugadapter.DebugSession {
     setExceptionBreakPointsRequest(response, args) {
         var errorType = args.filters.length;
         // 0 - no stop on error
-        // 1 - stop only ut-of-sequence
+        // 1 - stop only out-of-sequence
         // 2 - stop all
         if (errorType == 1 && args.filters[0] != 'notSeq') {
             errorType++;
         }
         this.command(`ERRORTYPE\r\n${errorType}\r\n`)
+        //TODO: list all possibile harbour exceptions
+        /*response.body = {};
+        response.body.breakpoints = [
+          {id:0,message:"Unknown error"},
+          {id:1,message:"Argument error"},
+          {id:2,message:"Bound error"},
+          {id:3,message:"String overflow"},
+          {id:4,message:"Numeric overflow"},
+          {id:5,message:"Zero divisor"},
+          {id:6,message:"Numeric error"},
+          {id:7,message:"Syntax error"},
+          {id:8,message:"Operation too complex"},
+          {id:11,message:"Memory low"},
+          {id:12,message:"Undefined function"},
+          {id:13,message:"No exported method"},
+          {id:14,message:"Variable does not exist"},
+          {id:15,message:"Alias does not exist"},
+          {id:16,message:"No exported variable"},
+          {id:17,message:"Illegal characters in alias"},
+          {id:18,message:"Alias already in use"},
+          {id:20,message:"Create error"},
+          {id:21,message:"Open error"},
+          {id:22,message:"Close error"},
+          {id:23,message:"Read error"},
+          {id:24,message:"Write error"},
+          {id:25,message:"Print error"},
+          {id:30,message:"Operation not supported"},
+          {id:31,message:"Limit exceeded"},
+          {id:32,message:"Corruption detected"},
+          {id:33,message:"Data type error"},
+          {id:34,message:"Data width error"},
+          {id:35,message:"Workarea not in use"},
+          {id:36,message:"Workarea not indexed"},
+          {id:37,message:"Exclusive required"},
+          {id:38,message:"Lock required"},
+          {id:39,message:"Write not allowed"},
+          {id:40,message:"Append lock failed"},
+          {id:41,message:"Lock Failure"},
+          {id:45,message:"Object destructor failure"},
+          {id:46,message:"array access"},
+          {id:47,message:"array assign"},
+          {id:48,message:"array dimension"},
+          {id:49,message:"not an array"},
+          {id:50,message:"conditional"}
+        ];*/
         this.sendResponse(response);
     }
 
@@ -815,4 +896,3 @@ class harbourDebugSession extends debugadapter.DebugSession {
 
 /// END
 debugadapter.DebugSession.run(harbourDebugSession);
-
