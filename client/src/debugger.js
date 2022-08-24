@@ -157,6 +157,11 @@ class harbourDebugSession extends debugadapter.DebugSession {
         this.sendResponse(response);
     }
 
+    /**
+     * 
+     * @param {debugprotocol.DebugProtocol.LaunchRequest} response 
+     * @param {debugprotocol.DebugProtocol.LaunchRequestArguments} args 
+     */
     launchRequest(response, args) {
         var port = args.port ? args.port : 6110;
         var tc = this;
@@ -230,6 +235,11 @@ class harbourDebugSession extends debugadapter.DebugSession {
         this.sendResponse(response);
     }
 
+    /**
+     * 
+     * @param {debugprotocol.DebugProtocol.AttachResponse} response 
+     * @param {debugprotocol.DebugProtocol.AttachRequestArguments} args 
+     */
     attachRequest(response, args) {
         var port = args.port ? args.port : 6110;
         if (args.process <= 0 && (args.program || "").length == 0) {
@@ -289,6 +299,7 @@ class harbourDebugSession extends debugadapter.DebugSession {
             try {
                 process.kill(pid, 0);
             } catch (error) {
+                if(platform=="win32") winMonitor.stop()
                 tc.sendEvent(new debugadapter.TerminatedEvent());
                 clearInterval(interval);
             }
@@ -305,6 +316,12 @@ class harbourDebugSession extends debugadapter.DebugSession {
         this.sendResponse(response);
     }
 
+    /**
+     * 
+     * @param {net.Socket} socket 
+     * @param {net.Server} server 
+     * @param {debugprotocol.DebugProtocol.LaunchRequestArguments|debugprotocol.DebugProtocol.AttachRequestArguments} args 
+     */
     evaluateClient(socket, server, args) {
         var tc = this;
 

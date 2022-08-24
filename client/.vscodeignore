@@ -6,5 +6,7 @@ copy.*
 node_modules
 !node_modules/@vscode/codicons/dist/codicon.css
 !node_modules/@vscode/codicons/dist/codicon.ttf
+!node_modules/@yagisumi/win-output-debug-string/build/Release/win_output_debug_string.node
 src
 webpack.config.js
+appunti_formatter
