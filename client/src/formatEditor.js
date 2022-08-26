@@ -41,7 +41,7 @@ function showEditor(context) {
     <title>Cat Coding</title>
     <link href="${panel.webview.asWebviewUri(codiconsUri)}/codicon.css" rel="stylesheet" />
     <link href="${baseUri}/style.css" rel="stylesheet" />
-    <script src="${baseUri}/jquery-3.6.0${debug?"":".slim"}.min.js"></script>
+    <script src="${baseUri}/jquery-3.6.0.slim${debug?"":".min"}.js"></script>
     <script src="${baseUri}/code.js"></script>
     </head><body>`;
 

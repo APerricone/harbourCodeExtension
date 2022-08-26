@@ -88,7 +88,7 @@ connection.onInitialize(params => {
     });
     fs.readFile(path.join(__dirname, 'hbdocs.missing'), "utf8", (err, data) => {
         if (!err)
-            missing = data.split(/\r\n{1,2}/g)
+            missing = JSON.parse(data);
     });
     return {
         capabilities: {
@@ -1122,15 +1122,16 @@ connection.onCompletion((param, cancelled) => {
         for (var i = 0; i < docs.length; i++) {
             var c = CheckAdd(docs[i].name, server.CompletionItemKind.Function, "AA")
             if (c) c.documentation = docs[i].documentation;
-            if (cancelled.isCancellationRequested) return server.CompletionList.create(completions, false);
+            if (cancelled.isCancellationRequested) return server.CompletionList.create(completions, true);
         }
         for (var i = 1; i < keywords.length; i++) {
             CheckAdd(keywords[i], server.CompletionItemKind.Keyword, "AAA")
-            if (cancelled.isCancellationRequested) return server.CompletionList.create(completions, false);
+            if (cancelled.isCancellationRequested) return server.CompletionList.create(completions, true);
         }
         for (var i = 1; i < missing.length; i++) {
-            CheckAdd(missing[i], server.CompletionItemKind.Function, "A")
-            if (cancelled.isCancellationRequested) return server.CompletionList.create(completions, false);
+            let c = CheckAdd(missing[i][0], server.CompletionItemKind.Function, "A")
+            if(c) c.detail = missing[i][1];
+            if (cancelled.isCancellationRequested) return server.CompletionList.create(completions, true);
         }
         //AddCommands(param, completions)
     }
@@ -1143,7 +1144,7 @@ connection.onCompletion((param, cancelled) => {
             if (foundWord.index < pos && foundWord.index + foundWord[0].length >= pos)
                 continue;
             CheckAdd(foundWord[0], server.CompletionItemKind.Text, "")
-            if (cancelled.isCancellationRequested) return server.CompletionList.create(completions, false);
+            if (cancelled.isCancellationRequested) return server.CompletionList.create(completions, true);
         }
     }
     return server.CompletionList.create(completions, false);

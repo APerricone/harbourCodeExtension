@@ -10,3 +10,4 @@ node_modules
 src
 webpack.config.js
 appunti_formatter
+formatter-settings/jquery-3.6.0.slim.js

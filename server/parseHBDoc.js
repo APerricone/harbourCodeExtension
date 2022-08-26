@@ -2,17 +2,13 @@ var fs = require("fs");
 var readline = require("readline");
 var path = require("path")
 
-//var hbPath = "/home/perry/harbour-src"
-var hbPath = "c:\\harbour"
-//parseDocEn(path.join(hbPath,"doc","en")); // parsed 332 procedures (over 1579 standard)
-parseDocEn(hbPath); //parsed 833 procedures (over 1579 standard)
-//parseDocEn("c:\\harbour\\contrib\\rddads\\doc\\en")
-parseHBX(path.join(hbPath,"include","harbour.hbx"));
-
 var nTodo = 0;
 var docs = [];
 var stdMethods = [];
-function parseDocEn(dir) {
+
+//walkPath(/home/perry/harbour-src)
+walkPath("c:\\harbour")
+function walkPath(dir) {
 	console.debug(`listing: ${dir}...`)
 	fs.readdir(dir, function (err, ff) {
 		if (ff == undefined)
@@ -20,26 +16,35 @@ function parseDocEn(dir) {
 		for (var i = 0; i < ff.length; i++) {
 			let completePath = path.join(dir, ff[i]);
 			let info = fs.statSync(completePath);
-			if(ff[i].toLocaleLowerCase().endsWith(".txt")) {
+			const lowerFileName = ff[i].toLocaleLowerCase();
+			if(lowerFileName.endsWith(".txt")) {
 				new parseFile(completePath);
+			} else if(lowerFileName.endsWith(".hbx")) {
+				parseHBX(completePath);
 			} else if(info.isDirectory()) {
-				parseDocEn(completePath)
+				walkPath(completePath)
 			}
 		}
 	});
 }
 
-function parseHBX(path)
+////parseDocEn(path.join(hbPath,"doc","en")); // parsed 332 procedures (over 1579 standard)
+//parseDocEn(hbPath); //parsed 833 procedures (over 1579 standard)
+////parseDocEn("c:\\harbour\\contrib\\rddads\\doc\\en")
+//parseHBX(path.join(hbPath,"include","harbour.hbx"));
+
+function parseHBX(completePath)
 {
 	nTodo++;
+	let fileName = path.parse(completePath).name
 	var ck = /DYNAMIC\s+([_a-z0-9]+)/i;
-	var reader = readline.createInterface({input:fs.createReadStream(path,"utf8")});
+	var reader = readline.createInterface({input:fs.createReadStream(completePath,"utf8")});
 	reader.on("line",l =>
 	{
 		var m = l.match(ck);
 		if(m && m[1])
 		{
-			stdMethods.push(m[1]);
+			stdMethods.push([m[1],fileName]);
 		}
 	});
 	reader.on("close",() =>
@@ -72,22 +77,23 @@ function createDoc()
 {
 	console.debug(`parsed ${docs.length} procedures (over ${stdMethods.length} standard)`)
 	docs.sort( (a,b) => a.name.localeCompare(b.name));
-	stdMethods.sort( (a,b) => a.localeCompare(b));
+	stdMethods.sort( (a,b) => a[0].localeCompare(b[0]));
 	var unDoc = [], extra = [];
 	var is = 0, id =0;
 	while(is<stdMethods.length && id<docs.length)
 	{
-		switch(stdMethods[is].localeCompare(docs[id].name))
+		switch(stdMethods[is][0].localeCompare(docs[id].name))
 		{
 			case  0: id++; is++; break; //are the same, go ahead both
 			case -1: unDoc.push(stdMethods[is]); is++; break; // Cathed! undocumentated method.
 			case 1: extra.push(docs[id].label); id++; break; // I don't write it anywhere, but extra contains documentated proc absent in hbx
 		}
 	}
-	var msg = "standard un documentated methods:\r\n"
+	var msg = "[\r\n"
 	for(var i=0;i<unDoc.length;i++)
-		msg += unDoc[i]+"\r\n";
-
+		msg += `["${unDoc[i][0]}","${unDoc[i][1]}"],\r\n`;
+	msg=msg.slice(0,msg.length-3)
+	msg += "\r\n]";
 	fs.writeFile("src/hbdocs.missing",	msg, (err)=>{if(err) console.error(err);});
 	fs.writeFile("src/hbdocs.json",	JSON.stringify(docs,undefined,1),(err)=>{if(err) console.error(err);});
 }
