@@ -972,7 +972,8 @@ connection.onCompletion((param, cancelled) => {
     var doc = documents.get(param.textDocument.uri);
     var line = doc.getText(server.Range.create(param.position.line, 0, param.position.line, 1000));
     var include = /^\s*#(pragma\s+__(?:c|binary)?stream)?include\s+[<"]([^>"]*)/i.exec(line);
-    var prevLetter = doc.getText(server.Range.create(server.Position.create(param.position.line, param.position.character - 1), param.position));
+    var prevLetter = ""
+    if(param.position.character>0) prevLetter = doc.getText(server.Range.create(server.Position.create(param.position.line, param.position.character - 1), param.position));
     if (include !== null) {
         if (prevLetter == '>') {
             return server.CompletionList.create([], false); // wrong call

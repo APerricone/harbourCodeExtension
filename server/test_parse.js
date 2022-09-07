@@ -3,8 +3,8 @@ var provider = require('./src/provider.js');
 var p = new provider.Provider();
 p.doGroups = true;
 var src = "..\\test\\minimal.prg";
-//src="C:\\Perry\\ProgramFileCreatingHighCPUUseV3.prg"
-src="C:\\Perry\\beta\\c_artmod.prg"
+src="..\\test\\class_c.prg"
+//src="C:\\Perry\\beta\\c_artmod.prg"
 //src = "c:\\fwh\\include\\fivewin.ch"
 //src="C:\\Harbour32\\tests\\hbpp\\hbpptest.prg"
 console.log(new Date())

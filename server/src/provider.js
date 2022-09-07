@@ -620,6 +620,7 @@ Provider.prototype.parseHarbour = function (words) {
                     this.currentClass = this.addInfo(words[2], 'class', "definition")
                 else
                     this.currentClass = this.addInfo(words1, 'class', "definition")
+                this.currentClass.endLine = undefined;
             } else
                 if (words[0] == "data" || words[0] == "var") {
                     if (this.currentClass) {
@@ -631,7 +632,7 @@ Provider.prototype.parseHarbour = function (words) {
                         var r = methodRegEx.exec(this.currLine);
                         if (r) {
                             var fLike = "definition"
-                            if (this.currentClass) fLike = "declaration";
+                            if (this.currentClass && !this.currentClass.endLine) fLike = "declaration";
                             if (r[4] && r[4].length) {
                                 r[4] = r[4].toLowerCase();
                                 fLike = "definition";

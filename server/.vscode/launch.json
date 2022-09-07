@@ -9,7 +9,6 @@
             "request": "attach",
             "name": "Attach",
             "port": 21780,
-            "protocol": "inspector",
             "preLaunchTask": "prelanch"
         },
         {
