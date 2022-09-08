@@ -408,7 +408,7 @@ connection.onDocumentSymbol((param) => {
         if (info.kind == "memvar") continue;
         var selRange = server.Range.create(info.startLine, info.startCol, info.endLine, info.endCol);
         if (info.endLine != info.startLine)
-            selRange.end = server.Position.create(info.startLine, 1000);
+            selRange.end = server.Position.create(info.startLine, 1e8);
         var docSym = server.DocumentSymbol.create(info.name,
             (info.comment && info.comment.length > 0 ? info.comment.replace(/[\r\n]+/g, " ") : ""),
             kindToVS(info.kind),
@@ -457,7 +457,18 @@ connection.onDocumentSymbol((param) => {
     return dest;
 });
 
+/**
+ * Checks if word1 is contained on word2, return a string with word1 filled with Z where it is not present on word2
+ * @param {String} word1 The string to search
+ * @param {String} word2 The string where search
+ * @returns undefined or the word1 with Z
+ * @example IsInside('a',"ciao") -> ZZa
+ * @example IsInside('ab',"ciao belli") -> ZZaZZb
+ * @example IsInside('ab',"ciao") -> undefined
+ */
 function IsInside(word1, word2) {
+    if(word1.length==0)
+        return ""
     var ret = "";
     var i1 = 0;
     var lenMatch = 0, maxLenMatch = 0, minLenMatch = word1.length;
@@ -534,7 +545,7 @@ function GetWord(params, withPrev) {
     var r = /\b[a-z_][a-z0-9_]*\b/gi
     while (true) {
         r.lastIndex = 0;
-        //var text = allText.substr(Math.max(pos-delta,0),delta+delta)
+        //var text = allText.substring(Math.max(pos-delta,0),pos+delta)
         var text = doc.getText(server.Range.create(doc.positionAt(Math.max(pos - delta, 0)), doc.positionAt(pos + delta)));
         var txtPos = pos < delta ? pos : delta;
         while (word = r.exec(text)) {
@@ -693,13 +704,13 @@ connection.onSignatureHelp((params) => {
     var doc = documents.get(params.textDocument.uri);
     var pos = doc.offsetAt(params.position) - 1;
     /** @type {string} */
-    var text = doc.getText();
+    var text = doc.getText(); //here takes all text because the line can break with ;
     // backwards find (
     pos = findBracket(text, pos, -1, "(")
     if (pos === undefined) return pos;
     // Get parameter position
     var endPos = doc.offsetAt(params.position)
-    var nC = CountParameter(text.substr(pos + 1, endPos - pos - 1), doc.offsetAt(params.position) - pos - 1)
+    var nC = CountParameter(text.substring(pos + 1, endPos), doc.offsetAt(params.position) - pos - 1)
     // Get the word
     pos--;
     var rge = /[0-9a-z_]/i;
@@ -757,7 +768,7 @@ function findBracket(text, pos, dir, bracket) {
                 case '\n':
                     var nSpace = 1;
                     while((pos - nSpace)>0 && text[pos - nSpace] != '\n') nSpace++;
-                    var thisLine = text.substr(pos - nSpace + 1, nSpace)
+                    var thisLine = text.substring(pos - nSpace + 1, pos)
                     thisLine = thisLine.replace(/\/\/[^\n]*\n/, "\n")
                     thisLine = thisLine.replace(/&&[^\n]*\n/, "\n")
                     thisLine = thisLine.replace(/\s+\n/, "\n")
@@ -800,7 +811,7 @@ function CountParameter(txt, position) {
             })
         } while (someChange)
     }
-    return (txt.substr(0, position).match(/,/g) || []).length
+    return (txt.substring(0, position).match(/,/g) || []).length
 }
 
 function getWorkspaceSignatures(word, doc, className, nC) {
@@ -936,7 +947,7 @@ function parseDocument(doc, onInit) {
     pp.currentDocument = doc.uri;
     if (onInit != undefined) onInit(pp);
     for (var i = 0; i < doc.lineCount; i++) {
-        pp.parse(doc.getText(server.Range.create(i, 0, i, 1000)));
+        pp.parse(doc.getText(server.Range.create(i, 0, i, 1e8)));
     }
     pp.endParse();
     return pp;
@@ -970,7 +981,7 @@ function getDocumentProvider(doc, checkGroup) {
 
 connection.onCompletion((param, cancelled) => {
     var doc = documents.get(param.textDocument.uri);
-    var line = doc.getText(server.Range.create(param.position.line, 0, param.position.line, 1000));
+    var line = doc.getText(server.Range.create(param.position.line, 0, param.position.line, 1e8));
     var include = /^\s*#(pragma\s+__(?:c|binary)?stream)?include\s+[<"]([^>"]*)/i.exec(line);
     var prevLetter = ""
     if(param.position.character>0) prevLetter = doc.getText(server.Range.create(server.Position.create(param.position.line, param.position.character - 1), param.position));
@@ -987,28 +998,30 @@ connection.onCompletion((param, cancelled) => {
             server.Range.create(server.Position.create(param.position.line, includePos),
                 server.Position.create(param.position.line, includePos + include[2].length - 1)));
     }
-    var allText = doc.getText();
+    var allText = doc.getText(server.Range.create(
+        server.Position.create(param.position.line, 0),
+        server.Position.create(param.position.line, 1e8)));
     var completions = [];
-    var pos = doc.offsetAt(param.position) - 1
+    var pos = param.position.character-1;
     // Get the word
     var rge = /[0-9a-z_]/i;
     var word = "", className = undefined;
-    var pp = getDocumentProvider(doc);
     while (pos >= 0 && rge.test(allText[pos])) {
         word = allText[pos] + word;
         pos--;
     }
     word = word.toLowerCase();
+    var pp = getDocumentProvider(doc);
     var prevLetter = allText[pos];
     if (prevLetter == '>') {
-        if (allText[pos - 1] == '-') {
+        if (pos>0 && allText[pos - 1] == '-') {
             prevLetter = '->';
             completions = CompletionDBFields(word, allText, pos, pp)
             if (completions.length > 0)
                 return server.CompletionList.create(completions, true); // put true because added all known field of this db
-        } else {
+        } /*else {
             return server.CompletionList.create([], false); // wrong call
-        }
+        }*/
     }
     var done = {}
     function CheckAdd(label, kind, sort) {
@@ -1030,7 +1043,7 @@ connection.onCompletion((param, cancelled) => {
         return c;
     }
     if (prevLetter != '->' && prevLetter != ':') prevLetter = undefined;
-    if (word.length == 0 && prevLetter == undefined) return server.CompletionList.create(completions, false);
+    //if (word.length == 0 && prevLetter == undefined) return server.CompletionList.create(completions, false);
     if (!prevLetter) {
         for (var dbName in databases) {
             CheckAdd(databases[dbName].name, server.CompletionItemKind.Struct, "AAAA")
@@ -1139,7 +1152,7 @@ connection.onCompletion((param, cancelled) => {
     if (wordBasedSuggestions && !pp) {
         var wordRE = /\b[a-z_][a-z0-9_]*\b/gi
         var foundWord;
-        var pos = doc.offsetAt(param.position);
+        var pos = param.position.character;
         while (foundWord = wordRE.exec(allText)) {
             // remove current word
             if (foundWord.index < pos && foundWord.index + foundWord[0].length >= pos)
@@ -1157,14 +1170,14 @@ connection.onCompletion((param, cancelled) => {
  * */
 function AddCommands(param, completions) {
     var doc = documents.get(param.textDocument.uri);
-    var line = doc.getText(server.Range.create(param.position.line,0,param.position.line,1000));
+    var line = doc.getText(server.Range.create(param.position.line,0,param.position.line,1e8));
     var nextLine = line;
     var contTest = /;(\/\*.*\*\/)*((\/\/|&&).*)?[\r\n]{1,2}$/;
     var startLine=param.position.line;
     var endLine=param.position.line;
     var i=1;
     while((param.position.line-i)>0) {
-        var prevLine=doc.getText(server.Range.create(param.position.line-i,0,param.position.line-i,1000));
+        var prevLine=doc.getText(server.Range.create(param.position.line-i,0,param.position.line-i,1e8));
         if(prevLine.match(contTest)) {
             line = prevLine+line;
             startLine = param.position.line-i;
@@ -1174,7 +1187,7 @@ function AddCommands(param, completions) {
     }
     i=1;
     while(nextLine.match(contTest)) {
-        nextLine = doc.getText(server.Range.create(param.position.line+i,0,param.position.line+i,1000));
+        nextLine = doc.getText(server.Range.create(param.position.line+i,0,param.position.line+i,1e8));
         line += nextLine;
         endLine = param.position.line+i;
         i++;
@@ -1205,9 +1218,9 @@ function completionFiles(word, startPath, allFiles, includeRange) {
     var deltaPath = ""
     var lastSlash = Math.max(word.lastIndexOf("\\"), word.lastIndexOf("/"))
     if (lastSlash > 0) {
-        foundSlash = word.substr(lastSlash,1)
-        deltaPath = word.substr(0, lastSlash);
-        word = word.substr(lastSlash + 1);
+        foundSlash = word.substring(lastSlash,lastSlash+1)
+        deltaPath = word.substring(0, lastSlash);
+        word = word.substring(lastSlash + 1);
     }
     if (process.platform.startsWith("win")) {
         word = word.toLowerCase();
@@ -1738,7 +1751,7 @@ function getCleanline(_line, lineState, precLineState) {
             if (prevC == "/") {
                 var endComment = line.indexOf("*/", i + 1)
                 if (endComment > 0) {
-                    line = line.substring(0, i - 1) + " ".repeat(endComment - i + 3) + line.substr(endComment + 2);
+                    line = line.substring(0, i - 1) + " ".repeat(endComment - i + 3) + line.substring(endComment + 2);
                     c=" ";
                     i=endComment;
                     continue;
@@ -1749,7 +1762,7 @@ function getCleanline(_line, lineState, precLineState) {
             }
         }
         if ((c == "/" && prevC == "/") || (c == "&" && prevC == "&")) {
-            //line = line.substr(0, i - 1)
+            //line = line.substring(0, i - 1)
             break;
         }
         if (c == '"' || c=="'" || (c == "[" && /[^a-zA-Z0-9_\[\]]/.test(prevCNoSpace) && !/^\s*#/.test(line))) {
@@ -1764,7 +1777,7 @@ function getCleanline(_line, lineState, precLineState) {
                 line = line.substring(0, i - 1)
                 break;
             }
-            line = line.substring(0, i+1) + " ".repeat(endString - i-1) + line.substr(endString);
+            line = line.substring(0, i+1) + " ".repeat(endString - i-1) + line.substring(endString);
             i = endString+1;
             c=" ";
             continue;
@@ -1796,7 +1809,7 @@ connection.onDocumentFormatting( (params) => {
                 }
                 let doLast = false;
                 if((info.kind.startsWith("func") || info.kind.startsWith("proc")) && info.foundLike=="definition") {
-                    let line = doc.getText(server.Range.create(info.endLine, 0, info.endLine, 1000));
+                    let line = doc.getText(server.Range.create(info.endLine, 0, info.endLine, 1e8));
                     //doLast = !/^\s*ret(u(r(n?)?)?)?/i.test(line);
                     doLast = !(line.trimStart().toLowerCase().startsWith("ret"))
                 }
@@ -1855,7 +1868,7 @@ connection.onDocumentFormatting( (params) => {
             let t = tabs[i];
             let precCont = precState.state==2
             if(i>0 && precCont) t++;
-            let line = doc.getText(server.Range.create(i, 0, i, 1000));
+            let line = doc.getText(server.Range.create(i, 0, i, 1e8));
             let firstNoSpace=0;
             while(line[firstNoSpace]==" " || line[firstNoSpace]=="\t") firstNoSpace++;
             let line2 = getCleanline(line, state, precState);
@@ -1881,7 +1894,7 @@ connection.onDocumentFormatting( (params) => {
             if(precState.state==0 && currStyleConfig.replace.asterisk!="ignore") {
                 if(/^\s*(\*|\/\/|&&|note)/i.test(line)) {
                     commentReplaced = true
-                    let firstChar = line.substring(firstNoSpace,firstNoSpace+1);//line2.trimStart().substr(0,1);
+                    let firstChar = line.substring(firstNoSpace,firstNoSpace+1);//line2.trimStart().substring(0,1);
                     let commentLen = 2;
                     if(firstChar=="*") commentLen = 1;
                     if(firstChar=="n") commentLen = 4;
