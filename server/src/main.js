@@ -1635,7 +1635,8 @@ function getNextNotSpace(doc,startPos) {
     var p;
     var currPos = doc.positionAt(startPos);
     var endPos = doc.positionAt(startPos);
-    endPos.character=doc.line;
+    endPos.line+=1
+    endPos.character=0;
     p = doc.getText(server.Range.create(currPos,endPos)).trimStart();
     return p[0];
 }
