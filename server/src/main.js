@@ -406,6 +406,7 @@ connection.onDocumentSymbol((param) => {
         var info = p.funcList[fn];
         if (info.kind == "field") continue;
         if (info.kind == "memvar") continue;
+        if (typeof(info.endLine)!="number") continue;
         var selRange = server.Range.create(info.startLine, info.startCol, info.endLine, info.endCol);
         if (info.endLine != info.startLine)
             selRange.end = server.Position.create(info.startLine, 1e8);

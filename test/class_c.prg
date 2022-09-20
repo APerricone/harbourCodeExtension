@@ -1,5 +1,13 @@
 #include <hbclass.ch>
 
+#define FORNITORE_PUNTIVENDITA      "PUNT"
+#define FORNITORE_SEDE              "SEDE"
+#define FORNITORE_SMA               "SMA "
+#define FORNITORE_VARI              "VARI"
+#define FORNITORE_VBPCSTORE         "VBPC"
+#define FORNITORE_UNES              "UNES"
+#define FORNITORE_UPIM              "UPIM"
+
 class ClassTest
    DATA nFormat AS NUMERIC INIT 0
    DATA nWidth AS NUMERIC INIT 100
@@ -7,6 +15,8 @@ class ClassTest
    DATA nIndex
    DATA nOrder
    DATA nWidthMin
+
+   class Var pippo
 
    METHOD Test() //Directly C Code
    METHOD AddText()
@@ -21,7 +31,11 @@ procedure main()
    local col1 := ClassTest():New()
    col1:cText := "Perry"
    col1:nWidthMin := 50
+   col0:pippo := 10
 
+   cazzo := figa+cazzo * 3+figa
+   merda := merda * 3
+   
    col0:Test()
    CallMember(col1)
    col1:Test()

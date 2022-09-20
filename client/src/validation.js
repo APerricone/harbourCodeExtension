@@ -44,6 +44,7 @@ function validate(textDocument)
 	args = args.concat(section.extraOptions.split(" ").filter(function(el) {return el.length != 0 || el=="-ge1"}));
 	var diagnostics = {};
 	diagnostics[textDocument.fileName] = [];
+	var doneSubjects = {};
 	function parseLine(subLine)
 	{
 		var r = valRegEx.exec(subLine);
@@ -60,6 +61,11 @@ function validate(textDocument)
 					lineNr = parseInt(nSub[1])-1;
 				}
 			}
+			if(subject && subject.length>0) {
+				if(lineNr in doneSubjects && doneSubjects[lineNr].indexOf(subject[0])>=0) return
+				if(!(lineNr in doneSubjects)) doneSubjects[lineNr]=[];
+				doneSubjects[lineNr].push(subject[0]);
+			}
 			var line = textDocument.lineAt(lineNr)
 			if(!(r[1] in diagnostics))
 			{
@@ -69,7 +75,7 @@ function validate(textDocument)
 			if(subject)
 			{
 				var m;
-				subject[0] = subject[0].substr(1,subject[0].length-2)
+				subject[0] = subject[0].substring(1,subject[0].length-1)
 				var rr = new RegExp('\\b'+subject[0].replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&")+'\\b',"ig")
 				var testLine = line;
 				do {
