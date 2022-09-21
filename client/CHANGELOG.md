@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to the "Harbour and xHarbour" extension will be documented in this file.
 
+# 1.0.6
+ - **Syntax** better classData, classVar, classMethod support
+ - **Debugger** better handshake
+
 # 1.0.5
  - **Server** Added classData, classVar, classMethod support [#86](https://github.com/APerricone/harbourCodeExtension/issues/86)
  - **Syntax** Added classData, classVar, classMethod support

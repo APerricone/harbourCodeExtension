@@ -564,7 +564,7 @@
 		"class-declaration": {
 			"patterns": [{
 				"name": "meta.class.harbour",
-				"begin": "(?i)(?=^\\s*(?:CREATE\\s*)?CLASS(?!\\s*(?:var|data|method)))",
+				"begin": "(?i)(?=^\\s*(?:CREATE\\s*)?CLASS\\b(?!\\s*(?:var|data|method)))",
 				"end": "(?i)END[\\t ]*CLASS",
 				"endCaptures": {
 					"0": {
