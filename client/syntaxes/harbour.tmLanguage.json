@@ -737,10 +737,10 @@
 		"method-declaration": {
 			"patterns": [{
 				"name": "meta.method.declaration.harbour",
-				"begin": "(?i)^\\s*(assign|method)\\b",
+				"begin": "(?i)^\\s*((?:class\\s*)?(assign|method))\\b",
 				"beginCaptures": {
 					"1": {
-						"name": "keyword.type.${1:/downcase}.harbour"
+						"name": "keyword.type.${2:/downcase}.harbour"
 					}
 				},
 				"end": "(?m:$)",

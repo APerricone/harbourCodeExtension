@@ -613,7 +613,8 @@ Provider.prototype.parseHarbour = function (words) {
             this.currentMethod = undefined;
             this.currentClass.endLine = this.lineNr;
         } else if (words[0].length >= 4) {
-            if (((words[0] == "class") && !this.currentClass) || (words[0] == "create" && words[1] == "class")) {
+            //if ((words[0] == "class" && ["var","data","method"].indexOf(words[1])<0) || (words[0] == "create" && words[1] == "class")) {
+            if ((words[0] == "class" && (!this.currentClass || this.currentClass.endLine)) || (words[0] == "create" && words[1] == "class")) {
                 if (this.currentMethod) this.currentMethod.endLine = this.lastCodeLine;
                 this.currentMethod = undefined;
                 if (words[0] == "create")
@@ -622,11 +623,16 @@ Provider.prototype.parseHarbour = function (words) {
                     this.currentClass = this.addInfo(words1, 'class', "definition")
                 this.currentClass.endLine = undefined;
             } else
-                if(words[0] == "data" || words[0] == "var" || words[0] == "classdata" ||
-                    words[0] == "classvar" || (words[0] == "class" && words[1]=="var"))  {
+                if(["data","var","classdata","classvar"].indexOf(words[0])>=0 ||
+                    (words[0] == "class" && ["data","var"].indexOf(words[1])>=0))  {
                     if (this.currentClass) {
                         words[1] = words1;
-                        this.parseDeclareList(words.slice(1).join(" "), 'data', this.currentClass)
+                        let subList;
+                        if(words[0]=="class")
+                            subList = words.slice(2).join(" ")
+                        else
+                            subList = words.slice(1).join(" ")
+                        this.parseDeclareList(subList, 'data', this.currentClass)
                     }
                 } else
                     if (words[0] == "method" || words[0] == "classmethod" || (words[0] == "class" && words[1]=="method")) {
