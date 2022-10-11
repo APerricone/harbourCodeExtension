@@ -17,8 +17,7 @@
 			"workingDir": "${workspaceRoot}/",
 			"stopOnEntry": true,
 			//"preLaunchTask": "build",
-			"terminalType": "integrated",
-			"debugServer": 4711
+			"terminalType": "integrated"
 		},
 		{
 			"type": "harbour-dbg",

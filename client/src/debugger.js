@@ -8,7 +8,10 @@ const localize = require("./myLocalize.js").localize;
 const process = require("process")
 const trueCase = require("true-case-path");
 const platform = require("os").platform();
-const winMonitor = require("@yagisumi/win-output-debug-string").monitor;
+var winMonitor = undefined;
+if(platform=="win32") {
+    winMonitor = require("@yagisumi/win-output-debug-string").monitor;
+}
 
 // https://code.visualstudio.com/updates/v1_30#:~:text=Finalized%20Debug%20Adapter%20Tracker%20API
 /** @requires vscode-debugadapter   */
@@ -288,18 +291,16 @@ class harbourDebugSession extends debugadapter.DebugSession {
             return
         }
         this.processId = pid;
-        if(platform=="win32") {
-            winMonitor.start(mInfo=>{
-                if(mInfo.pid==pid) {
-                    this.sendEvent(new debugadapter.OutputEvent(mInfo.message + "\r\n", "console"))
-                }
-            })
-        }
+        winMonitor?.start(mInfo=>{
+            if(mInfo.pid==pid) {
+                this.sendEvent(new debugadapter.OutputEvent(mInfo.message + "\r\n", "console"))
+            }
+        })
         var interval = setInterval(() => {
             try {
                 process.kill(pid, 0);
             } catch (error) {
-                if(platform=="win32") winMonitor.stop()
+                winMonitor?.stop()
                 tc.sendEvent(new debugadapter.TerminatedEvent());
                 clearInterval(interval);
             }
