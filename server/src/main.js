@@ -12,23 +12,24 @@ var connection = server.createConnection(
 
 
 /** @type {Array<string>} */
-var workspaceRoots;
+var workspaceRoots = [];
 /** @type {Array<string>} */
-var includeDirs;
+var includeDirs = [];
 /** @type {number} */
-var workspaceDepth;
+var workspaceDepth = 0;
 /** @type {boolean} */
-var wordBasedSuggestions;
+var wordBasedSuggestions = true;
 /** @type {Object.<string, provider.Provider>} */
-var files;
+var files = {};
 /** @type {Object.<string, provider.Provider>} */
-var includes;
+var includes ={};
 /** the list of documentation harbour base functions
  * @type {Array<object>} */
-var docs;
+var docs = [];
 /** the list of undocumented harbour base functions
  * @type {Array<string>} */
-var missing
+var missing = [];
+
 /**
  * @typedef dbInfo
  * @property {string} dbInfo.name the name to show
@@ -930,7 +931,7 @@ documents.onDidChangeContent((e) => {
     var cMode = (ext.startsWith(".c") && ext != ".ch")
     if (ext == ".prg" || ext == ".ch" || cMode) {
         var doGroups = false;
-        if (uri in files) doGroups = files[uri].doGroups;
+        if(uri in files) doGroups = files[uri].doGroups;
         var pp = parseDocument(e.document, (p) => { p.cMode = cMode; p.doGroups = doGroups; })
         UpdateFile(pp);
     }
