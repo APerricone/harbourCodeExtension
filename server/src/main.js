@@ -1575,7 +1575,7 @@ connection.onRequest("harbour/docSnippet", (params) => {
     return snippet;
     })
 
-connection.onRequest(server.SemanticTokensRegistrationType.method, (param)=> {
+connection.onRequest(server.SemanticTokensRequest.method, (param) => {
     var doc = documents.get(param.textDocument.uri);
     if(!doc) return [];
     var ret = [];
