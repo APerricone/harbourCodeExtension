@@ -16,7 +16,7 @@ var workspaceRoots = [];
 /** @type {Array<string>} */
 var includeDirs = [];
 /** @type {number} */
-var workspaceDepth = 0;
+var workspaceDepth;
 /** @type {boolean} */
 var wordBasedSuggestions = true;
 /** @type {Object.<string, provider.Provider>} */
