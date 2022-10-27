@@ -1,8 +1,13 @@
 # Change Log
 All notable changes to the "Harbour and xHarbour" extension will be documented in this file.
 
+# 1.0.7
+ - **Server** fixed completion on trigger character
+ - **Debugger** fixed start on non-windows system [#87](https://github.com/APerricone/harbourCodeExtension/issues/86)
+
+
 # 1.0.6
-- **Server** better classData, classVar, classMethod support
+ - **Server** better classData, classVar, classMethod support
  - **Syntax** better classData, classVar, classMethod support
  - **Debugger** better handshake
 

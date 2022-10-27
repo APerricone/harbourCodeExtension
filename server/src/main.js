@@ -40,7 +40,7 @@ var missing = [];
  * @property {string[]} fieldInfo.files the list of files where the field is found
  */
 /** @type {Object.<string, dbInfo>} every key is the lowercase name of db */
-var databases;
+var databases = {};
 /** @type {boolean} */
 var canLocationLink;
 /** @type {boolean} */
@@ -983,10 +983,18 @@ function getDocumentProvider(doc, checkGroup) {
 
 connection.onCompletion((param, cancelled) => {
     var doc = documents.get(param.textDocument.uri);
-    var line = doc.getText(server.Range.create(param.position.line, 0, param.position.line, 1e8));
+    var line = doc.getText(server.Range.create(
+        server.Position.create(param.position.line, 0),
+        server.Position.create(param.position.line, 1e8)));
+    if(param.context?.triggerKind==server.CompletionTriggerKind.TriggerCharacter &&
+        line[param.position.character - 1]!=param.context?.triggerCharacter) {
+        // somethime the triggerCharacter is not included on the line
+        line = line.substring(0,param.position.character-1)+param.context?.triggerCharacter+line.substring(param.position.character-1)
+    }
     var include = /^\s*#(pragma\s+__(?:c|binary)?stream)?include\s+[<"]([^>"]*)/i.exec(line);
     var prevLetter = ""
-    if(param.position.character>0) prevLetter = doc.getText(server.Range.create(server.Position.create(param.position.line, param.position.character - 1), param.position));
+    if(param.position.character>0)
+        prevLetter = doc.getText(server.Range.create(server.Position.create(param.position.line, param.position.character - 1), param.position));
     if (include !== null) {
         if (prevLetter == '>') {
             return server.CompletionList.create([], false); // wrong call
@@ -1000,30 +1008,25 @@ connection.onCompletion((param, cancelled) => {
             server.Range.create(server.Position.create(param.position.line, includePos),
                 server.Position.create(param.position.line, includePos + include[2].length - 1)));
     }
-    var allText = doc.getText(server.Range.create(
-        server.Position.create(param.position.line, 0),
-        server.Position.create(param.position.line, 1e8)));
     var completions = [];
     var pos = param.position.character-1;
     // Get the word
     var rge = /[0-9a-z_]/i;
     var word = "", className = undefined;
-    while (pos >= 0 && rge.test(allText[pos])) {
-        word = allText[pos] + word;
+    while (pos >= 0 && rge.test(line[pos])) {
+        word = line[pos] + word;
         pos--;
     }
     word = word.toLowerCase();
     var pp = getDocumentProvider(doc);
-    var prevLetter = allText[pos];
+    prevLetter = line[pos];
     if (prevLetter == '>') {
-        if (pos>0 && allText[pos - 1] == '-') {
+        if (pos>0 && line[pos - 1] == '-') {
             prevLetter = '->';
-            completions = CompletionDBFields(word, allText, pos, pp)
+            completions = CompletionDBFields(word, line, pos, pp)
             if (completions.length > 0)
                 return server.CompletionList.create(completions, true); // put true because added all known field of this db
-        } /*else {
-            return server.CompletionList.create([], false); // wrong call
-        }*/
+        }
     }
     var done = {}
     function CheckAdd(label, kind, sort) {
@@ -1155,7 +1158,7 @@ connection.onCompletion((param, cancelled) => {
         var wordRE = /\b[a-z_][a-z0-9_]*\b/gi
         var foundWord;
         var pos = param.position.character;
-        while (foundWord = wordRE.exec(allText)) {
+        while (foundWord = wordRE.exec(line)) {
             // remove current word
             if (foundWord.index < pos && foundWord.index + foundWord[0].length >= pos)
                 continue;
