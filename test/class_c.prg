@@ -19,11 +19,11 @@ class ClassTest
    class Var pippo
 
    METHOD Test() //Directly C Code
-   METHOD AddText()
+   METHOD AddText(prova)
 endclass
 
-METHOD AddText()
-   ::cText += " - Added from Harbour code"
+METHOD AddText(prova)
+   ::cText += " - Added from Harbour code" + prova
 return nil
 
 procedure main()

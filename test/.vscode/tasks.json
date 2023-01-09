@@ -24,7 +24,7 @@
     },
     "tasks": [
         {
-            "label": "build",
+            "label": "build w/lib",
             "type": "HBMK2",
             "input": "${file}",
             "group": {
@@ -34,6 +34,22 @@
             "extraArgs": [
                 "-lcode_dbg", "-L.", "-gtcgi", "-w", "-ql", "-b", "-gc3", "-winuni", "-debug","hbwin.hbc"
             ],
+            "windows": {
+                "setupBatch": "c:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\Build\\vcvars32.bat"
+            }
+        },
+        {
+            "label": "build w/ext",
+            "type": "HBMK2",
+            "input": "${file}",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "extraArgs": [
+                "-gtcgi", "-w", "-ql", "-b", "-gc3", "-winuni", "-debug","hbwin.hbc"
+            ],
+            "debugSymbols": true,
             "windows": {
                 "setupBatch": "c:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\Build\\vcvars32.bat"
             }
