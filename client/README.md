@@ -1,9 +1,9 @@
 # Antonino Perricone's extension for visual studio code about Harbour and xHarbour programming languages
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=LHCBE7ERSSVDJ&source=url)
-[![Version](https://vsmarketplacebadge.apphb.com/version-short/aperricone.harbour.svg)](https://marketplace.visualstudio.com/items?itemName=aperricone.harbour)
-[![Installs](https://vsmarketplacebadge.apphb.com/installs-short/aperricone.harbour.svg)](https://marketplace.visualstudio.com/items?itemName=aperricone.harbour)
-[![Ratings](https://vsmarketplacebadge.apphb.com/rating-short/aperricone.harbour.svg)](https://marketplace.visualstudio.com/items?itemName=aperricone.harbour)
+[![Version](https://vsmarketplacebadges.dev/version-short/aperricone.harbour.svg)](https://marketplace.visualstudio.com/items?itemName=aperricone.harbour)
+[![Installs](https://vsmarketplacebadges.dev/installs-short/aperricone.harbour.svg)](https://marketplace.visualstudio.com/items?itemName=aperricone.harbour)
+[![Ratings](https://vsmarketplacebadges.dev/rating-short/aperricone.harbour.svg)](https://marketplace.visualstudio.com/items?itemName=aperricone.harbour)
 
 do you like this extension? Help me to make it better with a donation, click the first button.
 
