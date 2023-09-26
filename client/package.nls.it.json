@@ -16,6 +16,7 @@
     "harbour.launch.workspaceRoot": "l'attributo 'workspaceRoot' è in disuso, usa 'sourcePaths'",
     "harbour.launch.program": "Percorso assoluto dell'eseguibile",
     "harbour.launch.workingDir": "Directory di lavoro",
+    "harbour.launch.env": "Variabili di ambiente passate al programma.",
     "harbour.launch.arguments": "Argomenti da passare all'eseguibile",
     "harbour.launch.stopOnEntry": "Fermati automaticamente dopo l'avvio",
     "harbour.launch.sourcePaths": "Percorsi dove cercare i sorgenti",

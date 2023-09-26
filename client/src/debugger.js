@@ -193,12 +193,14 @@ class harbourDebugSession extends debugadapter.DebugSession {
         }).listen(port);
         // starts the program
         //console.log("start the program");
+        const mergedEnv = Object.assign({}, process.env, args.env);
         switch (args.terminalType) {
             case 'external':
             case 'integrated':
                 this.runInTerminalRequest({
                     "kind": args.terminalType,
                     "cwd": args.workingDir,
+                    "env": mergedEnv,
                     "args": [args.program].concat(args.arguments ? args.arguments : [])
                 }, undefined, runResp =>{
                     if(runResp && runResp.body && runResp.body.processId) {
@@ -210,9 +212,9 @@ class harbourDebugSession extends debugadapter.DebugSession {
             default:
                 var process;
                 if (args.arguments)
-                    process = cp.spawn(args.program, args.arguments, { cwd: args.workingDir });
+                    process = cp.spawn(args.program, args.arguments, { cwd: args.workingDir, env: mergedEnv });
                 else
-                    process = cp.spawn(args.program, { cwd: args.workingDir });
+                    process = cp.spawn(args.program, { cwd: args.workingDir, env: mergedEnv });
                 process.on("error", e => {
                     tc.sendEvent(new debugadapter.OutputEvent(localize("harbour.dbgError1", args.program, args.workingDir), "stderr"))
                     tc.sendEvent(new debugadapter.TerminatedEvent());
