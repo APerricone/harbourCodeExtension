@@ -16,6 +16,7 @@
     "harbour.launch.workspaceRoot": "Attribute 'workspaceRoot' is deprecated, use 'sourcePaths' instead",
     "harbour.launch.program": "Absolute path of executable",
     "harbour.launch.workingDir": "Working directory",
+    "harbour.launch.env": "Environment variables passed to the program.",
     "harbour.launch.arguments": "Arguments to pass to executable",
     "harbour.launch.stopOnEntry": "Automatically stop after launch",
     "harbour.launch.sourcePaths": "Directories where search for source files",

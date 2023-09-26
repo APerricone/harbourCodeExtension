@@ -304,6 +304,14 @@
                                 "items": {
                                     "type": "string"
                                 }
+                            }, 
+                            "env": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "type": "string"
+                                },
+                                "description": "%%harbour.launch.env%",
+                                "default": {}
                             },
                             "stopOnEntry": {
                                 "type": "boolean",
