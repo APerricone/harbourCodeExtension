@@ -520,7 +520,7 @@ static procedure sendArea(cParams,prefix)
    iStart := iif(iStart<1           , 1         , iStart )
    iCount := iif(iCount<1           , nColCount , iCount )
    iEnd := iStart+iCount-1
-   iEnd := iif(iEnd>=nColCount, nColCount-1, iEnd)
+   iEnd := iif(iEnd>nColCount, nColCount, iEnd)
    //idxSend := 0
    FOR i := iStart TO iEnd
       value := (nArea)->(FieldGet(i))
